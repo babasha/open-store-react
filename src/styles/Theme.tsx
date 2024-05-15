@@ -2,7 +2,9 @@
 export const theme = {
     colors: {
       primaryBg: "#E5E5E5",
-      secondary: "#252527",
+      mainBg: "#FFFFFF",
+      ShopWindowBg: "#F0F4F8",
+      
       accent: "#7572D5",
       font: "#181818"
     },

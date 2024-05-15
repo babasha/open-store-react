@@ -46,7 +46,7 @@ export const GlobalStyled = createGlobalStyle`
     background-color: ${theme.colors.primaryBg};
   }
   section:nth-of-type(even) {
-    background-color: ${theme.colors.secondary};
+    background-color: ${theme.colors.mainBg};
   }
 
   h3 {

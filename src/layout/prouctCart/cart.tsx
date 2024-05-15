@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from "styled-components";
 import { Container } from '../../components/Container';
+import { theme } from '../../styles/Theme';
 
 
 // const items = ["Home", "Skills", "Works", "Testimony", "Contact",]
@@ -16,8 +17,9 @@ export const ProductCart = () => {
 
 
 const Cart= styled.div`
-    background-color: red;
-    width: 100px;
-    height: 200px;
+    background-color: ${theme.colors.mainBg};
+    width: 250px;
+    height: 380px;
     margin: 10px;
+    border-radius:30px;
 `
