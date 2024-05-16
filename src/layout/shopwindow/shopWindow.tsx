@@ -4,6 +4,7 @@ import { ProductCart } from '../prouctCart/cart';
 import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import { theme } from '../../styles/Theme';
+import { Basket } from '../cart/basket';
 
 
 // const items = ["Home", "Skills", "Works", "Testimony", "Contact",]
@@ -11,116 +12,27 @@ export const ShopWindow = () => {
     return (
         <Showcase>
             <Container width={"max-content"}>
-                <FlexWrapper  wrap='wrap'>
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            <ProductCart />
-            </FlexWrapper>
+                <FlexWrapper  wrap='nowrap'>
+                    <FlexWrapper  wrap='wrap'>
+                       
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+                       <ProductCart />
+
+
+                     
+                  </FlexWrapper>
+                  <Basket />
+               </FlexWrapper>
             </Container>
         </Showcase>
     );

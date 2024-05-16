@@ -1,21 +1,19 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Header } from './layout/header/header';
-import { ShopWindow } from './layout/shopwindow/shopWindow';
-import { Container } from './components/Container';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Shop } from './styles/shop';
+import { AdminPanel } from './page/AdminPanel';
 
 export function App() {
   return (
-    
-      <Container>
-     <Header />
-     <ShopWindow />
-     </Container>    
+    <Main>
+      <Routes>
+        <Route
+          path="/"   element={<Shop /> }   />
+        <Route path="/admin" element={<AdminPanel />} />
+      </Routes>
+    </Main>
   );
 }
 
-
-const Main = styled.div`
-  
-`
- 
+const Main = styled.div``;
