@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+
 
 const ToggleButton: React.FC = () => {
   const [isAdded, setIsAdded] = useState(false);
+  const { t } = useTranslation();
 
   const handleClick = () => {
     setIsAdded(!isAdded);
@@ -20,7 +23,7 @@ const ToggleButton: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {isAdded ? 'Добавлено' : '+ Добавить'}
+      {isAdded ? t('added') : t('add_to_cart')}
     </Button>
   );
 };

@@ -5,6 +5,7 @@ import reportWebVitals from './reportWebVitals';
 import { App } from './App';
 import { GlobalStyled } from './styles/globalStyled';
 import { BrowserRouter as Router } from 'react-router-dom';
+import './i18n';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
