@@ -15,7 +15,7 @@ export const Header = () => {
           
             </FlexWrapper>
             <Container>
-            <h1>Open market</h1>
+               <h1>Open market</h1>
             </Container>
         </StyledHeader>
     );

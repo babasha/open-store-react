@@ -13,9 +13,7 @@ export const GlobalStyled = createGlobalStyle`
   
   body {
     margin: 0;
-    font-family: 'Poppins',-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    font-family: "Rubik", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: ${theme.colors.font};
@@ -47,6 +45,12 @@ export const GlobalStyled = createGlobalStyle`
   }
   section:nth-of-type(even) {
     background-color: ${theme.colors.mainBg};
+  }
+
+  h1 {
+    font-weight: 900;
+    font-size: 24px;
+    text-transform: uppercase;
   }
 
   h3 {

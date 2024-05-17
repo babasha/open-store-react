@@ -2,16 +2,19 @@ import React from 'react';
 import styled from "styled-components";
 import { Container } from '../../components/Container';
 import { theme } from '../../styles/Theme';
+import ToggleButton from '../../components/button/button';
 
+type CartPropsType = {
+    title: string;
+  };
 
 // const items = ["Home", "Skills", "Works", "Testimony", "Contact",]
-export const ProductCart = () => {
+export const ProductCart: React.FC<CartPropsType> = ({ title }) => {
     return (
-        <Container width={'auto'}>
-            <Cart /> 
-        </Container>
-
-        
+      <Cart>
+        <p>{title}</p>
+        <ToggleButton/>
+      </Cart>
     );
 };
 
