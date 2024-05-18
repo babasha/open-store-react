@@ -10,6 +10,11 @@ export const theme = {
     },
     media: {
       tablet: "screen and (max-width:768px)"
-    }
-  };
+    },
+    button: {
+      buttonActive: "#0098EA"
+
+
+  },
+};
   

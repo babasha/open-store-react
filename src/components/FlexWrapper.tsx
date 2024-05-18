@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { theme } from "../styles/Theme";
 
 type  FlexWrapperPropsType = {
     direction?: string
@@ -7,6 +8,8 @@ type  FlexWrapperPropsType = {
     wrap?: string
     width?: string
     top?: string
+    bg?: string
+    radius?: any  
 }
 
 export  const FlexWrapper = styled.div<FlexWrapperPropsType>`
@@ -19,5 +22,7 @@ export  const FlexWrapper = styled.div<FlexWrapperPropsType>`
   width: ${props => props.width || "auto" };
   haight: 100%;
   margin-top: ${props => props.top || "auto" };
+  background-color: ${props => props.bg || "auto" };
+  border-radius: ${props => props.radius || "auto"};
 
 `
