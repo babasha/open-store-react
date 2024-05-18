@@ -11,6 +11,7 @@ import { ProductCart } from '../prouctCart/cart';
 export type CartsType = {
     title : string
     id : number
+    price : number 
 }
 
 type ShopWindowProps  = {
@@ -27,7 +28,7 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
                     <FlexWrapper  wrap='wrap'>
                  
                         {carts.map((cart) => (
-                            <ProductCart key={cart.id} title={cart.title} />
+                            <ProductCart key={cart.id} title={cart.title} price={cart.price} />
                     ))}
                 
                  

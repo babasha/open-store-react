@@ -50,7 +50,7 @@ const ToggleButton: React.FC = () => {
 };
 
 const Button = styled(motion.button)<{ isAdded: boolean }>`
-  padding: 10px 20px;
+  /* padding: 10px 20px; */
   /* border: none; */
   border-radius: 30px;
   cursor: pointer;
@@ -61,8 +61,8 @@ const Button = styled(motion.button)<{ isAdded: boolean }>`
   font-size: 16px;
   position: relative;
   overflow: hidden;
-width: 123px;
-height: 40px;
+width: 120px;
+height: 35px;
   &:hover {
     background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'lightblue')};
   }

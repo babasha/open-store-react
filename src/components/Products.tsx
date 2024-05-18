@@ -1,8 +1,15 @@
-// src/components/Products.js
+// src/components/Products.tsx
 import React, { useEffect, useState } from 'react';
+import { ProductCart } from '../layout/prouctCart/cart';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+}
 
 const Products = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
 
@@ -35,9 +42,7 @@ const Products = () => {
       <h1>Products</h1>
       <ul>
         {products.map(product => (
-          <li key={product.id}>
-            {product.name} - ${product.price.toFixed(2)}
-          </li>
+          <ProductCart key={product.id} title={product.name} price={product.price} />
         ))}
       </ul>
       <div>

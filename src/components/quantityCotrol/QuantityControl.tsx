@@ -3,24 +3,38 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FlexWrapper } from '../FlexWrapper';
 
-const QuantityControl: React.FC = () => {
+interface QuantityControlProps {
+  pricePerUnit: number;
+  onQuantityChange: (quantity: number) => void;
+}
+const QuantityControl: React.FC<QuantityControlProps> = ({ onQuantityChange }) => {
   const [quantity, setQuantity] = useState(1);
 
+
+
   const increase = () => {
-    setQuantity(prevQuantity => prevQuantity + 1);
+    setQuantity(prevQuantity => {
+      const newQuantity = prevQuantity + 1;
+      onQuantityChange(newQuantity);
+      return newQuantity;
+    });
   };
 
   const decrease = () => {
-    setQuantity(prevQuantity => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+    setQuantity(prevQuantity => {
+      const newQuantity = prevQuantity > 1 ? prevQuantity - 1 : 1;
+      onQuantityChange(newQuantity);
+      return newQuantity;
+    });
   };
 
   return (
-    <FlexWrapper radius='10px'  justify='center' align='center' bg='#F0F4F8'>
-      <Button onClick={decrease} >
+    <FlexWrapper radius='10px' justify='space-between' align='center' bg='#F0F4F8'>
+      <Button onClick={decrease}>
         <span>-</span>
       </Button>
       <Quantity>{quantity} кг</Quantity>
-      <Button onClick={increase} >
+      <Button onClick={increase}>
         <span>+</span>
       </Button>
     </FlexWrapper>
@@ -40,14 +54,17 @@ const Button = styled(motion.button)`
   background-color: white;
   border: 1px solid #d9e2ec;
   border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  width: 67px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   cursor: pointer;
   outline: none;
+  margin: 5.5px;
+  display: flex;
+
 
   &:hover {
     background-color: #e2e8f0;
