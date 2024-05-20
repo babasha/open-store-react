@@ -4,24 +4,32 @@ import { motion } from 'framer-motion';
 
 interface ModalProps {
   isOpen: boolean;
-  onClose: () => void;
   children: React.ReactNode;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0 },
+  visible: { opacity: 1, scale: 1 },
+};
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+
+const Modal: React.FC<ModalProps> = ({ isOpen, children, onMouseEnter, onMouseLeave }) => {
   return (
     <Backdrop
-      initial={{ opacity: 0 }}
-      animate={{ opacity: isOpen ? 1 : 0 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      isOpen={isOpen}
+    initial="hidden"
+    animate={isOpen ? "visible" : "hidden"}
+    variants={modalVariants}
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+    transition={{ duration: 0.3 }}
+
     >
       <ModalContent
-        initial={{ scale: 0 }}
-        animate={{ scale: isOpen ? 1 : 0 }}
-        exit={{ scale: 0 }}
-        onClick={(e) => e.stopPropagation()} // Остановить всплытие клика, чтобы не закрывать модальное окно при клике внутри него
+      initial="hidden"
+      animate={isOpen ? "visible" : "hidden"}
+      variants={modalVariants}
+      transition={{ duration: 0.3 }}
       >
         {children}
       </ModalContent>
@@ -31,10 +39,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
 
 const Backdrop = styled(motion.div)<{ isOpen: boolean }>`
   display: ${({ isOpen }) => (isOpen ? "flex" : "none")};
-  position: fixed; // Убедитесь, что модальное окно фиксировано
-  top: 120%;
+  position: fixed;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); // Центрируем модальное окно
+  transform: translate(-50%, -50%);
   z-index: 1000;
 `;
 

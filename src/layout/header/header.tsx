@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 // import {Logo} from "../../components/logo/logo";
 // import {Menu} from "../../components/logo/menu";
 import styled from "styled-components";
@@ -10,28 +10,41 @@ import Modal from '../../components/modal/modal';
 // import {Container} from "../../components/Container";
 // import {FlexWrapper} from "../../components/FlexWrapper";
 
-export const Header : React.FC = () => {
+ export const Header: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const handleMouseEnter = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    setIsModalOpen(true);
+  };
 
+  const handleMouseLeave = () => {
+    timerRef.current = setTimeout(() => {
+      setIsModalOpen(false);
+    }, 1000);
+  };
     return (
         <StyledHeader>
-            <FlexWrapper >
-          
-            </FlexWrapper>
-            <Container>
-                    
-                     <MainContainer>
-      <Button onClick={openModal}>Open Modal</Button>
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <h2>Modal Title</h2>
+            <FlexWrapper >  
+              </FlexWrapper>
+                 <Container> 
+                 <MainContainer>
+      <Button
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+      </Button>
+      <Modal 
+        isOpen={isModalOpen}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <LanguageSwitcher />
-                <Button onClick={closeModal}>Close Modal</Button>
       </Modal>
     </MainContainer>
-
 
 
                <h1>Open market</h1>
@@ -39,6 +52,7 @@ export const Header : React.FC = () => {
         </StyledHeader>
     );
 };
+
 
 const StyledHeader = styled.header`
   /* background-color: rgba(31,31,32, 0.9); */
