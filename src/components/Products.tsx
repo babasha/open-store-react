@@ -1,4 +1,3 @@
-// src/components/Products.tsx
 import React, { useEffect, useState } from 'react';
 import { ProductCart } from '../layout/prouctCart/cart';
 

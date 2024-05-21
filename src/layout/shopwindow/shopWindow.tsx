@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from "styled-components";
-import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import { theme } from '../../styles/Theme';
 import { Basket } from '../cart/basket';
@@ -43,34 +42,25 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
 
 const Showcase= styled.div`
     background-color: ${theme.colors.ShopWindowBg};
-    /* width: 100%; */
     padding: 0 10px;
     border-radius: 10px;
-    /* height: 9000px; */
     display: flex;
     width: 100%;
-    /* height: 1000px; */
- 
 
 `
 const Containers1= styled.div`
     background-color: ${theme.colors.ShopWindowBg};
-    /* width: 100%; */
     padding: 0 10px;
     border-radius: 10px;
-    /* height: 9000px; */
     display: flex;
-    /* width:72%; */
     flex-wrap: wrap;
 
 `
 
 const Containers2= styled.div`
     background-color: ${theme.colors.ShopWindowBg};
-    /* width: 100%; */
     padding: 0 10px;
     border-radius: 10px;
-    /* height: 9000px; */
     display: flex;
     width: 30%;
 `

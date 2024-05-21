@@ -10,5 +10,4 @@ width: ${props => props.width || '100%'};
   min-height: 100%;
   margin: 0 auto;
   padding: 0 15px;
-  /* border: 1px solid red; */
 `

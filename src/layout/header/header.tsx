@@ -63,7 +63,6 @@ export const Header: React.FC = () => {
 const StyledHeader = styled.header`
   display: flex;
 justify-content: space-between;
-  /* background-color: rgba(31,31,32, 0.9); */
   background: rgba(255, 255, 255, .7);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);

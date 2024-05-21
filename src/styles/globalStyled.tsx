@@ -54,7 +54,6 @@ export const GlobalStyled = createGlobalStyle`
   }
 
   h3 {
-    //font-family: Josefin Sans;
     font-size: 16px;
     font-style: normal;
     font-weight: 700;

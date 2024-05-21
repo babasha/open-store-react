@@ -16,7 +16,7 @@ let carts : Array <CartsType>  = [
 ]
 
 
-export function Shop() {
+export function HomePage () {
   return (
     
       <Container>

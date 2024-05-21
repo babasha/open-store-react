@@ -1,4 +1,3 @@
-// src/styles/Theme.tsx
 export const theme = {
     colors: {
       primaryBg: "#E5E5E5",
