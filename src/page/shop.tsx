@@ -9,9 +9,9 @@ let carts : Array <CartsType>  = [
   { id: 1, title: 'HTML&CSS',price: 50},
   { id: 2, title: 'JS', price: 50},
   { id: 3, title: 'JS' ,price: 50},
-  { id: 1, title: 'Привет',price: 50},
-  { id: 2, title: 'здарова',price: 50 },
-  { id: 3, title: 'ЕПТА',price: 50},
+  { id: 4, title: 'Привет',price: 50},
+  { id: 5, title: 'здарова',price: 50 },
+  { id: 6, title: 'ЕПТА',price: 50},
 
 ]
 

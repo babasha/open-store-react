@@ -1,14 +1,16 @@
-import React, { useState, MouseEventHandler, MouseEvent } from 'react';
+import React, { useState, useEffect, MouseEvent } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 
 interface ToggleButtonProps {
-  onClick: MouseEventHandler<HTMLButtonElement>;
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
+  resetButtonFlag: boolean;
+  resetButton: () => void;
 }
 
-const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick }) => {
+const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick, resetButtonFlag, resetButton }) => {
   const [isAdded, setIsAdded] = useState(false);
   const { t } = useTranslation();
   const [ripples, setRipples] = useState<{ key: number, style: React.CSSProperties }[]>([]);
@@ -16,7 +18,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick }) => {
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setIsAdded(!isAdded);
     createRipple(event);
-    onClick(event); // Вызовите переданную функцию onClick
+    onClick(event);
   };
 
   const createRipple = (event: MouseEvent<HTMLButtonElement>) => {
@@ -29,6 +31,13 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick }) => {
 
     setRipples(prevRipples => [...prevRipples, newRipple]);
   };
+
+  useEffect(() => {
+    if (resetButtonFlag) {
+      setIsAdded(false);
+      resetButton();
+    }
+  }, [resetButtonFlag, resetButton]);
 
   return (
     <Button
@@ -62,7 +71,6 @@ const Button = styled(motion.button)<{ isAdded: boolean }>`
   overflow: hidden;
   width: 120px;
   height: 35px;
-
   &:hover {
     background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'lightblue')};
   }

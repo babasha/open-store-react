@@ -4,7 +4,19 @@ import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
 
 export const Basket: React.FC = () => {
-  const { cartItems, removeItemFromCart, clearCart } = useCart();
+  const { cartItems, removeItemFromCart, clearCart, resetQuantityInProductCard, resetAllQuantities, setResetFlag } = useCart();
+
+  const handleRemoveItem = (id: number) => {
+    removeItemFromCart(id);
+    resetQuantityInProductCard(id);
+    setResetFlag(true);
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    resetAllQuantities();
+    setResetFlag(true);
+  };
 
   return (
     <Container width={'auto'}>
@@ -16,12 +28,12 @@ export const Basket: React.FC = () => {
             <span>{item.title}</span>
             <span>{item.quantity} кг</span>
             <span>{item.price} GEL</span>
-            <button onClick={() => removeItemFromCart(item.id)}>Удалить</button>
+            <button onClick={() => handleRemoveItem(item.id)}>Удалить</button>
           </CartItem>
         ))}
         {cartItems.length > 0 && (
           <>
-            <button onClick={clearCart}>Очистить корзину</button>
+            <button onClick={handleClearCart}>Очистить корзину</button>
           </>
         )}
       </CartdiInner>
