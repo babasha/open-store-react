@@ -20,7 +20,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ onLanguageChange })
       <LanguageSwitcherBtn onClick={() => changeLanguage('en')}>English</LanguageSwitcherBtn>
       <LanguageSwitcherBtn onClick={() => changeLanguage('ru')}>Русский</LanguageSwitcherBtn>
       <LanguageSwitcherBtn onClick={() => changeLanguage('geo')}>Georgian</LanguageSwitcherBtn>
-    </LanguageSwitcherInner>
+    </LanguageSwitcherInner> 
   );
 };
 
@@ -32,10 +32,10 @@ const LanguageSwitcherBtn = styled.button`
 /* margin: 20px; */
 /* height: 20px; */
 transition: 0.2s;
-margin: 10px;
+margin: 10px;   
+ width: 100%;
 &:hover {
     background-color: ${theme.colors.primaryBg};
-    width: 100%;
   }
 `
 const LanguageSwitcherInner = styled.button`
