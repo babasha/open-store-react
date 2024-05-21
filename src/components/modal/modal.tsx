@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { theme } from '../../styles/Theme';
 
 interface ModalProps {
   isOpen: boolean;
@@ -37,17 +38,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, children, onMouseEnter, onMouseLe
   );
 };
 
-const Backdrop = styled(motion.div)<{ isOpen: boolean }>`
-  display: ${({ isOpen }) => (isOpen ? "flex" : "none")};
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+const Backdrop = styled(motion.div)`
+  top: 80%;
   z-index: 1000;
+  position: absolute;
+
 `;
 
 const ModalContent = styled(motion.div)`
-  background: white;
+  background:  ${theme.colors.mainBg};
   padding: 20px;
   border-radius: 10px;
   max-width: 400px;

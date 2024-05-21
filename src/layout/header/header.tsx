@@ -24,14 +24,14 @@ import Modal from '../../components/modal/modal';
   const handleMouseLeave = () => {
     timerRef.current = setTimeout(() => {
       setIsModalOpen(false);
-    }, 1000);
+    }, 300);
   };
     return (
         <StyledHeader>
             <FlexWrapper >  
+               <h1>Open market</h1>
               </FlexWrapper>
-                 <Container> 
-                 <MainContainer>
+                 <FlexWrapper justify='center'>
       <Button
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -44,17 +44,17 @@ import Modal from '../../components/modal/modal';
       >
         <LanguageSwitcher />
       </Modal>
-    </MainContainer>
+    </FlexWrapper>
 
 
-               <h1>Open market</h1>
-            </Container>
         </StyledHeader>
     );
 };
 
 
 const StyledHeader = styled.header`
+  display: flex;
+justify-content: space-between;
   /* background-color: rgba(31,31,32, 0.9); */
   background: rgba(255, 255, 255, .7);
   -webkit-backdrop-filter: blur(10px);
@@ -62,21 +62,9 @@ const StyledHeader = styled.header`
 padding: 20px 0 ;
 border-radius: 30px;
 margin: 15px 0px;
-
-
-  /* position: fixed; */
-  /* top: 0; */
-  /* left: 0; */
-  /* right: 0; */
-  /* z-index: 99999; */
 `
-const MainContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* height: 100vh; */
-  /* background: #f0f4f8; */
-`;
+
+
 
 const Button = styled(motion.button)`
   padding: 10px 20px;
