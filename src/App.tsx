@@ -7,12 +7,14 @@ import { AdminPanel } from './page/AdminPanel';
 
 export function App() {
   return (
+    // <Router basename="/open-store-react">
     <Main>
       <Routes>
-        <Route path="/"      element={<HomePage  /> }/>
+        <Route path="/open-store-react"      element={<HomePage  /> }/>
         <Route path="/admin" element={<AdminPanel />} />
       </Routes>
     </Main>
+    // </Router>
   );
 }
 
