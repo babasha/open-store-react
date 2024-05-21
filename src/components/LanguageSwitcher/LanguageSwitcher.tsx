@@ -1,20 +1,37 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
 
-const LanguageSwitcher: React.FC = () => {
+interface LanguageSwitcherProps {
+  onLanguageChange: (lng: string) => void;
+}
+
+const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ onLanguageChange }) => {
   const { i18n } = useTranslation();
 
   const changeLanguage = (lng: string) => {
+    onLanguageChange(lng);
     i18n.changeLanguage(lng);
   };
 
   return (
-    <div>
-      <button onClick={() => changeLanguage('en')}>English</button>
-      <button onClick={() => changeLanguage('ru')}>Русский</button>
-      <button onClick={() => changeLanguage('geo')}>Georgian</button>
-    </div>
+    <LanguageSwitcherInner>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('en')}>English</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('ru')}>Русский</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('geo')}>Georgian</LanguageSwitcherBtn>
+    </LanguageSwitcherInner>
   );
 };
 
+const LanguageSwitcherBtn = styled.button`
+margin: 10px 0;
+`
+const LanguageSwitcherInner = styled.button`
+display:flex;
+align-items: center;
+flex-wrap: nowrap;
+flex-direction: column;
+
+
+`
 export default LanguageSwitcher;
