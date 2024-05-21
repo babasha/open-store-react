@@ -10,6 +10,7 @@ interface CartItem {
 interface CartContextType {
   cartItems: CartItem[];
   addItemToCart: (item: CartItem) => void;
+  updateItemInCart: (item: CartItem) => void;
   removeItemFromCart: (id: number) => void;
   clearCart: () => void;
 }
@@ -24,24 +25,33 @@ export const useCart = () => {
   return context;
 };
 
-export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface CartProviderProps {
+  children: ReactNode;
+}
+
+export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const addItemToCart = (item: CartItem) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(i => i.id === item.id);
+    setCartItems((prevItems) => {
+      const existingItem = prevItems.find((i) => i.id === item.id);
       if (existingItem) {
-        return prevItems.map(i =>
-          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+        return prevItems.map((i) =>
+          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity, price: i.price + item.price } : i
         );
-      } else {
-        return [...prevItems, item];
       }
+      return [...prevItems, item];
     });
   };
 
+  const updateItemInCart = (item: CartItem) => {
+    setCartItems((prevItems) =>
+      prevItems.map((i) => (i.id === item.id ? { ...i, quantity: item.quantity, price: item.price } : i))
+    );
+  };
+
   const removeItemFromCart = (id: number) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+    setCartItems((prevItems) => prevItems.filter((i) => i.id !== id));
   };
 
   const clearCart = () => {
@@ -49,7 +59,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addItemToCart, removeItemFromCart, clearCart }}>
+    <CartContext.Provider
+      value={{ cartItems, addItemToCart, updateItemInCart, removeItemFromCart, clearCart }}
+    >
       {children}
     </CartContext.Provider>
   );

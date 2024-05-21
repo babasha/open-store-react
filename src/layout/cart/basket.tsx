@@ -1,30 +1,28 @@
 import React from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
-import { theme } from '../../styles/Theme';
 
-export const Basket = () => {
+export const Basket: React.FC = () => {
   const { cartItems, removeItemFromCart, clearCart } = useCart();
 
   return (
     <Container width={'auto'}>
       <CartdiInner>
-        <h3>Корзина</h3>
-        {cartItems.length === 0 ? (
-          <p>Корзина пуста</p>
-        ) : (
-          cartItems.map(item => (
-            <CartItem key={item.id}>
-              <p>{item.title}</p>
-              <p>{item.quantity} кг</p>
-              <p>{item.price} GEL</p>
-              <button onClick={() => removeItemFromCart(item.id)}>Удалить</button>
-            </CartItem>
-          ))
-        )}
+        <h2>Корзина</h2>
+        {cartItems.length === 0 && <p>Корзина пуста</p>}
+        {cartItems.map((item) => (
+          <CartItem key={item.id}>
+            <span>{item.title}</span>
+            <span>{item.quantity} кг</span>
+            <span>{item.price} GEL</span>
+            <button onClick={() => removeItemFromCart(item.id)}>Удалить</button>
+          </CartItem>
+        ))}
         {cartItems.length > 0 && (
-          <button onClick={clearCart}>Очистить корзину</button>
+          <>
+            <button onClick={clearCart}>Очистить корзину</button>
+          </>
         )}
       </CartdiInner>
     </Container>
@@ -32,12 +30,10 @@ export const Basket = () => {
 };
 
 const CartdiInner = styled.div`
-  background-color: ${theme.colors.mainBg};
-  width: 250px;
-  height: auto;
-  margin: 10px;
-  border-radius: 30px;
-  padding: 10px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const CartItem = styled.div`

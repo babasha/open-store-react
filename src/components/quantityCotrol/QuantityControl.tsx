@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FlexWrapper } from '../FlexWrapper';
@@ -6,26 +6,17 @@ import { FlexWrapper } from '../FlexWrapper';
 interface QuantityControlProps {
   pricePerUnit: number;
   onQuantityChange: (quantity: number) => void;
+  quantity: number;
 }
-const QuantityControl: React.FC<QuantityControlProps> = ({ onQuantityChange }) => {
-  const [quantity, setQuantity] = useState(1);
 
-
+const QuantityControl: React.FC<QuantityControlProps> = ({ pricePerUnit, onQuantityChange, quantity }) => {
 
   const increase = () => {
-    setQuantity(prevQuantity => {
-      const newQuantity = prevQuantity + 1;
-      onQuantityChange(newQuantity);
-      return newQuantity;
-    });
+    onQuantityChange(quantity + 1);
   };
 
   const decrease = () => {
-    setQuantity(prevQuantity => {
-      const newQuantity = prevQuantity > 1 ? prevQuantity - 1 : 1;
-      onQuantityChange(newQuantity);
-      return newQuantity;
-    });
+    onQuantityChange(quantity > 1 ? quantity - 1 : 1);
   };
 
   return (
@@ -41,15 +32,6 @@ const QuantityControl: React.FC<QuantityControlProps> = ({ onQuantityChange }) =
   );
 };
 
-// const Container = styled.div`
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   background-color: #f5f9fc;
-//   border-radius: 12px;
-//   padding: 10px;
-// `;
-
 const Button = styled(motion.button)`
   background-color: white;
   border: 1px solid #d9e2ec;
@@ -64,7 +46,6 @@ const Button = styled(motion.button)`
   outline: none;
   margin: 5.5px;
   display: flex;
-
 
   &:hover {
     background-color: #e2e8f0;
