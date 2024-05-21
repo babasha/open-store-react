@@ -5,17 +5,22 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 i18n
   .use(Backend)
-  .use(LanguageDetector)
+  .use(LanguageDetector)  
   .use(initReactI18next)
   .init({
-    fallbackLng: 'en',
+    fallbackLng: 'en',  
     debug: true,
     interpolation: {
-      escapeValue: false, // React already does escaping
+      escapeValue: false,  
     },
     backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
+      loadPath: '/locales/{{lng}}/{{ns}}.json',  
     },
+    detection: {
+      
+      order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
+      caches: ['localStorage', 'cookie'],  
+    }
   });
 
 export default i18n;

@@ -33,9 +33,9 @@ const LanguageSwitcherBtn = styled.button`
 /* height: 20px; */
 transition: 0.2s;
 margin: 10px;   
- width: 100%;
+ /* width: 100%; */
 &:hover {
-    background-color: ${theme.colors.primaryBg};
+    /* background-color: ${theme.colors.primaryBg}; */
   }
 `
 const LanguageSwitcherInner = styled.button`

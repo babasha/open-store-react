@@ -61,11 +61,11 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price }) => {
   );
 };
 
-const Cart = styled.div`
+export const Cart = styled.div`
   background-color: ${theme.colors.mainBg};
   width: 250px;
   height: 380px;
-  margin: 10px;
+  margin: 0px 13px 17px 0px;
   border-radius:30px;
   padding: 10px;
 `;

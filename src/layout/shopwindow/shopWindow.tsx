@@ -23,21 +23,19 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
   
     return (
         <Showcase>
-            <Container width={"max-content"}>
-                <FlexWrapper  wrap='nowrap'>
-                    <FlexWrapper  wrap='wrap'>
+                <FlexWrapper >
+                    <Containers1 >
                  
                         {carts.map((cart) => (
               <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} />
             ))}
-                
-                 
+                  </Containers1  >
 
-                     
-                  </FlexWrapper>
-                  <Basket />
+        <Containers2 >
+            <Basket />
+        </Containers2>
+        
                </FlexWrapper>
-            </Container>
         </Showcase>
     );
 };
@@ -45,8 +43,34 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
 
 const Showcase= styled.div`
     background-color: ${theme.colors.ShopWindowBg};
-    width: 100%;
+    /* width: 100%; */
+    padding: 0 10px;
     border-radius: 10px;
     /* height: 9000px; */
-    display: flex
+    display: flex;
+    width: 100%;
+    /* height: 1000px; */
+ 
+
+`
+const Containers1= styled.div`
+    background-color: ${theme.colors.ShopWindowBg};
+    /* width: 100%; */
+    padding: 0 10px;
+    border-radius: 10px;
+    /* height: 9000px; */
+    display: flex;
+    /* width:72%; */
+    flex-wrap: wrap;
+
+`
+
+const Containers2= styled.div`
+    background-color: ${theme.colors.ShopWindowBg};
+    /* width: 100%; */
+    padding: 0 10px;
+    border-radius: 10px;
+    /* height: 9000px; */
+    display: flex;
+    width: 30%;
 `

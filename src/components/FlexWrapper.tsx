@@ -10,6 +10,7 @@ type  FlexWrapperPropsType = {
     top?: string
     bg?: string
     radius?: any  
+    pading?: string 
 }
 
 export  const FlexWrapper = styled.div<FlexWrapperPropsType>`
@@ -24,5 +25,5 @@ export  const FlexWrapper = styled.div<FlexWrapperPropsType>`
   margin-top: ${props => props.top || "auto" };
   background-color: ${props => props.bg || "auto" };
   border-radius: ${props => props.radius || "auto"};
-
+ padding: ${props => props.pading || "auto"};
 `
