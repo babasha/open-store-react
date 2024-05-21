@@ -47,10 +47,10 @@ const Backdrop = styled(motion.div)`
 
 const ModalContent = styled(motion.div)`
   background:  ${theme.colors.mainBg};
-  padding: 20px;
+  /* padding: 20px; */
   border-radius: 10px;
-  max-width: 400px;
-  width: 100%;
+  /* max-width: 400px; */
+  width: 80px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 `;
 

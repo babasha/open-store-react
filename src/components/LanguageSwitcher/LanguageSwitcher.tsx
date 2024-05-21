@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { theme } from '../../styles/Theme';
 
 interface LanguageSwitcherProps {
   onLanguageChange: (lng: string) => void;
@@ -23,14 +24,27 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ onLanguageChange })
   );
 };
 
+
+
+
+
 const LanguageSwitcherBtn = styled.button`
-margin: 10px 0;
+/* margin: 20px; */
+/* height: 20px; */
+transition: 0.2s;
+margin: 10px;
+&:hover {
+    background-color: ${theme.colors.primaryBg};
+    width: 100%;
+  }
 `
 const LanguageSwitcherInner = styled.button`
 display:flex;
-align-items: center;
-flex-wrap: nowrap;
+/* align-items: center; */
+/* flex-wrap: nowrap; */
 flex-direction: column;
+justify-content: center;
+/* width: 50px; */
 
 
 `

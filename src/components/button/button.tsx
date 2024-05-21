@@ -65,6 +65,7 @@ const Button = styled(motion.button)<{ isActive: boolean; isDisabled: boolean }>
   overflow: hidden;
   width: 120px;
   height: 35px;
+  transition: 0.2s;
   pointer-events: ${({ isDisabled }) => (isDisabled ? 'none' : 'auto')};
 
   &:hover {

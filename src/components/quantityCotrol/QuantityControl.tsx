@@ -54,6 +54,7 @@ const Button = styled(motion.button)`
   cursor: pointer;
   outline: none;
   margin: 5.5px;
+  transition: 0.2s;
 
   &:hover {
     background-color: #e2e8f0;
