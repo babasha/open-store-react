@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.js": "/babasha/open-store-react/static/js/main.70ad8491.js",
+    "static/js/453.ed3810f9.chunk.js": "/babasha/open-store-react/static/js/453.ed3810f9.chunk.js",
+    "index.html": "/babasha/open-store-react/index.html",
+    "static/media/getFetch.cjs": "/babasha/open-store-react/static/media/getFetch.c4cca45e22bc1b2c7d0d.cjs",
+    "main.70ad8491.js.map": "/babasha/open-store-react/static/js/main.70ad8491.js.map",
+    "453.ed3810f9.chunk.js.map": "/babasha/open-store-react/static/js/453.ed3810f9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.70ad8491.js"
+  ]
+}

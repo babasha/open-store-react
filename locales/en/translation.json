@@ -1,0 +1,15 @@
+{
+  "cart": {
+    "title": "Cart",
+    "empty": "Cart is empty",
+    "total": "Total",
+    "delivery": "Delivery",
+    "free": "Free",
+    "edit": "Edit",
+    "finish_editing": "Finish editing",
+    "clear": "Clear cart",
+    "remove": "Remove"
+  },
+  "add_to_cart": "Add to cart",
+  "added": "Added"
+}
