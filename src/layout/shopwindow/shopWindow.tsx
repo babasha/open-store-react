@@ -28,8 +28,8 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
                     <FlexWrapper  wrap='wrap'>
                  
                         {carts.map((cart) => (
-                            <ProductCart key={cart.id} title={cart.title} price={cart.price} />
-                    ))}
+              <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} />
+            ))}
                 
                  
 

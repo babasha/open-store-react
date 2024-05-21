@@ -42,7 +42,7 @@ const Products = () => {
       <h1>Products</h1>
       <ul>
         {products.map(product => (
-          <ProductCart key={product.id} title={product.name} price={product.price} />
+          <ProductCart key={product.id} id={product.id} title={product.name} price={product.price} />
         ))}
       </ul>
       <div>

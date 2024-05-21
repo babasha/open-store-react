@@ -1,10 +1,14 @@
-import React, { useState, MouseEvent } from 'react';
+import React, { useState, MouseEventHandler, MouseEvent } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 
-const ToggleButton: React.FC = () => {
+interface ToggleButtonProps {
+  onClick: MouseEventHandler<HTMLButtonElement>;
+}
+
+const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick }) => {
   const [isAdded, setIsAdded] = useState(false);
   const { t } = useTranslation();
   const [ripples, setRipples] = useState<{ key: number, style: React.CSSProperties }[]>([]);
@@ -12,6 +16,7 @@ const ToggleButton: React.FC = () => {
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setIsAdded(!isAdded);
     createRipple(event);
+    onClick(event); // Вызовите переданную функцию onClick
   };
 
   const createRipple = (event: MouseEvent<HTMLButtonElement>) => {
@@ -29,10 +34,7 @@ const ToggleButton: React.FC = () => {
     <Button
       onClick={handleClick}
       isAdded={isAdded}
-      // whileTap={{ scale: 0.9 }}
-      // initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      // transition={{ duration: 19.5 }}
     >
       {isAdded ? t('added') : t('add_to_cart')}
       {ripples.map(({ key, style }) => (
@@ -50,19 +52,17 @@ const ToggleButton: React.FC = () => {
 };
 
 const Button = styled(motion.button)<{ isAdded: boolean }>`
-  /* padding: 10px 20px; */
-  /* border: none; */
   border-radius: 30px;
   cursor: pointer;
-  /* color: white; */
   background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'transparent')};
   color: ${props => (props.isAdded ? 'white' : theme.button.buttonActive)};
   border: ${props => (props.isAdded ? theme.button.buttonActive : '1px solid #0098EA')};
   font-size: 16px;
   position: relative;
   overflow: hidden;
-width: 120px;
-height: 35px;
+  width: 120px;
+  height: 35px;
+
   &:hover {
     background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'lightblue')};
   }
@@ -72,7 +72,6 @@ const Ripple = styled(motion.span)`
   position: absolute;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.7);
-  /* transform: scale(0); */
   pointer-events: none;
 `;
 
