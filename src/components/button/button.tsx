@@ -1,17 +1,24 @@
-import React, { useState, MouseEvent } from 'react';
+import React, { useState, MouseEvent, MouseEventHandler } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 
-const ToggleButton: React.FC = () => {
-  const [isAdded, setIsAdded] = useState(false);
-  const { t } = useTranslation();
+interface ToggleButtonProps {
+  onClick: MouseEventHandler<HTMLButtonElement>;
+  isActive: boolean;
+  isDisabled: boolean;
+}
+
+const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick, isActive, isDisabled }) => {
   const [ripples, setRipples] = useState<{ key: number, style: React.CSSProperties }[]>([]);
+  const { t } = useTranslation();
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    setIsAdded(!isAdded);
-    createRipple(event);
+    if (!isDisabled) {
+      createRipple(event);
+      onClick(event);
+    }
   };
 
   const createRipple = (event: MouseEvent<HTMLButtonElement>) => {
@@ -28,13 +35,11 @@ const ToggleButton: React.FC = () => {
   return (
     <Button
       onClick={handleClick}
-      isAdded={isAdded}
-      // whileTap={{ scale: 0.9 }}
-      // initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      // transition={{ duration: 19.5 }}
+      isActive={isActive}
+      isDisabled={isDisabled}
+      disabled={isDisabled}
     >
-      {isAdded ? t('added') : t('add_to_cart')}
+      {isActive ? t('added') : t('add_to_cart')}
       {ripples.map(({ key, style }) => (
         <Ripple
           key={key}
@@ -49,22 +54,26 @@ const ToggleButton: React.FC = () => {
   );
 };
 
-const Button = styled(motion.button)<{ isAdded: boolean }>`
-  /* padding: 10px 20px; */
-  /* border: none; */
+const Button = styled(motion.button)<{ isActive: boolean; isDisabled: boolean }>`
   border-radius: 30px;
-  cursor: pointer;
-  /* color: white; */
-  background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'transparent')};
-  color: ${props => (props.isAdded ? 'white' : theme.button.buttonActive)};
-  border: ${props => (props.isAdded ? theme.button.buttonActive : '1px solid #0098EA')};
+  cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
+  background-color: ${props => (props.isActive ? theme.button.buttonActive : 'transparent')};
+  color: ${props => (props.isActive ? 'white' : theme.button.buttonActive)};
+  border: ${props => (props.isActive ? theme.button.buttonActive : '1px solid #0098EA')};
   font-size: 16px;
   position: relative;
   overflow: hidden;
-width: 120px;
-height: 35px;
+  width: 120px;
+  height: 35px;
+  transition: 0.2s;
+  pointer-events: ${({ isDisabled }) => (isDisabled ? 'none' : 'auto')};
+
   &:hover {
-    background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'lightblue')};
+    background-color: ${props => (props.isActive ? theme.button.buttonActive : 'lightblue')};
+  }
+
+  &:disabled {
+    background-color: gray;
   }
 `;
 
@@ -72,7 +81,6 @@ const Ripple = styled(motion.span)`
   position: absolute;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.7);
-  /* transform: scale(0); */
   pointer-events: none;
 `;
 

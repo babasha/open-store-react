@@ -9,7 +9,6 @@ import LanguageSwitcher from './components/LanguageSwitcher/LanguageSwitcher';
 export function App() {
   return (
     <Main>
-       <LanguageSwitcher />
       <Routes>
         <Route path="/"      element={<Shop /> }/>
         <Route path="/admin" element={<AdminPanel />} />

@@ -1,23 +1,48 @@
 import React from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 import { Container } from '../../components/Container';
+import { useCart } from './CartContext';
+import { useTranslation } from 'react-i18next';
+import { theme } from '../../styles/Theme';
+import { FlexWrapper } from '../../components/FlexWrapper';
 
+export const Basket: React.FC = () => {
+  const { cartItems, removeItemFromCart, clearCart } = useCart();
+  const { t } = useTranslation();
 
-export const Basket  = () => {
-    return (
-        <Container width={'auto'}>
-            <CartdiInner /> 
-        </Container>
-
-        
-    );
+  return (
+      <FlexWrapper  >
+        <h2>{t('cart.title')}</h2>
+        {cartItems.length === 0 && <p>{t('cart.empty')}</p>}
+        {cartItems.map((item) => (
+          <CartItem key={item.id}>
+            <span>{item.title}</span>
+            <span>{item.quantity} кг</span>
+            <span>{item.price} GEL</span>
+            <button onClick={() => removeItemFromCart(item.id)}>{t('cart.remove')}</button>
+          </CartItem>
+        ))}
+        {cartItems.length > 0 && (
+          <>
+            <button onClick={clearCart}>{t('cart.clear')}</button>
+          </>
+        )}
+      </FlexWrapper>
+  );
 };
 
+const CartdiInner = styled.div`
+  background-color: ${theme.colors.mainBg};
+  padding: 20px;
+  border-radius: 10px;
+  height: max-content;
+  width: 395px;
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+  
+`;
 
-const CartdiInner= styled.div`
-    background-color: red;
-    width: 250px;
-    height: 380px;
-    margin: 10px;
-    border-radius:30px;
-`
+const CartItem = styled.div`
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* margin-bottom: 10px; */
+`;

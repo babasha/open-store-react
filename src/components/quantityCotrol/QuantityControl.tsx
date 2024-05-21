@@ -1,54 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FlexWrapper } from '../FlexWrapper';
 
 interface QuantityControlProps {
   pricePerUnit: number;
+  quantity: number;
   onQuantityChange: (quantity: number) => void;
 }
-const QuantityControl: React.FC<QuantityControlProps> = ({ onQuantityChange }) => {
-  const [quantity, setQuantity] = useState(1);
 
+const QuantityControl: React.FC<QuantityControlProps> = ({ pricePerUnit, quantity, onQuantityChange }) => {
+  const [localQuantity, setLocalQuantity] = useState(quantity);
 
+  useEffect(() => {
+    setLocalQuantity(quantity);
+  }, [quantity]);
 
   const increase = () => {
-    setQuantity(prevQuantity => {
-      const newQuantity = prevQuantity + 1;
-      onQuantityChange(newQuantity);
-      return newQuantity;
-    });
+    const newQuantity = localQuantity + 1;
+    setLocalQuantity(newQuantity);
+    onQuantityChange(newQuantity);
   };
 
   const decrease = () => {
-    setQuantity(prevQuantity => {
-      const newQuantity = prevQuantity > 1 ? prevQuantity - 1 : 1;
-      onQuantityChange(newQuantity);
-      return newQuantity;
-    });
+    const newQuantity = localQuantity > 1 ? localQuantity - 1 : 1;
+    setLocalQuantity(newQuantity);
+    onQuantityChange(newQuantity);
   };
 
   return (
-    <FlexWrapper radius='10px' justify='space-between' align='center' bg='#F0F4F8'>
+    <FlexWrapper radius="10px" justify="space-between" align="center" bg="#F0F4F8">
       <Button onClick={decrease}>
         <span>-</span>
       </Button>
-      <Quantity>{quantity} кг</Quantity>
+      <Quantity>{localQuantity} кг</Quantity>
       <Button onClick={increase}>
         <span>+</span>
       </Button>
     </FlexWrapper>
   );
 };
-
-// const Container = styled.div`
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   background-color: #f5f9fc;
-//   border-radius: 12px;
-//   padding: 10px;
-// `;
 
 const Button = styled(motion.button)`
   background-color: white;
@@ -63,8 +54,7 @@ const Button = styled(motion.button)`
   cursor: pointer;
   outline: none;
   margin: 5.5px;
-  display: flex;
-
+  transition: 0.2s;
 
   &:hover {
     background-color: #e2e8f0;
