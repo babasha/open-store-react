@@ -1,24 +1,24 @@
-import React, { useState, useEffect, MouseEvent } from 'react';
+import React, { useState, MouseEvent, MouseEventHandler } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 
 interface ToggleButtonProps {
-  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
-  resetButtonFlag: boolean;
-  resetButton: () => void;
+  onClick: MouseEventHandler<HTMLButtonElement>;
+  isActive: boolean;
+  isDisabled: boolean;
 }
 
-const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick, resetButtonFlag, resetButton }) => {
-  const [isAdded, setIsAdded] = useState(false);
-  const { t } = useTranslation();
+const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick, isActive, isDisabled }) => {
   const [ripples, setRipples] = useState<{ key: number, style: React.CSSProperties }[]>([]);
+  const { t } = useTranslation();
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    setIsAdded(!isAdded);
-    createRipple(event);
-    onClick(event);
+    if (!isDisabled) {
+      createRipple(event);
+      onClick(event);
+    }
   };
 
   const createRipple = (event: MouseEvent<HTMLButtonElement>) => {
@@ -32,20 +32,14 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick, resetButtonFlag, r
     setRipples(prevRipples => [...prevRipples, newRipple]);
   };
 
-  useEffect(() => {
-    if (resetButtonFlag) {
-      setIsAdded(false);
-      resetButton();
-    }
-  }, [resetButtonFlag, resetButton]);
-
   return (
     <Button
       onClick={handleClick}
-      isAdded={isAdded}
-      animate={{ opacity: 1 }}
+      isActive={isActive}
+      isDisabled={isDisabled}
+      disabled={isDisabled}
     >
-      {isAdded ? t('added') : t('add_to_cart')}
+      {isActive ? t('added') : t('add_to_cart')}
       {ripples.map(({ key, style }) => (
         <Ripple
           key={key}
@@ -60,19 +54,25 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ onClick, resetButtonFlag, r
   );
 };
 
-const Button = styled(motion.button)<{ isAdded: boolean }>`
+const Button = styled(motion.button)<{ isActive: boolean; isDisabled: boolean }>`
   border-radius: 30px;
-  cursor: pointer;
-  background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'transparent')};
-  color: ${props => (props.isAdded ? 'white' : theme.button.buttonActive)};
-  border: ${props => (props.isAdded ? theme.button.buttonActive : '1px solid #0098EA')};
+  cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
+  background-color: ${props => (props.isActive ? theme.button.buttonActive : 'transparent')};
+  color: ${props => (props.isActive ? 'white' : theme.button.buttonActive)};
+  border: ${props => (props.isActive ? theme.button.buttonActive : '1px solid #0098EA')};
   font-size: 16px;
   position: relative;
   overflow: hidden;
   width: 120px;
   height: 35px;
+  pointer-events: ${({ isDisabled }) => (isDisabled ? 'none' : 'auto')};
+
   &:hover {
-    background-color: ${props => (props.isAdded ? theme.button.buttonActive : 'lightblue')};
+    background-color: ${props => (props.isActive ? theme.button.buttonActive : 'lightblue')};
+  }
+
+  &:disabled {
+    background-color: gray;
   }
 `;
 

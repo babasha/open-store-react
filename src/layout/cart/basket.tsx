@@ -1,22 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
 
 export const Basket: React.FC = () => {
-  const { cartItems, removeItemFromCart, clearCart, resetQuantityInProductCard, resetAllQuantities, setResetFlag } = useCart();
+  const { cartItems, removeItemFromCart, clearCart } = useCart();
 
-  const handleRemoveItem = (id: number) => {
-    removeItemFromCart(id);
-    resetQuantityInProductCard(id);
-    setResetFlag(true);
-  };
+  useEffect(() => {
+    const handleCartCleared = () => {
+      document.querySelectorAll('.product-cart').forEach((cart) => {
+        (cart as any).reset();
+      });
+    };
 
-  const handleClearCart = () => {
-    clearCart();
-    resetAllQuantities();
-    setResetFlag(true);
-  };
+    document.addEventListener('cartCleared', handleCartCleared);
+
+    return () => {
+      document.removeEventListener('cartCleared', handleCartCleared);
+    };
+  }, []);
 
   return (
     <Container width={'auto'}>
@@ -28,12 +30,12 @@ export const Basket: React.FC = () => {
             <span>{item.title}</span>
             <span>{item.quantity} кг</span>
             <span>{item.price} GEL</span>
-            <button onClick={() => handleRemoveItem(item.id)}>Удалить</button>
+            <button onClick={() => removeItemFromCart(item.id)}>Удалить</button>
           </CartItem>
         ))}
         {cartItems.length > 0 && (
           <>
-            <button onClick={handleClearCart}>Очистить корзину</button>
+            <button onClick={clearCart}>Очистить корзину</button>
           </>
         )}
       </CartdiInner>

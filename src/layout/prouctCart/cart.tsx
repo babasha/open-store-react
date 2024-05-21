@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 import { theme } from '../../styles/Theme';
 import ToggleButton from '../../components/button/button';
 import QuantityControl from '../../components/quantityCotrol/QuantityControl';
@@ -13,38 +13,50 @@ type CartPropsType = {
 };
 
 export const ProductCart: React.FC<CartPropsType> = ({ id, title, price }) => {
-  const { addItemToCart, cartItems, updateItemInCart, resetFlag, setResetFlag, resetButtonFlag, resetButton } = useCart();
-  const cartItem = cartItems.find(item => item.id === id);
+  const { addItemToCart, cartItems, updateItemInCart } = useCart();
+  const cartItem = cartItems.find((item) => item.id === id);
   const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : 1);
   const [totalPrice, setTotalPrice] = useState(price * quantity);
+  const [isActive, setIsActive] = useState(!!cartItem);
 
   useEffect(() => {
-    if (resetFlag) {
-      setQuantity(1);
-      setTotalPrice(price);
-      setResetFlag(false);
-    } else if (cartItem) {
-      setQuantity(cartItem.quantity);
-      setTotalPrice(cartItem.price);
+    setTotalPrice(price * quantity);
+    if (cartItem) {
+      setIsActive(true);
+    } else {
+      setIsActive(false);
     }
-  }, [cartItem, resetFlag, price, setResetFlag]);
+  }, [quantity, price, cartItem]);
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
     setTotalPrice(newQuantity * price);
-    updateItemInCart({ id, title, price: newQuantity * price, quantity: newQuantity });
+    if (cartItem) {
+      updateItemInCart({ ...cartItem, quantity: newQuantity, price: newQuantity * price });
+    }
   };
 
   const handleAddToCart = () => {
-    addItemToCart({ id, title, price: totalPrice, quantity });
+    if (!isActive) {
+      addItemToCart({ id, title, price: totalPrice, quantity });
+      setIsActive(true);
+    }
   };
+
+  useEffect(() => {
+    if (!cartItem) {
+      setQuantity(1);
+      setTotalPrice(price);
+      setIsActive(false);
+    }
+  }, [cartItem, price]);
 
   return (
     <Cart>
       <p>{title}</p>
       <QuantityControl pricePerUnit={price} quantity={quantity} onQuantityChange={handleQuantityChange} />
       <Price amount={totalPrice} />
-      <ToggleButton onClick={handleAddToCart} resetButtonFlag={resetButtonFlag} resetButton={resetButton} />
+      <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
     </Cart>
   );
 };
