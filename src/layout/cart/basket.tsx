@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../../styles/Theme';
+import { FlexWrapper } from '../../components/FlexWrapper';
 
 export const Basket: React.FC = () => {
   const { t } = useTranslation();
@@ -22,16 +24,25 @@ export const Basket: React.FC = () => {
   const totalWithDelivery = totalPrice + deliveryCost;
 
   return (
-    <Container width={'auto'}>
+    <Container width={'100%'}>
       <CartdiInner>
+        <FlexWrapper align='center' justify='space-between'>
+
         <h2>{t('cart.title')}</h2>
+
+        <EditButton onClick={handleEditClick}>
+              {isEditing ? t('cart.finishEditing') : t('cart.edit')}
+            </EditButton>
+
+        </FlexWrapper>
+
         {cartItems.length === 0 && <p>{t('cart.empty')}</p>}
         {cartItems.map((item) => (
           <CartItem key={item.id}>
             <ItemDetails>
-              <span>{item.title}</span>
-              <span>{item.quantity} кг</span>
-              <span>{item.price * item.quantity} GEL</span>
+              <ItemContextTitle>{item.title}</ItemContextTitle>
+              <ItemContext>{item.quantity} кг</ItemContext>
+              <ItemContext>{item.price * item.quantity} ₾</ItemContext>
             </ItemDetails>
             <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
               {t('cart.delete')}
@@ -43,34 +54,36 @@ export const Basket: React.FC = () => {
             <CartItem>
               <ItemDetails>
                 <span>{t('cart.delivery')}</span>
-                <span>1 услуга</span>
+                {/* <span>1 услуга</span> */}
                 <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
               </ItemDetails>
             </CartItem>
-            <TotalPrice>{t('cart.total')}: {totalWithDelivery} GEL</TotalPrice>
-            <EditButton onClick={handleEditClick}>
-              {isEditing ? t('cart.finishEditing') : t('cart.edit')}
-            </EditButton>
-            <button onClick={clearCart}>{t('cart.clear')}</button>
+            <TotalPrice>{t('cart.total')}: {totalWithDelivery} ₾</TotalPrice>
+           
+            <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
           </>
         )}
-      </CartdiInner>
+      </CartdiInner >
     </Container>
   );
 };
 
 const CartdiInner = styled.div`
-  background-color: #fff;
+  background-color: ${theme.colors.mainBg};
+  margin-top: 10px;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+  width: 100%
 `;
 
 const CartItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  /* justify-content: space-between; */
+  /* margin-bottom: 10px; */
   position: relative;
+  margin-top: 15px;
+  margin-bottom: 10px;
 `;
 
 const ItemDetails = styled.div`
@@ -95,21 +108,36 @@ const DeleteButton = styled.button<{ isEditing: boolean }>`
 `;
 
 const EditButton = styled.button`
-  margin-top: 10px;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #5bc0de;
-  color: white;
+  /* margin-top: 10px; */
+  /* padding: 5px 10px; */
+  /* border: none; */
+  /* border-radius: 5px; */
+  /* background-color: #5bc0de; */
+  color: ${theme.button.buttonActive};
   cursor: pointer;
 
   &:hover {
-    background-color: #31b0d5;
+    /* background-color: #31b0d5; */
   }
 `;
 
 const TotalPrice = styled.div`
   margin-top: 10px;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 20px;
 `;
+
+const ItemContext = styled.span`
+margin-right:25px ;
+font-size: 16px;
+
+  
+`
+
+
+const ItemContextTitle = styled.span`
+font-weight:bold  ;
+margin-right: 25px ;
+font-size: 16px;
+  
+`

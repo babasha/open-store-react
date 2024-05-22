@@ -23,18 +23,18 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
   
     return (
         <Showcase>
-            <FlexWrapper wrap='wrap'>                 
+            <ShopInner >                 
                         {carts.map((cart) => (
               <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} />
             ))}
-              </FlexWrapper>
+              </ShopInner>
 
                  
 
                      
-                  <FlexWrapper>
+                  <MenuWrapper>
                      <Basket />
-                  </FlexWrapper>
+                  </MenuWrapper>
                  
                
         </Showcase>
@@ -47,5 +47,24 @@ const Showcase= styled.div`
     width: 100%;
     border-radius: 10px;
     /* height: 9000px; */
-    display: flex
+    display: flex;
 `
+
+const ShopInner = styled.div`
+    display:flex ;
+    background-color: ${theme.colors.ShopWindowBg};
+    width: 1100px;
+    flex-wrap: wrap;
+
+    /* width: 100%; */
+    /* border-radius: 10px; */
+    /* height: 9000px; */
+    /* display: flex */
+      /* background-color: ; */
+`
+
+const MenuWrapper = styled.div`
+    display: flex;
+    width: 300px;
+`
+

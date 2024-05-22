@@ -3,7 +3,12 @@
     "title": "Корзина",
     "empty": "Корзина пуста",
     "clear": "Очистить корзину",
-    "remove": "Удалить"
+    "remove": "Удалить",
+    "edit": "ред",
+    "total": "Итог",
+    "delivery": "Доставка",
+    "finishEditing": "Edit"
+
   },
   "add_to_cart": "В корзину",
   "added": "Добавлено"

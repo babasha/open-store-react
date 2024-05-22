@@ -3,7 +3,13 @@
     "title": "Cart",
     "empty": "Cart is empty",
     "clear": "Clear cart",
-    "remove": "Remove"
+    "remove": "Remove",
+    "edit": "Edit",
+"total": "Total" ,
+"delivery": "delivery",
+"finishEditing": "Edit"
+
+
   },
   "add_to_cart": "Add to cart",
   "added": "Added"

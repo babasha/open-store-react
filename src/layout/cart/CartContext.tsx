@@ -1,8 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-
-interface CartProviderProps {
-  children: ReactNode;
-}
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface CartItem {
   id: number;
@@ -29,6 +25,10 @@ export const useCart = () => {
   return context;
 };
 
+interface CartProviderProps {
+  children: ReactNode;
+}
+
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
@@ -37,7 +37,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const existingItem = prevItems.find((i) => i.id === item.id);
       if (existingItem) {
         return prevItems.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity, price: item.price } : i
+          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
         );
       }
       return [...prevItems, item];
@@ -46,7 +46,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const updateItemInCart = (item: CartItem) => {
     setCartItems((prevItems) =>
-      prevItems.map((i) => (i.id === item.id ? { ...i, quantity: item.quantity, price: item.price } : i))
+      prevItems.map((i) => (i.id === item.id ? { ...i, quantity: item.quantity } : i))
     );
   };
 
@@ -58,14 +58,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     setCartItems([]);
   };
 
-  useEffect(() => {
-    if (cartItems.length === 0) {
-      document.dispatchEvent(new CustomEvent('cartCleared'));
-    }
-  }, [cartItems]);
-
   return (
-    <CartContext.Provider value={{ cartItems, addItemToCart, updateItemInCart, removeItemFromCart, clearCart }}>
+    <CartContext.Provider
+      value={{ cartItems, addItemToCart, updateItemInCart, removeItemFromCart, clearCart }}
+    >
       {children}
     </CartContext.Provider>
   );

@@ -52,7 +52,14 @@ export const GlobalStyled = createGlobalStyle`
     font-size: 24px;
     text-transform: uppercase;
   }
-
+  h2 {
+    //font-family: Josefin Sans;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: 1px;
+  }
   h3 {
     //font-family: Josefin Sans;
     font-size: 16px;
