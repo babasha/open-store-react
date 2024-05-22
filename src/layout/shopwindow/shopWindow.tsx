@@ -23,21 +23,20 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
   
     return (
         <Showcase>
-            <Container width={"max-content"}>
-                <FlexWrapper  wrap='nowrap'>
-                    <FlexWrapper  wrap='wrap'>
-                 
+            <FlexWrapper wrap='wrap'>                 
                         {carts.map((cart) => (
               <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} />
             ))}
-                
+              </FlexWrapper>
+
                  
 
                      
+                  <FlexWrapper>
+                     <Basket />
                   </FlexWrapper>
-                  <Basket />
-               </FlexWrapper>
-            </Container>
+                 
+               
         </Showcase>
     );
 };
