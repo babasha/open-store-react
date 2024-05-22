@@ -30,6 +30,34 @@ app.post('/products', async (req, res) => {
   }
 });
 
+// Маршрут для удаления продукта
+app.delete('/products/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM products WHERE id = $1', [id]);
+    res.status(204).end();
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Маршрут для обновления продукта
+app.put('/products/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, price } = req.body;
+  try {
+    const updatedProduct = await pool.query(
+      'UPDATE products SET name = $1, price = $2 WHERE id = $3 RETURNING *',
+      [name, price, id]
+    );
+    res.json(updatedProduct.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
