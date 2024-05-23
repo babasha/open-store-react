@@ -134,27 +134,27 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 require('dotenv').config();
-const { bot, users } = require('./telegramBot');  // Убедитесь, что у вас есть telegramBot.js
+// const { bot, users } = require('./telegramBot');  // Убедитесь, что у вас есть telegramBot.js
 
 const app = express();
 app.use(bodyParser.json());
 app.use(express.json());
 
-/// telegram test 
-app.post('/auth/telegram', (req, res) => {
-  const { id, first_name, last_name, username, auth_date, hash } = req.body;
-  const dataCheckString = `auth_date=${auth_date}\nid=${id}\nfirst_name=${first_name}\nlast_name=${last_name}${username ? `\nusername=${username}` : ''}`;
-  const secretKey = crypto.createHash('sha256').update(process.env.TELEGRAM_BOT_TOKEN).digest();
-  const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+// /// telegram test 
+// app.post('/auth/telegram', (req, res) => {
+//   const { id, first_name, last_name, username, auth_date, hash } = req.body;
+//   const dataCheckString = `auth_date=${auth_date}\nid=${id}\nfirst_name=${first_name}\nlast_name=${last_name}${username ? `\nusername=${username}` : ''}`;
+//   const secretKey = crypto.createHash('sha256').update(process.env.TELEGRAM_BOT_TOKEN).digest();
+//   const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
   
-  if (hmac === hash) {
-    const user = { id, first_name, last_name, username };
-    users.push(user);
-    res.json({ isAuthenticated: true });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
-});
+//   if (hmac === hash) {
+//     const user = { id, first_name, last_name, username };
+//     users.push(user);
+//     res.json({ isAuthenticated: true });
+//   } else {
+//     res.json({ isAuthenticated: false });
+//   }
+// });
 
 // Настройка multer для хранения файлов
 const storage = multer.diskStorage({
