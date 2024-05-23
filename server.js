@@ -127,11 +127,10 @@
 //   console.log('Server is running on port 3000');
 // });
 
-
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
-require('dotenv').config();  // Добавьте эту строку для загрузки переменных окружения
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -171,3 +170,4 @@ app.post('/products', async (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log('Server is running on port', process.env.PORT || 3000);
 });
+
