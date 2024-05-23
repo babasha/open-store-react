@@ -1,6 +1,9 @@
 // src/components/Products.tsx
 import React, { useEffect, useState } from 'react';
 import { ProductCart } from '../layout/prouctCart/cart';
+import { Basket } from '../layout/cart/basket';
+import { theme } from '../styles/Theme';
+import styled from 'styled-components';
 
 interface Product {
   id: number;
@@ -20,48 +23,54 @@ const Products = () => {
       .catch(error => console.error(error));
   }, []);
 
-  const handleAddProduct = () => {
-    fetch('/products', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, price: parseFloat(price) }),
-    })
-      .then(response => response.json())
-      .then(newProduct => {
-        setProducts([...products, newProduct]);
-        setName('');
-        setPrice('');
-      })
-      .catch(error => console.error(error));
-  };
-
   return (
-    <div>
-      <h1>Products</h1>
-      <ul>
-        {products.map(product => (
-          <ProductCart key={product.id} id={product.id} title={product.name} price={product.price} />
-        ))}
-      </ul>
-      <div>
-        <input
-          type="text"
-          placeholder="Product Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Product Price"
-          value={price}
-          onChange={e => setPrice(e.target.value)}
-        />
-        <button onClick={handleAddProduct}>Add Product</button>
-      </div>
-    </div>
+    <Showcase>
+      <ShopInner >                 
+                  {products.map((product) => (
+        <ProductCart key={product.id} id={product.id} title={product.name} price={product.price} />
+      ))}
+        </ShopInner>
+
+           
+
+               
+            <MenuWrapper>
+               <Basket />
+            </MenuWrapper>
+           
+         
+  </Showcase>
   );
 };
 
 export default Products;
+
+
+
+
+const Showcase= styled.div`
+background-color: ${theme.colors.ShopWindowBg};
+width: 100%;
+border-radius: 10px;
+/* height: 9000px; */
+display: flex;
+`
+
+const ShopInner = styled.div`
+display:flex ;
+background-color: ${theme.colors.ShopWindowBg};
+width: 1100px;
+flex-wrap: wrap;
+
+/* width: 100%; */
+/* border-radius: 10px; */
+/* height: 9000px; */
+/* display: flex */
+/* background-color: ; */
+`
+
+const MenuWrapper = styled.div`
+display: flex;
+width: 300px;
+`
+
