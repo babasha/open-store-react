@@ -12,10 +12,13 @@ export type CartsType = {
     title : string
     id : number
     price : number 
+    imageUrl: string | null;
+
 }
 
 type ShopWindowProps  = {
     carts: CartsType[] 
+    
 }
 
 
@@ -23,15 +26,13 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
   
     return (
         <Showcase>
-            <ShopInner >                 
-                        {carts.map((cart) => (
-              <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} />
-            ))}
-              </ShopInner>
+           <ShopInner>
+        {carts.map((cart) => (
+          <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} imageUrl={cart.imageUrl} />
+        ))}
+      </ShopInner>
 
-                 
-
-                     
+                   
                   <MenuWrapper>
                      <Basket />
                   </MenuWrapper>

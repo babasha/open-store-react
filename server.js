@@ -1,8 +1,22 @@
 const express = require('express');
 const pool = require('./db');
+const multer = require('multer');
+const path = require('path');
 const app = express();
 
-app.use(express.json()); // Для парсинга JSON запросов
+app.use(express.json());
+
+// Настройка multer для хранения файлов
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Путь для хранения загруженных файлов
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname); // Имя файла
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // Маршрут для получения всех товаров
 app.get('/products', async (req, res) => {
@@ -16,12 +30,29 @@ app.get('/products', async (req, res) => {
 });
 
 // Маршрут для добавления нового товара
-app.post('/products', async (req, res) => {
+// app.post('/products', upload.single('image'), async (req, res) => {
+//   try {
+//     const { name, price } = req.body;
+//     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+//     const newProduct = await pool.query(
+//       'INSERT INTO products (name, price, image_url) VALUES ($1, $2, $3) RETURNING *',
+//       [name, price, imageUrl]
+//     );
+//     res.json(newProduct.rows[0]);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server Error');
+//   }
+// });
+app.post('/products', upload.single('image'), async (req, res) => {
+  const { name, price } = req.body;
+  const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
   try {
-    const { name, price } = req.body;
     const newProduct = await pool.query(
-      'INSERT INTO products (name, price) VALUES ($1, $2) RETURNING *',
-      [name, price]
+      'INSERT INTO products (name, price, image_url) VALUES ($1, $2, $3) RETURNING *',
+      [name, price, imageUrl]
     );
     res.json(newProduct.rows[0]);
   } catch (err) {
@@ -29,6 +60,7 @@ app.post('/products', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
 
 // Маршрут для удаления продукта
 app.delete('/products/:id', async (req, res) => {
@@ -43,13 +75,15 @@ app.delete('/products/:id', async (req, res) => {
 });
 
 // Маршрут для обновления продукта
-app.put('/products/:id', async (req, res) => {
+app.put('/products/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
   const { name, price } = req.body;
+  const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
   try {
     const updatedProduct = await pool.query(
-      'UPDATE products SET name = $1, price = $2 WHERE id = $3 RETURNING *',
-      [name, price, id]
+      'UPDATE products SET name = $1, price = $2, image_url = $3 WHERE id = $4 RETURNING *',
+      [name, price, imageUrl, id]
     );
     res.json(updatedProduct.rows[0]);
   } catch (err) {
@@ -57,6 +91,8 @@ app.put('/products/:id', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+app.use('/uploads', express.static('uploads')); // Для обслуживания загруженных файлов
 
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
