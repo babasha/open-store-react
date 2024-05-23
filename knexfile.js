@@ -9,7 +9,7 @@ module.exports = {
     client: 'pg', // Используем PostgreSQL
     connection: {
       host: '127.0.0.1', // Локальный хост
-      user: 'postgres', // Имя пользователя базы данных
+      user: 'babasha', // Имя пользователя базы данных
       password: '953764', // Пароль пользователя базы данных
       database: 'openstore', // Имя базы данных
     },
