@@ -10,8 +10,8 @@ module.exports = {
     connection: {
       host: '127.0.0.1', // Локальный хост
       user: 'babasha', // Имя пользователя базы данных
-      password: '953764', // Пароль пользователя базы данных
-      database: 'openstore', // Имя базы данных
+      password: 'dVP65PhHvXfGZXqQEQD2ZQCquLPjVX9t', // Пароль пользователя базы данных
+      database: 'openstore_ampi', // Имя базы данных
     },
     migrations: {
       directory: './migrations', // Путь к миграциям
