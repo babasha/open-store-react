@@ -1,38 +1,56 @@
-require('dotenv').config();
+// Update with your config settings.
 
+/**
+ * @type { Object.<string, import("knex").Knex.Config> }
+ */
 module.exports = {
+
   development: {
-    client: 'pg', 
+    client: 'pg', // Используем PostgreSQL
     connection: {
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
+      host: '127.0.0.1', // Локальный хост
+      user: 'babasha', // Имя пользователя базы данных
+      password: '953764', // Пароль пользователя базы данных
+      database: 'openstore', // Имя базы данных
     },
     migrations: {
-      directory: './migrations',
+      directory: './migrations', // Путь к миграциям
     },
     seeds: {
-      directory: './seeds',
+      directory: './seeds', // Путь к семенам (начальным данным)
     },
   },
-  production: {
-    client: 'pg',
+
+  staging: {
+    client: 'postgresql',
     connection: {
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      },
+      database: 'my_db',
+      user:     'username',
+      password: 'password'
     },
     pool: {
       min: 2,
-      max: 10,
+      max: 10
     },
     migrations: {
-      directory: './migrations',
+      tableName: 'knex_migrations'
+    }
+  },
+
+  production: {
+    client: 'postgresql',
+    connection: {
+      database: 'my_db',
+      user:     'username',
+      password: 'password'
     },
-    seeds: {
-      directory: './seeds',
+    pool: {
+      min: 2,
+      max: 10
     },
+    migrations: {
+      tableName: 'knex_migrations'
+    }
   }
+
 };
