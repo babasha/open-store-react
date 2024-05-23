@@ -8,7 +8,13 @@
     "edit": "Edit",
     "finish_editing": "Finish editing",
     "clear": "Clear cart",
-    "remove": "Remove"
+    "remove": "Remove",
+    "edit": "Edit",
+"total": "Total" ,
+"delivery": "delivery",
+"finishEditing": "Edit"
+
+
   },
   "add_to_cart": "Add to cart",
   "added": "Added"

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from "styled-components";
+import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import { theme } from '../../styles/Theme';
 import { Basket } from '../cart/basket';
@@ -11,10 +12,13 @@ export type CartsType = {
     title : string
     id : number
     price : number 
+    imageUrl: string | null;
+
 }
 
 type ShopWindowProps  = {
     carts: CartsType[] 
+    
 }
 
 
@@ -22,19 +26,18 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
   
     return (
         <Showcase>
-                <FlexWrapper >
-                    <Containers1 >
-                 
-                        {carts.map((cart) => (
-              <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} />
-            ))}
-                  </Containers1  >
+           <ShopInner>
+        {carts.map((cart) => (
+          <ProductCart key={cart.id} id={cart.id} title={cart.title} price={cart.price} imageUrl={cart.imageUrl} />
+        ))}
+      </ShopInner>
 
-        <Containers2 >
-            <Basket />
-        </Containers2>
-        
-               </FlexWrapper>
+                   
+                  <MenuWrapper>
+                     <Basket />
+                  </MenuWrapper>
+                 
+               
         </Showcase>
     );
 };
@@ -42,25 +45,27 @@ export const ShopWindow :  React.FC<ShopWindowProps> = ({ carts }) => {
 
 const Showcase= styled.div`
     background-color: ${theme.colors.ShopWindowBg};
-    padding: 0 10px;
-    border-radius: 10px;
-    display: flex;
     width: 100%;
-
-`
-const Containers1= styled.div`
-    background-color: ${theme.colors.ShopWindowBg};
-    padding: 0 10px;
     border-radius: 10px;
+    /* height: 9000px; */
     display: flex;
+`
+
+const ShopInner = styled.div`
+    display:flex ;
+    background-color: ${theme.colors.ShopWindowBg};
+    width: 1100px;
     flex-wrap: wrap;
 
+    /* width: 100%; */
+    /* border-radius: 10px; */
+    /* height: 9000px; */
+    /* display: flex */
+      /* background-color: ; */
 `
 
-const Containers2= styled.div`
-    background-color: ${theme.colors.ShopWindowBg};
-    padding: 0 10px;
-    border-radius: 10px;
+const MenuWrapper = styled.div`
     display: flex;
-    width: 30%;
+    width: 300px;
 `
+

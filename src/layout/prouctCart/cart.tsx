@@ -8,13 +8,14 @@ import { useCart } from '../cart/CartContext';
 
 type CartPropsType = {
   title: string;
-  price: number; 
+  price: number;
   id: number;
+  imageUrl: string | null;
 };
 
-export const ProductCart: React.FC<CartPropsType> = ({ id, title, price }) => {
+export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUrl }) => {
   const { addItemToCart, cartItems, updateItemInCart } = useCart();
-  const cartItem = cartItems.find((item) => item.id === id);
+  const cartItem = cartItems.find(item => item.id === id);
   const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : 1);
   const [totalPrice, setTotalPrice] = useState(price * quantity);
   const [isActive, setIsActive] = useState(!!cartItem);
@@ -53,6 +54,7 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price }) => {
 
   return (
     <Cart>
+      {imageUrl && <img src={imageUrl} alt={title} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />}
       <p>{title}</p>
       <QuantityControl pricePerUnit={price} quantity={quantity} onQuantityChange={handleQuantityChange} />
       <Price amount={totalPrice} />
@@ -65,7 +67,7 @@ export const Cart = styled.div`
   background-color: ${theme.colors.mainBg};
   width: 250px;
   height: 380px;
-  margin: 0px 13px 17px 0px;
-  border-radius:30px;
+  margin: 10px;
+  border-radius: 30px;
   padding: 10px;
 `;
