@@ -3,6 +3,7 @@ import { ProductCart } from '../layout/prouctCart/cart';
 import { Basket } from '../layout/cart/basket';
 import { theme } from '../styles/Theme';
 import styled from 'styled-components';
+import LoginWithTelegram from '../layout/UserAuteriztion/UserCart';
 
 type Product = {
   id: number;
@@ -57,8 +58,9 @@ const Products = () => {
            
 
                
-            <MenuWrapper>
+            <MenuWrapper  >
                <Basket />
+               <LoginWithTelegram/>
             </MenuWrapper>
            
          
@@ -95,5 +97,8 @@ flex-wrap: wrap;
 const MenuWrapper = styled.div`
 display: flex;
 width: 300px;
+flex-direction: column;
+
+
 `
 
