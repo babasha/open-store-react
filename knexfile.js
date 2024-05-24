@@ -1,11 +1,11 @@
+require('dotenv').config();
+
 module.exports = {
   development: {
     client: 'pg',
     connection: {
-      host: '127.0.0.1',
-      user: 'babasha',
-      password: 'dVP65PhHvXfGZXqQEQD2ZQCquLPjVX9t',
-      database: 'openstore_ampi',
+      connectionString: process.env.DATABASE_URL,
+      ssl: false,
     },
     migrations: {
       directory: './migrations',
@@ -16,11 +16,12 @@ module.exports = {
   },
 
   staging: {
-    client: 'postgresql',
+    client: 'pg',
     connection: {
-      database: 'my_db',
-      user: 'username',
-      password: 'password',
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     },
     pool: {
       min: 2,
@@ -33,16 +34,18 @@ module.exports = {
 
   production: {
     client: 'pg',
-    connection: process.env.DATABASE_URL,
+    connection: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
     pool: {
       min: 2,
       max: 10,
     },
     migrations: {
-      directory: './migrations',
-    },
-    seeds: {
-      directory: './seeds',
+      tableName: 'knex_migrations',
     },
   },
 };
