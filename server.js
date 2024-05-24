@@ -133,19 +133,14 @@ const path = require('path');
 const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const pool = require('./db'); // Ensure this import is correct
+const cors = require('cors'); // Adding CORS middleware
 const app = express();
 
+require('dotenv').config();
+
+app.use(cors()); // Use CORS middleware
 app.use(express.json());
 app.use(bodyParser.json());
-
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});
-
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -183,7 +178,6 @@ app.post('/products', upload.single('image'), async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
 
 app.delete('/products/:id', async (req, res) => {
   const { id } = req.params;
