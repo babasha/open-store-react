@@ -138,6 +138,15 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+});
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -174,6 +183,7 @@ app.post('/products', upload.single('image'), async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
 
 app.delete('/products/:id', async (req, res) => {
   const { id } = req.params;
