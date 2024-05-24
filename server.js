@@ -127,69 +127,28 @@
 //   console.log('Server is running on port 3000');
 // });
 
-
 const express = require('express');
-const pool = require('./db');
 const multer = require('multer');
 const path = require('path');
-const crypto = require('crypto');  // Не забудьте добавить этот импорт
-const bodyParser = require('body-parser');  // Не забудьте добавить этот импорт
+const crypto = require('crypto');
+const bodyParser = require('body-parser');
+const pool = require('./db'); // Ensure this import is correct
 const app = express();
-// const { bot, users } = require('./telegramBot');
-
 
 app.use(express.json());
 app.use(bodyParser.json());
 
-// const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN; // Убедитесь, что вы установили переменную окружения TELEGRAM_BOT_TOKEN
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
-
-app.post('/auth/telegram', (req, res) => {
-  const { id, first_name, last_name, username, auth_date, hash } = req.body;
-  const dataCheckString = `auth_date=${auth_date}\nid=${id}\nfirst_name=${first_name}\nlast_name=${last_name}${username ? `\nusername=${username}` : ''}`;
-  const secretKey = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
-  const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
-  
-  if (hmac === hash) {
-    const user = { id, first_name, last_name, username };
-    users.push(user);
-    res.json({ isAuthenticated: true });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
-});
-
-// Настройка multer для хранения файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Путь для хранения загруженных файлов
+    cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Имя файла
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
 const upload = multer({ storage: storage });
 
-// Маршрут для проверки авторизации пользователя через Telegram
-app.get('/auth/telegram', (req, res) => {
-  const chatId = req.query.chatId;
-
-  const user = users.find(user => user.chatId == chatId);
-  if (user) {
-    res.send('User is authenticated');
-  } else {
-    res.send('User is not authenticated');
-  }
-});
-
-// Маршрут для получения всех товаров
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
@@ -200,7 +159,6 @@ app.get('/products', async (req, res) => {
   }
 });
 
-// Маршрут для добавления нового товара
 app.post('/products', upload.single('image'), async (req, res) => {
   const { name, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -217,7 +175,6 @@ app.post('/products', upload.single('image'), async (req, res) => {
   }
 });
 
-// Маршрут для удаления продукта
 app.delete('/products/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -229,7 +186,6 @@ app.delete('/products/:id', async (req, res) => {
   }
 });
 
-// Маршрут для обновления продукта
 app.put('/products/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
   const { name, price } = req.body;
@@ -247,8 +203,9 @@ app.put('/products/:id', upload.single('image'), async (req, res) => {
   }
 });
 
-app.use('/uploads', express.static('uploads')); // Для обслуживания загруженных файлов
+app.use('/uploads', express.static('uploads'));
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log('Server is running on port', process.env.PORT || 3000);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
