@@ -127,34 +127,43 @@
 //   console.log('Server is running on port 3000');
 // });
 
+
 const express = require('express');
 const pool = require('./db');
 const multer = require('multer');
 const path = require('path');
-const bodyParser = require('body-parser');
-const crypto = require('crypto');
-require('dotenv').config();
-// const { bot, users } = require('./telegramBot');  // Убедитесь, что у вас есть telegramBot.js
-
+const crypto = require('crypto');  // Не забудьте добавить этот импорт
+const bodyParser = require('body-parser');  // Не забудьте добавить этот импорт
 const app = express();
-app.use(bodyParser.json());
-app.use(express.json());
+// const { bot, users } = require('./telegramBot');
 
-// /// telegram test 
-// app.post('/auth/telegram', (req, res) => {
-//   const { id, first_name, last_name, username, auth_date, hash } = req.body;
-//   const dataCheckString = `auth_date=${auth_date}\nid=${id}\nfirst_name=${first_name}\nlast_name=${last_name}${username ? `\nusername=${username}` : ''}`;
-//   const secretKey = crypto.createHash('sha256').update(process.env.TELEGRAM_BOT_TOKEN).digest();
-//   const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+
+app.use(express.json());
+app.use(bodyParser.json());
+
+// const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN; // Убедитесь, что вы установили переменную окружения TELEGRAM_BOT_TOKEN
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+app.post('/auth/telegram', (req, res) => {
+  const { id, first_name, last_name, username, auth_date, hash } = req.body;
+  const dataCheckString = `auth_date=${auth_date}\nid=${id}\nfirst_name=${first_name}\nlast_name=${last_name}${username ? `\nusername=${username}` : ''}`;
+  const secretKey = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
+  const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
   
-//   if (hmac === hash) {
-//     const user = { id, first_name, last_name, username };
-//     users.push(user);
-//     res.json({ isAuthenticated: true });
-//   } else {
-//     res.json({ isAuthenticated: false });
-//   }
-// });
+  if (hmac === hash) {
+    const user = { id, first_name, last_name, username };
+    users.push(user);
+    res.json({ isAuthenticated: true });
+  } else {
+    res.json({ isAuthenticated: false });
+  }
+});
 
 // Настройка multer для хранения файлов
 const storage = multer.diskStorage({
@@ -240,7 +249,6 @@ app.put('/products/:id', upload.single('image'), async (req, res) => {
 
 app.use('/uploads', express.static('uploads')); // Для обслуживания загруженных файлов
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Server is running on port', process.env.PORT || 3000);
 });
