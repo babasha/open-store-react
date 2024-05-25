@@ -133,15 +133,20 @@ const path = require('path');
 const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const pool = require('./db'); // Ensure this import is correct
-const cors = require('cors'); // Adding CORS middleware
 const app = express();
 
-require('dotenv').config();
-
-app.use(cors()); // Use CORS middleware
 app.use(express.json());
 app.use(bodyParser.json());
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+});
+
+// Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -153,7 +158,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.get('/products', async (req, res) => {
+// API routes
+app.get('/api/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
     res.json(result.rows);
@@ -163,7 +169,7 @@ app.get('/products', async (req, res) => {
   }
 });
 
-app.post('/products', upload.single('image'), async (req, res) => {
+app.post('/api/products', upload.single('image'), async (req, res) => {
   const { name, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -179,7 +185,7 @@ app.post('/products', upload.single('image'), async (req, res) => {
   }
 });
 
-app.delete('/products/:id', async (req, res) => {
+app.delete('/api/products/:id', async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM products WHERE id = $1', [id]);
@@ -190,7 +196,7 @@ app.delete('/products/:id', async (req, res) => {
   }
 });
 
-app.put('/products/:id', upload.single('image'), async (req, res) => {
+app.put('/api/products/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
   const { name, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -208,6 +214,12 @@ app.put('/products/:id', upload.single('image'), async (req, res) => {
 });
 
 app.use('/uploads', express.static('uploads'));
+
+// Serve React app
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
