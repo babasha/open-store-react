@@ -75,7 +75,7 @@ const AdminPanel = () => {
     <div>
       <h1>ADMIN PANEL</h1>
       <div>
-        <h2>Add New Product</h2>
+        <h2>Add Ne Product</h2>
         <input
           type="text"
           placeholder="Product Name"
