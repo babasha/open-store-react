@@ -3,12 +3,12 @@ const pool = require('./db');
 const multer = require('multer');
 const path = require('path');
 const app = express();
-const { bot, users } = require('./telegramBot');
-const bodyParser = require('body-parser');
-const crypto = require('crypto');
+// const { bot, users } = require('./telegramBot');
+// const bodyParser = require('body-parser');
+// const crypto = require('crypto');
 
-app.use(express.json());
-app.use(bodyParser.json());
+// app.use(express.json());
+// app.use(bodyParser.json());
 
 // Настройка multer для хранения файлов
 const storage = multer.diskStorage({
@@ -22,22 +22,22 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Корневой маршрут
-app.get('/', (req, res) => {
-  res.send('Dima i lovve you');
-});
+// // Корневой маршрут
+// app.get('/', (req, res) => {
+//   res.send('Dima i lovve you');
+// });
 
 // Маршрут для проверки авторизации пользователя через Telegram
-app.get('/auth/telegram', (req, res) => {
-  const chatId = req.query.chatId;
+// app.get('/auth/telegram', (req, res) => {
+//   const chatId = req.query.chatId;
 
-  const user = users.find(user => user.chatId == chatId);
-  if (user) {
-    res.send('User is authenticated');
-  } else {
-    res.send('User is not authenticated');
-  }
-});
+//   const user = users.find(user => user.chatId == chatId);
+//   if (user) {
+//     res.send('User is authenticated');
+//   } else {
+//     res.send('User is not authenticated');
+//   }
+// });
 
 // Маршрут для получения всех товаров
 app.get('/products', async (req, res) => {
