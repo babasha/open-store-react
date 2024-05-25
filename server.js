@@ -22,6 +22,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// Корневой маршрут
+app.get('/', (req, res) => {
+  res.send('Welcome to the Open Store API');
+});
+
 // Маршрут для проверки авторизации пользователя через Telegram
 app.get('/auth/telegram', (req, res) => {
   const chatId = req.query.chatId;
