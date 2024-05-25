@@ -3,25 +3,12 @@ const pool = require('./db');
 const multer = require('multer');
 const path = require('path');
 const app = express();
-const { bot, users } = require('./telegramBot');  
+const { bot, users } = require('./telegramBot');
+const bodyParser = require('body-parser');
+const crypto = require('crypto');
 
 app.use(express.json());
 app.use(bodyParser.json());
-/// telegram test 
-app.post('/auth/telegram', (req, res) => {
-  const { id, first_name, last_name, username, auth_date, hash } = req.body;
-  const dataCheckString = `auth_date=${auth_date}\nid=${id}\nfirst_name=${first_name}\nlast_name=${last_name}${username ? `\nusername=${username}` : ''}`;
-  const secretKey = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
-  const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
-  
-  if (hmac === hash) {
-    const user = { id, first_name, last_name, username };
-    users.push(user);
-    res.json({ isAuthenticated: true });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
-});
 
 // Настройка multer для хранения файлов
 const storage = multer.diskStorage({
@@ -74,22 +61,6 @@ app.post('/products', upload.single('image'), async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-app.post('/products', upload.single('image'), async (req, res) => {
-  const { name, price } = req.body;
-  const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-
-  try {
-    const newProduct = await pool.query(
-      'INSERT INTO products (name, price, image_url) VALUES ($1, $2, $3) RETURNING *',
-      [name, price, imageUrl]
-    );
-    res.json(newProduct.rows[0]);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
 
 // Маршрут для удаления продукта
 app.delete('/products/:id', async (req, res) => {
@@ -123,6 +94,6 @@ app.put('/products/:id', upload.single('image'), async (req, res) => {
 
 app.use('/uploads', express.static('uploads')); // Для обслуживания загруженных файлов
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Server is running on port ' + (process.env.PORT || 3000));
 });
