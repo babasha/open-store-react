@@ -53,7 +53,6 @@ export const GlobalStyled = createGlobalStyle`
     text-transform: uppercase;
   }
   h2 {
-    //font-family: Josefin Sans;
     font-size: 20px;
     font-style: normal;
     font-weight: 700;
