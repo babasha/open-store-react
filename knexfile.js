@@ -6,10 +6,6 @@ module.exports = {
       user: 'postgres',
       password: '953764',
       database: 'openstore',
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false,
-      }
     },
     migrations: {
       directory: './migrations',
@@ -20,7 +16,12 @@ module.exports = {
   },
   production: {
     client: 'pg',
-    connection: process.env.DATABASE_URL,
+    connection: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
     pool: {
       min: 2,
       max: 10,
