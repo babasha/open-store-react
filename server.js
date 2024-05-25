@@ -216,9 +216,9 @@ app.put('/api/products/:id', upload.single('image'), async (req, res) => {
 app.use('/uploads', express.static('uploads'));
 
 // Serve React app
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, 'build')));
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
