@@ -2,10 +2,11 @@ const express = require('express');
 const path = require('path');
 const pool = require('./db');
 const multer = require('multer');
+const bodyParser = require('body-parser'); // Add body-parser
 const app = express();
 
 // Middleware
-app.use(express.json());
+app.use(bodyParser.json()); // Use body-parser for JSON
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
