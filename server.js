@@ -24,7 +24,7 @@ const upload = multer({ storage: storage });
 
 // Корневой маршрут
 app.get('/', (req, res) => {
-  res.send('Welcome to the Open Store API');
+  res.send('Dima i lovve you');
 });
 
 // Маршрут для проверки авторизации пользователя через Telegram
