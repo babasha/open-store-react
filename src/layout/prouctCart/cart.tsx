@@ -33,13 +33,13 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUr
     setQuantity(newQuantity);
     setTotalPrice(newQuantity * price);
     if (cartItem) {
-      updateItemInCart({ ...cartItem, quantity: newQuantity, price: newQuantity * price });
+      updateItemInCart({ ...cartItem, quantity: newQuantity, price: price });
     }
   };
 
   const handleAddToCart = () => {
     if (!isActive) {
-      addItemToCart({ id, title, price: totalPrice, quantity });
+      addItemToCart({ id, title, price, quantity });
       setIsActive(true);
     }
   };
