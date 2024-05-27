@@ -13,6 +13,7 @@ interface Product {
 
 const AdminPanel = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [editProductId, setEditProductId] = useState<number | null>(null);
   const [nameEn, setNameEn] = useState('');
   const [nameRu, setNameRu] = useState('');
   const [nameGeo, setNameGeo] = useState('');
@@ -23,7 +24,6 @@ const AdminPanel = () => {
     fetch('/products')
       .then((response) => response.json())
       .then((data) => {
-        // Обновляем структуру данных для продуктов
         const updatedProducts = data.map((product: any) => ({
           ...product,
           name: {
@@ -81,16 +81,25 @@ const AdminPanel = () => {
       .catch((error) => console.error('Error deleting product:', error));
   };
 
-  const handleEditProduct = (id: number, newNameEn: string, newNameRu: string, newNameGeo: string, newPrice: number, newImage: File | null) => {
+  const handleEditProduct = (id: number) => {
+    const product = products.find(p => p.id === id);
+    if (product) {
+      setEditProductId(id);
+      setNameEn(product.name.en);
+      setNameRu(product.name.ru);
+      setNameGeo(product.name.geo);
+      setPrice(product.price.toString());
+    }
+  };
+
+  const handleSaveProduct = (id: number) => {
     const formData = new FormData();
-    formData.append('nameEn', newNameEn);
-    formData.append('nameRu', newNameRu);
-    formData.append('nameGeo', newNameGeo);
-    formData.append('price', newPrice.toString());
-    if (newImage) {
-      formData.append('image', newImage);
-    } else {
-      formData.append('image', ''); // чтобы отправить пустую строку если изображение не выбрано
+    formData.append('nameEn', nameEn);
+    formData.append('nameRu', nameRu);
+    formData.append('nameGeo', nameGeo);
+    formData.append('price', price);
+    if (image) {
+      formData.append('image', image);
     }
 
     fetch(`/products/${id}`, {
@@ -99,8 +108,8 @@ const AdminPanel = () => {
     })
       .then((response) => response.json())
       .then((updatedProduct) => {
-        const updatedProducts = products.map((product) => 
-          product.id === id 
+        const updatedProducts = products.map((product) =>
+          product.id === id
             ? {
                 ...updatedProduct,
                 name: {
@@ -112,30 +121,14 @@ const AdminPanel = () => {
             : product
         );
         setProducts(updatedProducts);
+        setEditProductId(null);
+        setNameEn('');
+        setNameRu('');
+        setNameGeo('');
+        setPrice('');
+        setImage(null);
       })
       .catch((error) => console.error('Error updating product:', error));
-  };
-
-  const handleEditClick = (product: Product) => {
-    const newNameEn = prompt('Enter new English name:', product.name.en);
-    const newNameRu = prompt('Enter new Russian name:', product.name.ru);
-    const newNameGeo = prompt('Enter new Georgian name:', product.name.geo);
-    const newPriceStr = prompt('Enter new price:', product.price.toString());
-    if (newNameEn !== null && newNameRu !== null && newNameGeo !== null && newPriceStr !== null) {
-      const newPrice = parseFloat(newPriceStr);
-      if (!isNaN(newPrice)) {
-        const newImage = document.createElement('input');
-        newImage.type = 'file';
-        newImage.onchange = () => {
-          if (newImage.files && newImage.files[0]) {
-            handleEditProduct(product.id, newNameEn, newNameRu, newNameGeo, newPrice, newImage.files[0]);
-          } else {
-            handleEditProduct(product.id, newNameEn, newNameRu, newNameGeo, newPrice, null);
-          }
-        };
-        newImage.click();
-      }
-    }
   };
 
   return (
@@ -179,9 +172,46 @@ const AdminPanel = () => {
           {products.map((product) => (
             <li key={product.id}>
               <img src={product.image_url ?? ''} alt={product.name.en ?? ''} style={{ width: '50px', height: '50px' }} />
-              {product.name.en} - ${product.price}
-              <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
-              <button onClick={() => handleEditClick(product)}>Edit</button>
+              {editProductId === product.id ? (
+                <div>
+                  <input
+                    type="text"
+                    value={nameEn}
+                    onChange={(e) => setNameEn(e.target.value)}
+                    placeholder="Product Name (English)"
+                  />
+                  <input
+                    type="text"
+                    value={nameRu}
+                    onChange={(e) => setNameRu(e.target.value)}
+                    placeholder="Product Name (Russian)"
+                  />
+                  <input
+                    type="text"
+                    value={nameGeo}
+                    onChange={(e) => setNameGeo(e.target.value)}
+                    placeholder="Product Name (Georgian)"
+                  />
+                  <input
+                    type="text"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="Product Price"
+                  />
+                  <input
+                    type="file"
+                    onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+                  />
+                  <button onClick={() => handleSaveProduct(product.id)}>Save</button>
+                  <button onClick={() => setEditProductId(null)}>Cancel</button>
+                </div>
+              ) : (
+                <div>
+                  {product.name.en} - ${product.price}
+                  <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
+                  <button onClick={() => handleEditProduct(product.id)}>Edit</button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
