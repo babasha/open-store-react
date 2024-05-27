@@ -2,78 +2,35 @@ const express = require('express');
 const pool = require('./db');
 const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
 const app = express();
-const { bot, users } = require('./telegramBot');  
 
 app.use(express.json());
-app.use(bodyParser.json());
-/// telegram test 
-app.post('/auth/telegram', (req, res) => {
-  const { id, first_name, last_name, username, auth_date, hash } = req.body;
-  const dataCheckString = `auth_date=${auth_date}\nid=${id}\nfirst_name=${first_name}\nlast_name=${last_name}${username ? `\nusername=${username}` : ''}`;
-  const secretKey = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
-  const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
-  
-  if (hmac === hash) {
-    const user = { id, first_name, last_name, username };
-    users.push(user);
-    res.json({ isAuthenticated: true });
-  } else {
-    res.json({ isAuthenticated: false });
-  }
-});
 
-// Настройка multer для хранения файлов
+// Multer configuration for file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Путь для хранения загруженных файлов
+    cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Имя файла
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
 const upload = multer({ storage: storage });
 
-// Маршрут для проверки авторизации пользователя через Telegram
-app.get('/auth/telegram', (req, res) => {
-  const chatId = req.query.chatId;
-
-  const user = users.find(user => user.chatId == chatId);
-  if (user) {
-    res.send('User is authenticated');
-  } else {
-    res.send('User is not authenticated');
-  }
-});
-
-// Маршрут для получения всех товаров
+// Route for getting all products
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
     res.json(result.rows);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error fetching products:', err.message);
     res.status(500).send('Server Error');
   }
 });
 
-// Маршрут для добавления нового товара
-// app.post('/products', upload.single('image'), async (req, res) => {
-//   try {
-//     const { name, price } = req.body;
-//     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-
-//     const newProduct = await pool.query(
-//       'INSERT INTO products (name, price, image_url) VALUES ($1, $2, $3) RETURNING *',
-//       [name, price, imageUrl]
-//     );
-//     res.json(newProduct.rows[0]);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send('Server Error');
-//   }
-// });
+// Route for adding a new product
 app.post('/products', upload.single('image'), async (req, res) => {
   const { name, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -83,45 +40,48 @@ app.post('/products', upload.single('image'), async (req, res) => {
       'INSERT INTO products (name, price, image_url) VALUES ($1, $2, $3) RETURNING *',
       [name, price, imageUrl]
     );
+    console.log('New product added:', newProduct.rows[0]);
     res.json(newProduct.rows[0]);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error adding product:', err.message);
     res.status(500).send('Server Error');
   }
 });
 
-
-// Маршрут для удаления продукта
+// Route for deleting a product
 app.delete('/products/:id', async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM products WHERE id = $1', [id]);
+    console.log(`Product with id ${id} deleted`);
     res.status(204).end();
   } catch (err) {
-    console.error(err.message);
+    console.error('Error deleting product:', err.message);
     res.status(500).send('Server Error');
   }
 });
 
-// Маршрут для обновления продукта
+// Route for updating a product
 app.put('/products/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
   const { name, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
+    console.log('Updating product:', { id, name, price, imageUrl });
     const updatedProduct = await pool.query(
       'UPDATE products SET name = $1, price = $2, image_url = $3 WHERE id = $4 RETURNING *',
       [name, price, imageUrl, id]
     );
+    console.log('Product updated:', updatedProduct.rows[0]);
     res.json(updatedProduct.rows[0]);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error updating product:', err.message);
     res.status(500).send('Server Error');
   }
 });
 
-app.use('/uploads', express.static('uploads')); // Для обслуживания загруженных файлов
+app.use('/uploads', express.static('uploads'));
 
 app.listen(3000, () => {
   console.log('Server is running on port 3000');

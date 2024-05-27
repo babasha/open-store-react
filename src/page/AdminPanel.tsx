@@ -17,7 +17,7 @@ const AdminPanel = () => {
     fetch('/products')
       .then((response) => response.json())
       .then((data) => setProducts(data))
-      .catch((error) => console.error(error));
+      .catch((error) => console.error('Error fetching products:', error));
   }, []);
 
   const handleAddProduct = () => {
@@ -39,7 +39,7 @@ const AdminPanel = () => {
         setPrice('');
         setImage(null);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => console.error('Error adding product:', error));
   };
 
   const handleDeleteProduct = (id: number) => {
@@ -49,7 +49,7 @@ const AdminPanel = () => {
       .then(() => {
         setProducts(products.filter((product) => product.id !== id));
       })
-      .catch((error) => console.error(error));
+      .catch((error) => console.error('Error deleting product:', error));
   };
 
   const handleEditProduct = (id: number, newName: string, newPrice: number, newImage: File | null) => {
@@ -58,6 +58,8 @@ const AdminPanel = () => {
     formData.append('price', newPrice.toString());
     if (newImage) {
       formData.append('image', newImage);
+    } else {
+      formData.append('image', ''); // чтобы отправить пустую строку если изображение не выбрано
     }
 
     fetch(`/products/${id}`, {
@@ -68,7 +70,29 @@ const AdminPanel = () => {
       .then((updatedProduct) => {
         setProducts(products.map((product) => (product.id === id ? updatedProduct : product)));
       })
-      .catch((error) => console.error(error));
+      .catch((error) => console.error('Error updating product:', error));
+  };
+
+  const handleEditClick = (product: Product) => {
+    const newName = prompt('Enter new name:', product.name);
+    const newPriceStr = prompt('Enter new price:', product.price.toString());
+    if (newName !== null && newPriceStr !== null) {
+      const newPrice = parseFloat(newPriceStr);
+      if (!isNaN(newPrice)) {
+        const newImage = document.createElement('input');
+        newImage.type = 'file';
+        newImage.onchange = () => {
+          if (newImage.files && newImage.files[0]) {
+            console.log('Updating product with new image:', newName, newPrice, newImage.files[0]);
+            handleEditProduct(product.id, newName, newPrice, newImage.files[0]);
+          } else {
+            console.log('Updating product without new image:', newName, newPrice);
+            handleEditProduct(product.id, newName, newPrice, null);
+          }
+        };
+        newImage.click();
+      }
+    }
   };
 
   return (
@@ -102,27 +126,7 @@ const AdminPanel = () => {
               <img src={product.image_url ?? ''} alt={product.name ?? ''} style={{ width: '50px', height: '50px' }} />
               {product.name} - ${product.price}
               <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
-              <button
-                onClick={() => {
-                  const newName = prompt('Enter new name:', product.name);
-                  const newPriceStr = prompt('Enter new price:', product.price.toString());
-                  if (newName !== null && newPriceStr !== null) {
-                    const newPrice = parseFloat(newPriceStr);
-                    if (!isNaN(newPrice)) {
-                      const newImage = document.createElement('input');
-                      newImage.type = 'file';
-                      newImage.onchange = () => {
-                        if (newImage.files) {
-                          handleEditProduct(product.id, newName, newPrice, newImage.files[0]);
-                        }
-                      };
-                      newImage.click();
-                    }
-                  }
-                }}
-              >
-                Edit
-              </button>
+              <button onClick={() => handleEditClick(product)}>Edit</button>
             </li>
           ))}
         </ul>
