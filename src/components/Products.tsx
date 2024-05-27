@@ -4,30 +4,50 @@ import { Basket } from '../layout/cart/basket';
 import { theme } from '../styles/Theme';
 import styled from 'styled-components';
 import LoginWithTelegram from '../layout/UserAuteriztion/UserCart';
+import { useTranslation } from 'react-i18next';
 
 type Product = {
   id: number;
-  name: string;
+  name: {
+    en: string;
+    ru: string;
+    geo: string;
+  };
   price: number;
   image_url: string | null;
 };
 
 const Products = () => {
+  const { i18n } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
-  const [name, setName] = useState('');
+  const [nameEn, setNameEn] = useState('');
+  const [nameRu, setNameRu] = useState('');
+  const [nameGeo, setNameGeo] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
     fetch('/products')
       .then(response => response.json())
-      .then(data => setProducts(data))
+      .then(data => {
+        const updatedProducts = data.map((product: any) => ({
+          ...product,
+          name: {
+            en: product.name_en,
+            ru: product.name_ru,
+            geo: product.name_geo
+          }
+        }));
+        setProducts(updatedProducts);
+      })
       .catch(error => console.error(error));
   }, []);
 
   const handleAddProduct = () => {
     const formData = new FormData();
-    formData.append('name', name);
+    formData.append('nameEn', nameEn);
+    formData.append('nameRu', nameRu);
+    formData.append('nameGeo', nameGeo);
     formData.append('price', price);
     if (image) {
       formData.append('image', image);
@@ -39,8 +59,18 @@ const Products = () => {
     })
       .then(response => response.json())
       .then(newProduct => {
-        setProducts([...products, newProduct]);
-        setName('');
+        const updatedProduct = {
+          ...newProduct,
+          name: {
+            en: newProduct.name_en,
+            ru: newProduct.name_ru,
+            geo: newProduct.name_geo
+          }
+        };
+        setProducts([...products, updatedProduct]);
+        setNameEn('');
+        setNameRu('');
+        setNameGeo('');
         setPrice('');
         setImage(null);
       })
@@ -51,54 +81,41 @@ const Products = () => {
     <Showcase>
       <ShopInner>
         {products.map((product) => (
-          <ProductCart key={product.id} id={product.id} title={product.name} price={product.price} imageUrl={product.image_url} />
+          <ProductCart
+            key={product.id}
+            id={product.id}
+            title={product.name[i18n.language as 'en' | 'ru' | 'geo'] || product.name.en}
+            price={product.price}
+            imageUrl={product.image_url}
+          />
         ))}
       </ShopInner>
-
-           
-
-               
-            <MenuWrapper  >
-               <Basket />
-               <LoginWithTelegram/>
-            </MenuWrapper>
-           
-         
-  </Showcase>
+      <MenuWrapper>
+        <Basket />
+        <LoginWithTelegram />
+      </MenuWrapper>
+    </Showcase>
   );
 };
 
 export default Products;
 
-
-
-
-const Showcase= styled.div`
-background-color: ${theme.colors.ShopWindowBg};
-width: 100%;
-border-radius: 10px;
-/* height: 9000px; */
-display: flex;
-`
+const Showcase = styled.div`
+  background-color: ${theme.colors.ShopWindowBg};
+  width: 100%;
+  border-radius: 10px;
+  display: flex;
+`;
 
 const ShopInner = styled.div`
-display:flex ;
-background-color: ${theme.colors.ShopWindowBg};
-width: 1100px;
-flex-wrap: wrap;
-
-/* width: 100%; */
-/* border-radius: 10px; */
-/* height: 9000px; */
-/* display: flex */
-/* background-color: ; */
-`
+  display: flex;
+  background-color: ${theme.colors.ShopWindowBg};
+  width: 1100px;
+  flex-wrap: wrap;
+`;
 
 const MenuWrapper = styled.div`
-display: flex;
-width: 300px;
-flex-direction: column;
-
-
-`
-
+  display: flex;
+  width: 300px;
+  flex-direction: column;
+`;

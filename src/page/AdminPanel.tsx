@@ -2,27 +2,46 @@ import React, { useState, useEffect } from 'react';
 
 interface Product {
   id: number;
-  name: string;
+  name: {
+    en: string;
+    ru: string;
+    geo: string;
+  };
   price: number;
   image_url: string | null;
 }
 
 const AdminPanel = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [name, setName] = useState('');
+  const [nameEn, setNameEn] = useState('');
+  const [nameRu, setNameRu] = useState('');
+  const [nameGeo, setNameGeo] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
     fetch('/products')
       .then((response) => response.json())
-      .then((data) => setProducts(data))
+      .then((data) => {
+        // Обновляем структуру данных для продуктов
+        const updatedProducts = data.map((product: any) => ({
+          ...product,
+          name: {
+            en: product.name_en,
+            ru: product.name_ru,
+            geo: product.name_geo
+          }
+        }));
+        setProducts(updatedProducts);
+      })
       .catch((error) => console.error('Error fetching products:', error));
   }, []);
 
   const handleAddProduct = () => {
     const formData = new FormData();
-    formData.append('name', name);
+    formData.append('nameEn', nameEn);
+    formData.append('nameRu', nameRu);
+    formData.append('nameGeo', nameGeo);
     formData.append('price', price);
     if (image) {
       formData.append('image', image);
@@ -34,8 +53,18 @@ const AdminPanel = () => {
     })
       .then((response) => response.json())
       .then((newProduct) => {
-        setProducts([...products, newProduct]);
-        setName('');
+        const updatedProduct = {
+          ...newProduct,
+          name: {
+            en: newProduct.name_en,
+            ru: newProduct.name_ru,
+            geo: newProduct.name_geo
+          }
+        };
+        setProducts([...products, updatedProduct]);
+        setNameEn('');
+        setNameRu('');
+        setNameGeo('');
         setPrice('');
         setImage(null);
       })
@@ -52,9 +81,11 @@ const AdminPanel = () => {
       .catch((error) => console.error('Error deleting product:', error));
   };
 
-  const handleEditProduct = (id: number, newName: string, newPrice: number, newImage: File | null) => {
+  const handleEditProduct = (id: number, newNameEn: string, newNameRu: string, newNameGeo: string, newPrice: number, newImage: File | null) => {
     const formData = new FormData();
-    formData.append('name', newName);
+    formData.append('nameEn', newNameEn);
+    formData.append('nameRu', newNameRu);
+    formData.append('nameGeo', newNameGeo);
     formData.append('price', newPrice.toString());
     if (newImage) {
       formData.append('image', newImage);
@@ -68,26 +99,38 @@ const AdminPanel = () => {
     })
       .then((response) => response.json())
       .then((updatedProduct) => {
-        setProducts(products.map((product) => (product.id === id ? updatedProduct : product)));
+        const updatedProducts = products.map((product) => 
+          product.id === id 
+            ? {
+                ...updatedProduct,
+                name: {
+                  en: updatedProduct.name_en,
+                  ru: updatedProduct.name_ru,
+                  geo: updatedProduct.name_geo
+                }
+              }
+            : product
+        );
+        setProducts(updatedProducts);
       })
       .catch((error) => console.error('Error updating product:', error));
   };
 
   const handleEditClick = (product: Product) => {
-    const newName = prompt('Enter new name:', product.name);
+    const newNameEn = prompt('Enter new English name:', product.name.en);
+    const newNameRu = prompt('Enter new Russian name:', product.name.ru);
+    const newNameGeo = prompt('Enter new Georgian name:', product.name.geo);
     const newPriceStr = prompt('Enter new price:', product.price.toString());
-    if (newName !== null && newPriceStr !== null) {
+    if (newNameEn !== null && newNameRu !== null && newNameGeo !== null && newPriceStr !== null) {
       const newPrice = parseFloat(newPriceStr);
       if (!isNaN(newPrice)) {
         const newImage = document.createElement('input');
         newImage.type = 'file';
         newImage.onchange = () => {
           if (newImage.files && newImage.files[0]) {
-            console.log('Updating product with new image:', newName, newPrice, newImage.files[0]);
-            handleEditProduct(product.id, newName, newPrice, newImage.files[0]);
+            handleEditProduct(product.id, newNameEn, newNameRu, newNameGeo, newPrice, newImage.files[0]);
           } else {
-            console.log('Updating product without new image:', newName, newPrice);
-            handleEditProduct(product.id, newName, newPrice, null);
+            handleEditProduct(product.id, newNameEn, newNameRu, newNameGeo, newPrice, null);
           }
         };
         newImage.click();
@@ -102,9 +145,21 @@ const AdminPanel = () => {
         <h2>Add New Product</h2>
         <input
           type="text"
-          placeholder="Product Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="Product Name (English)"
+          value={nameEn}
+          onChange={(e) => setNameEn(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Product Name (Russian)"
+          value={nameRu}
+          onChange={(e) => setNameRu(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Product Name (Georgian)"
+          value={nameGeo}
+          onChange={(e) => setNameGeo(e.target.value)}
         />
         <input
           type="text"
@@ -123,8 +178,8 @@ const AdminPanel = () => {
         <ul>
           {products.map((product) => (
             <li key={product.id}>
-              <img src={product.image_url ?? ''} alt={product.name ?? ''} style={{ width: '50px', height: '50px' }} />
-              {product.name} - ${product.price}
+              <img src={product.image_url ?? ''} alt={product.name.en ?? ''} style={{ width: '50px', height: '50px' }} />
+              {product.name.en} - ${product.price}
               <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
               <button onClick={() => handleEditClick(product)}>Edit</button>
             </li>
