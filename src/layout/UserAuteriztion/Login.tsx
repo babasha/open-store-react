@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../autoeization/AuthContext';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -10,7 +10,7 @@ const Login: React.FC = () => {
 
   const handleLogin = () => {
     if (username === 'admin' && password === 'password') {
-      login({ username }); // Передаем объект с данными пользователя
+      login({ username }); // Передаем данные пользователя
       navigate('/admin');
     } else {
       alert('Invalid credentials');

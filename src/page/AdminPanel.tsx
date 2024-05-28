@@ -11,8 +11,19 @@ interface Product {
   image_url: string | null;
 }
 
+interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  address: string;
+  phone: string;
+  telegram_username: string;
+}
+
 const AdminPanel = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [editProductId, setEditProductId] = useState<number | null>(null);
   const [nameEn, setNameEn] = useState('');
   const [nameRu, setNameRu] = useState('');
@@ -35,6 +46,13 @@ const AdminPanel = () => {
         setProducts(updatedProducts);
       })
       .catch((error) => console.error('Error fetching products:', error));
+  }, []);
+
+  useEffect(() => {
+    fetch('/users')
+      .then((response) => response.json())
+      .then((data) => setUsers(data))
+      .catch((error) => console.error('Error fetching users:', error));
   }, []);
 
   const handleAddProduct = () => {
@@ -212,6 +230,19 @@ const AdminPanel = () => {
                   <button onClick={() => handleEditProduct(product.id)}>Edit</button>
                 </div>
               )}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h2>Users List</h2>
+        <ul>
+          {users.map((user) => (
+            <li key={user.id}>
+              {user.first_name} {user.last_name} - {user.email}
+              <p>Address: {user.address}</p>
+              <p>Phone: {user.phone}</p>
+              <p>Telegram: {user.telegram_username}</p>
             </li>
           ))}
         </ul>
