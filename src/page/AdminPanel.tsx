@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Header } from '../layout/header/header';
 
 interface Product {
   id: number;
@@ -151,6 +152,7 @@ const AdminPanel = () => {
 
   return (
     <div>
+          <Header />
       <h1>ADMIN PANEL</h1>
       <div>
         <h2>Add New Product</h2>
