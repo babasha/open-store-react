@@ -1,21 +1,9 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  address: string;
-  phone: string;
-  telegram_username: string;
-  role: string;
-}
-
 interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (userData: User, token: string) => void;
+  user: any;
+  login: (userData: any, token: string) => void;
   logout: () => void;
 }
 
@@ -26,26 +14,39 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
-  const login = (userData: User, token: string) => {
-    setIsAuthenticated(true);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Загрузите пользователя с использованием токена
+      fetch('http://localhost:3001/auth/me', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          setUser(data.user);
+        });
+    }
+  }, []);
+
+  const login = (userData: any, token: string) => {
     setUser(userData);
     localStorage.setItem('token', token);
-    navigate('/admin');
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
     setUser(null);
     localStorage.removeItem('token');
-    navigate('/');
+    navigate('/auth');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -58,4 +59,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

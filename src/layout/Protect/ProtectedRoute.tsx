@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (user.role !== 'admin') {
-    return <Navigate to="/" />;
+    return <Navigate to="/shop" />;
   }
 
   return element;

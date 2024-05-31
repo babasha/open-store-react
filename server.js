@@ -19,7 +19,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Middleware для проверки, является ли пользователь администратором
 const isAdmin = (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   if (!token) return res.status(403).send('Доступ запрещен.');
@@ -34,7 +33,6 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-// Маршрут для получения всех продуктов
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
@@ -53,7 +51,6 @@ app.get('/products', async (req, res) => {
   }
 });
 
-// Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -78,7 +75,6 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
-// Маршрут для удаления продукта
 app.delete('/products/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   try {
@@ -90,7 +86,6 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
   }
 });
 
-// Маршрут для обновления продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
   const { nameEn, nameRu, nameGeo, price } = req.body;
@@ -116,28 +111,6 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
-// Маршрут для регистрации пользователя
-// app.post('/auth/register', async (req, res) => {
-//   const { firstName, lastName, email, address, phone, telegram, password, role = 'user' } = req.body;
-//   try {
-//     const salt = await bcrypt.genSalt(10);
-//     const passwordHash = await bcrypt.hash(password, salt);
-
-//     const result = await pool.query(
-//       'INSERT INTO users (first_name, last_name, email, address, phone, telegram_username, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, first_name, last_name, email, address, phone, telegram_username, created_at',
-//       [firstName, lastName, email, address, phone, telegram, passwordHash, role]
-//     );
-
-//     const user = result.rows[0];
-//     res.status(201).json(user);
-//   } catch (err) {
-//     if (err.code === '23505') { // Уникальное нарушение в PostgreSQL
-//       return res.status(400).json({ error: 'Email уже используется' });
-//     }
-//     console.error('Ошибка регистрации пользователя:', err.message);
-//     res.status(500).json({ error: 'Ошибка сервера', message: err.message });
-//   }
-// });
 app.post('/auth/register', async (req, res) => {
   const { firstName, lastName, email, address, phone, password } = req.body;
   try {
@@ -160,11 +133,10 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-// Маршрут для входа пользователя
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1 OR phone = $2 OR telegram_username = $3', [username, username, username]);
+    const result = await pool.query('SELECT * FROM users WHERE email = $1 OR phone = $2', [username, username]);
     if (result.rows.length === 0) {
       return res.status(400).json({ message: 'Неверные учетные данные' });
     }
@@ -176,17 +148,16 @@ app.post('/auth/login', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, 'secret_key', { expiresIn: '1h' });
-    res.json({ token, user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email, address: user.address, phone: user.phone, telegramUsername: user.telegram_username } });
+    res.json({ token, user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email, address: user.address, phone: user.phone, role: user.role } });
   } catch (err) {
     console.error('Ошибка входа пользователя:', err.message);
     res.status(500).send('Ошибка сервера');
   }
 });
 
-// Маршрут для получения всех пользователей
 app.get('/users', async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, first_name, last_name, email, address, phone, telegram_username FROM users');
+    const result = await pool.query('SELECT id, first_name, last_name, email, address, phone FROM users');
     res.json(result.rows);
   } catch (err) {
     console.error('Ошибка получения пользователей:', err.message);

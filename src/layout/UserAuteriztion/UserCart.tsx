@@ -1,29 +1,23 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../autoeization/AuthContext';
 
-const RegisterComponent: React.FC = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
+const LoginComponent: React.FC = () => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3001/auth/register', {
+      const response = await fetch('http://localhost:3001/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          address,
-          phone,
+          username,
           password,
         }),
       });
@@ -31,52 +25,28 @@ const RegisterComponent: React.FC = () => {
       if (!response.ok) {
         throw new Error(data.error || 'Something went wrong');
       }
-      console.log('User registered', data);
       login(data.user, data.token); // Передаем данные пользователя и токен
+      if (data.user.role === 'admin') {
+        navigate('/admin'); // Перенаправляем админа в админ панель
+      } else {
+        navigate('/shop'); // Перенаправляем пользователя на страницу магазина
+      }
     } catch (error) {
       const errorMessage = (error as Error).message;
-      console.error('Registration error:', errorMessage);
+      console.error('Login error:', errorMessage);
       alert(errorMessage); // Отобразите сообщение об ошибке пользователю
     }
   };
 
   return (
     <div>
-      <h1>Регистрация</h1>
-      <form onSubmit={handleRegister}>
+      <h1>Вход</h1>
+      <form onSubmit={handleLogin}>
         <input
           type="text"
-          placeholder="Имя"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Фамилия"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Адрес"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Телефон"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          placeholder="Имя пользователя, Email или Телефон"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <input
@@ -86,10 +56,10 @@ const RegisterComponent: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Зарегистрироваться</button>
+        <button type="submit">Войти</button>
       </form>
     </div>
   );
 };
 
-export default RegisterComponent;
+export default LoginComponent;
