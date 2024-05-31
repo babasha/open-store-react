@@ -1,9 +1,21 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  address: string;
+  phone: string;
+  telegram_username: string;
+  role: string;
+}
+
 interface AuthContextType {
+  user: User | null;
   isAuthenticated: boolean;
-  login: (userData: any) => void;
+  login: (userData: User, token: string) => void;
   logout: () => void;
 }
 
@@ -14,23 +26,26 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const login = (userData: any) => {
+  const login = (userData: User, token: string) => {
     setIsAuthenticated(true);
-    // Сохраните данные пользователя в localStorage или контекст
+    setUser(userData);
+    localStorage.setItem('token', token);
     navigate('/admin');
   };
 
   const logout = () => {
     setIsAuthenticated(false);
-    // Очистите данные пользователя из localStorage или контекста
+    setUser(null);
+    localStorage.removeItem('token');
     navigate('/');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -43,3 +58,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

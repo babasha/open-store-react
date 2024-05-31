@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../autoeization/AuthContext';
 
 interface ProtectedRouteProps {
@@ -7,9 +7,17 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
-  return isAuthenticated ? element : <Navigate to="/auth" />;
+  if (!user) {
+    return <Navigate to="/auth" />;
+  }
+
+  if (user.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
+
+  return element;
 };
 
 export default ProtectedRoute;

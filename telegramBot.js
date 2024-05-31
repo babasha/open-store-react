@@ -1,21 +1,21 @@
-const TelegramBot = require('node-telegram-bot-api');
+// const TelegramBot = require('node-telegram-bot-api');
 
-const token = 'YOUR_TELEGRAM_BOT_TOKEN'; // Замените на ваш токен
+// const token = 'YOUR_TELEGRAM_BOT_TOKEN'; // Замените на ваш токен
 
-const bot = new TelegramBot(token, { polling: true });
+// const bot = new TelegramBot(token, { polling: true });
 
-let users = [];
+// let users = [];
 
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  const username = msg.chat.username;
+// bot.onText(/\/start/, (msg) => {
+//   const chatId = msg.chat.id;
+//   const username = msg.chat.username;
 
-  if (!users.find(user => user.chatId === chatId)) {
-    users.push({ chatId, username });
-    bot.sendMessage(chatId, 'Welcome! You are successfully registered.');
-  } else {
-    bot.sendMessage(chatId, 'You are already registered.');
-  }
-});
+//   if (!users.find(user => user.chatId === chatId)) {
+//     users.push({ chatId, username });
+//     bot.sendMessage(chatId, 'Welcome! You are successfully registered.');
+//   } else {
+//     bot.sendMessage(chatId, 'You are already registered.');
+//   }
+// });
 
-module.exports = { bot, users };
+// module.exports = { bot, users };

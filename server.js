@@ -8,7 +8,6 @@ const app = express();
 
 app.use(express.json());
 
-// Multer configuration for file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -20,7 +19,22 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Route for getting all products
+// Middleware для проверки, является ли пользователь администратором
+const isAdmin = (req, res, next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  if (!token) return res.status(403).send('Доступ запрещен.');
+
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    req.user = decoded;
+    if (req.user.role !== 'admin') return res.status(403).send('Доступ запрещен.');
+    next();
+  } catch (error) {
+    res.status(400).send('Неверный токен.');
+  }
+};
+
+// Маршрут для получения всех продуктов
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
@@ -34,13 +48,13 @@ app.get('/products', async (req, res) => {
     }));
     res.json(products);
   } catch (err) {
-    console.error('Error fetching products:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Ошибка получения продуктов:', err.message);
+    res.status(500).send('Ошибка сервера');
   }
 });
 
-// Route for adding a new product
-app.post('/products', upload.single('image'), async (req, res) => {
+// Маршрут для добавления нового продукта
+app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -59,25 +73,25 @@ app.post('/products', upload.single('image'), async (req, res) => {
     };
     res.json(product);
   } catch (err) {
-    console.error('Error adding product:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Ошибка добавления продукта:', err.message);
+    res.status(500).send('Ошибка сервера');
   }
 });
 
-// Route for deleting a product
-app.delete('/products/:id', async (req, res) => {
+// Маршрут для удаления продукта
+app.delete('/products/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM products WHERE id = $1', [id]);
     res.status(204).end();
   } catch (err) {
-    console.error('Error deleting product:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Ошибка удаления продукта:', err.message);
+    res.status(500).send('Ошибка сервера');
   }
 });
 
-// Route for updating a product
-app.put('/products/:id', upload.single('image'), async (req, res) => {
+// Маршрут для обновления продукта
+app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
   const { nameEn, nameRu, nameGeo, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -97,54 +111,75 @@ app.put('/products/:id', upload.single('image'), async (req, res) => {
     };
     res.json(product);
   } catch (err) {
-    console.error('Error updating product:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Ошибка обновления продукта:', err.message);
+    res.status(500).send('Ошибка сервера');
   }
 });
 
 // Маршрут для регистрации пользователя
+// app.post('/auth/register', async (req, res) => {
+//   const { firstName, lastName, email, address, phone, telegram, password, role = 'user' } = req.body;
+//   try {
+//     const salt = await bcrypt.genSalt(10);
+//     const passwordHash = await bcrypt.hash(password, salt);
+
+//     const result = await pool.query(
+//       'INSERT INTO users (first_name, last_name, email, address, phone, telegram_username, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, first_name, last_name, email, address, phone, telegram_username, created_at',
+//       [firstName, lastName, email, address, phone, telegram, passwordHash, role]
+//     );
+
+//     const user = result.rows[0];
+//     res.status(201).json(user);
+//   } catch (err) {
+//     if (err.code === '23505') { // Уникальное нарушение в PostgreSQL
+//       return res.status(400).json({ error: 'Email уже используется' });
+//     }
+//     console.error('Ошибка регистрации пользователя:', err.message);
+//     res.status(500).json({ error: 'Ошибка сервера', message: err.message });
+//   }
+// });
 app.post('/auth/register', async (req, res) => {
-  const { firstName, lastName, email, address, phone, telegram, password } = req.body;
+  const { firstName, lastName, email, address, phone, password } = req.body;
   try {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
     const result = await pool.query(
-      'INSERT INTO users (first_name, last_name, email, address, phone, telegram_username, password_hash) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, first_name, last_name, email, address, phone, telegram_username, created_at',
-      [firstName, lastName, email, address, phone, telegram, passwordHash]
+      'INSERT INTO users (first_name, last_name, email, address, phone, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, first_name, last_name, email, address, phone, role',
+      [firstName, lastName, email, address, phone, passwordHash, 'user']
     );
 
     const user = result.rows[0];
     res.status(201).json(user);
   } catch (err) {
-    if (err.code === '23505') { // Unique violation error code in PostgreSQL
-      return res.status(400).json({ error: 'Email already in use' });
+    if (err.code === '23505') { // Уникальное нарушение в PostgreSQL
+      return res.status(400).json({ error: 'Email уже используется' });
     }
-    console.error('Error registering user:', err.message);
-    res.status(500).json({ error: 'Server Error', message: err.message });
+    console.error('Ошибка регистрации пользователя:', err.message);
+    res.status(500).json({ error: 'Ошибка сервера', message: err.message });
   }
 });
 
-// User login route
+// Маршрут для входа пользователя
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1 OR phone = $2 OR telegram_username = $3', [username, username, username]);
     if (result.rows.length === 0) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Неверные учетные данные' });
     }
 
     const user = result.rows[0];
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Неверные учетные данные' });
     }
 
-    const token = jwt.sign({ id: user.id }, 'secret_key', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, role: user.role }, 'secret_key', { expiresIn: '1h' });
     res.json({ token, user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email, address: user.address, phone: user.phone, telegramUsername: user.telegram_username } });
   } catch (err) {
-    console.error('Error logging in user:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Ошибка входа пользователя:', err.message);
+    res.status(500).send('Ошибка сервера');
   }
 });
 
@@ -154,13 +189,13 @@ app.get('/users', async (req, res) => {
     const result = await pool.query('SELECT id, first_name, last_name, email, address, phone, telegram_username FROM users');
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching users:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Ошибка получения пользователей:', err.message);
+    res.status(500).send('Ошибка сервера');
   }
 });
 
 app.use('/uploads', express.static('uploads'));
 
 app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+  console.log('Сервер работает на порту 3000');
 });
