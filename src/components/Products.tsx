@@ -3,9 +3,9 @@ import { ProductCart } from '../layout/prouctCart/cart';
 import { Basket } from '../layout/cart/basket';
 import { theme } from '../styles/Theme';
 import styled from 'styled-components';
-import LoginWithTelegram from '../layout/UserAuteriztion/UserCart';
 import { useTranslation } from 'react-i18next';
-import LoginComponent from '../layout/UserAuteriztion/UserCart';
+import AutorizationComponent from '../layout/autoeization/autoComponent';
+
 
 type Product = {
   id: number;
@@ -93,7 +93,7 @@ const Products = () => {
       </ShopInner>
       <MenuWrapper>
         <Basket />
-        <LoginComponent />
+        <AutorizationComponent />
       </MenuWrapper>
     </Showcase>
   );

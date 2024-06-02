@@ -29,7 +29,7 @@ const LoginComponent: React.FC = () => {
       if (data.user.role === 'admin') {
         navigate('/admin'); // Перенаправляем админа в админ панель
       } else {
-        navigate('/shop'); // Перенаправляем пользователя на страницу магазина
+        navigate('/'); // Перенаправляем пользователя на главную страницу
       }
     } catch (error) {
       const errorMessage = (error as Error).message;
