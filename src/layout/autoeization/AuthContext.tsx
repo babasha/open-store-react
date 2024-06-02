@@ -6,7 +6,6 @@ interface AuthContextType {
   login: (userData: any, token: string) => void;
   logout: () => void;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
