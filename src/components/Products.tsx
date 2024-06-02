@@ -5,6 +5,7 @@ import { theme } from '../styles/Theme';
 import styled from 'styled-components';
 import LoginWithTelegram from '../layout/UserAuteriztion/UserCart';
 import { useTranslation } from 'react-i18next';
+import LoginComponent from '../layout/UserAuteriztion/UserCart';
 
 type Product = {
   id: number;
@@ -92,7 +93,7 @@ const Products = () => {
       </ShopInner>
       <MenuWrapper>
         <Basket />
-        <LoginWithTelegram />
+        <LoginComponent />
       </MenuWrapper>
     </Showcase>
   );

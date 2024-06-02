@@ -1,38 +1,37 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../layout/autoeization/AuthContext';
 
 const RegisterComponent: React.FC = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    address: '',
+    phone: '',
+    password: ''
+  });
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const response = await fetch('http://localhost:3001/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          address,
-          phone,
-          password,
-        }),
+        body: JSON.stringify(formData)
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+        throw new Error(data.error || 'Что-то пошло не так');
       }
-      console.log('User registered', data);
-      login(data.user, data.token); // Передаем данные пользователя и токен
+      alert('Регистрация прошла успешно');
     } catch (error) {
       const errorMessage = (error as Error).message;
       console.error('Registration error:', errorMessage);
@@ -43,47 +42,52 @@ const RegisterComponent: React.FC = () => {
   return (
     <div>
       <h1>Регистрация</h1>
-      <form onSubmit={handleRegister}>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
+          name="firstName"
           placeholder="Имя"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
+          value={formData.firstName}
+          onChange={handleChange}
           required
         />
         <input
           type="text"
+          name="lastName"
           placeholder="Фамилия"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
+          value={formData.lastName}
+          onChange={handleChange}
           required
         />
         <input
           type="email"
+          name="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={handleChange}
           required
         />
         <input
           type="text"
+          name="address"
           placeholder="Адрес"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          required
+          value={formData.address}
+          onChange={handleChange}
         />
         <input
           type="text"
+          name="phone"
           placeholder="Телефон"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          value={formData.phone}
+          onChange={handleChange}
           required
         />
         <input
           type="password"
+          name="password"
           placeholder="Пароль"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formData.password}
+          onChange={handleChange}
           required
         />
         <button type="submit">Зарегистрироваться</button>

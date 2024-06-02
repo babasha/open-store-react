@@ -66,9 +66,14 @@ const AdminPanel = () => {
       formData.append('image', image);
     }
 
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
     fetch('/products', {
       method: 'POST',
       body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+      },
     })
       .then((response) => response.json())
       .then((newProduct) => {
@@ -91,8 +96,13 @@ const AdminPanel = () => {
   };
 
   const handleDeleteProduct = (id: number) => {
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
     fetch(`/products/${id}`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+      },
     })
       .then(() => {
         setProducts(products.filter((product) => product.id !== id));
@@ -121,9 +131,14 @@ const AdminPanel = () => {
       formData.append('image', image);
     }
 
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
     fetch(`/products/${id}`, {
       method: 'PUT',
       body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+      },
     })
       .then((response) => response.json())
       .then((updatedProduct) => {
@@ -152,7 +167,7 @@ const AdminPanel = () => {
 
   return (
     <div>
-          <Header />
+      <Header />
       <h1>ADMIN PANEL</h1>
       <div>
         <h2>Add New Product</h2>
