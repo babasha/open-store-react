@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 
 interface HeaderProps {
-  activeTab?: 'products' | 'users';
-  setActiveTab?: (tab: 'products' | 'users') => void;
+  activeTab?: 'products' | 'users' | 'orders';
+  setActiveTab?: (tab: 'products' | 'users' | 'orders') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
@@ -40,8 +40,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   return (
     <StyledHeader>
       <FlexWrapper>
-        <h1>Open Market</h1>
-        {activeTab && setActiveTab && (
+        <h1>Open market</h1>
+      </FlexWrapper>
+      <FlexWrapper justify='center'>
+        {setActiveTab && (
           <Nav>
             <NavButton
               onClick={() => setActiveTab('products')}
@@ -55,10 +57,14 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
             >
               Список клиентов
             </NavButton>
+            <NavButton
+              onClick={() => setActiveTab('orders')}
+              active={activeTab === 'orders'}
+            >
+              Список заказов
+            </NavButton>
           </Nav>
         )}
-      </FlexWrapper>
-      <FlexWrapper justify='center'>
         <Button
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}

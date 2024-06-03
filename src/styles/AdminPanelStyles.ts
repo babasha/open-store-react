@@ -67,3 +67,8 @@ export const ProductDetails = styled.div`
 export const UserDetails = styled.div`
   margin-top: 10px;
 `;
+export const OrderDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
