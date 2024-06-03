@@ -20,16 +20,26 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const isAdmin = (req, res, next) => {
-  const token = req.headers.authorization.split(' ')[1];
-  if (!token) return res.status(403).send('Доступ запрещен.');
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(403).json({ error: 'Доступ запрещен.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(403).json({ error: 'Доступ запрещен.' });
+  }
 
   try {
     const decoded = jwt.verify(token, 'secret_key');
     req.user = decoded;
-    if (req.user.role !== 'admin') return res.status(403).send('Доступ запрещен.');
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Доступ запрещен.' });
+    }
     next();
   } catch (error) {
-    res.status(400).send('Неверный токен.');
+    console.error('Ошибка при проверке токена:', error.message);
+    res.status(400).json({ error: 'Неверный токен.' });
   }
 };
 
@@ -126,11 +136,10 @@ app.post('/auth/register', async (req, res) => {
     res.status(201).json(user);
   } catch (err) {
     console.error('Ошибка регистрации пользователя:', err.message);
-    
-    if (err.code === '23505') { // Уникальное нарушение в PostgreSQL
+
+    if (err.code === '23505') {
       return res.status(400).json({ error: 'Email уже используется' });
     }
-    console.error('Ошибка регистрации пользователя:', err.message);
     res.status(500).json({ error: 'Ошибка сервера', message: err.message });
   }
 });
@@ -157,9 +166,8 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// Добавляем маршрут для получения данных текущего пользователя
 app.get('/auth/me', (req, res) => {
-  const token = req.headers.authorization.split(' ')[1];
+  const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'Токен не предоставлен' });
 
   try {
@@ -178,6 +186,49 @@ app.get('/auth/me', (req, res) => {
       });
   } catch (error) {
     res.status(400).json({ message: 'Неверный токен' });
+  }
+});
+
+app.post('/orders', (req, res) => {
+  const { userId, items, total } = req.body;
+
+  pool.query(
+    'INSERT INTO orders (user_id, items, total) VALUES ($1, $2, $3) RETURNING *',
+    [userId, JSON.stringify(items), total],
+    (error, results) => {
+      if (error) {
+        console.error('Ошибка при оформлении заказа:', error.message);
+        return res.status(500).json({ error: 'Ошибка сервера' });
+      }
+      res.status(201).json(results.rows[0]);
+    }
+  );
+});
+
+app.get('/orders', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM orders');
+    const orders = result.rows.map(order => {
+      try {
+        return {
+          ...order,
+          items: JSON.parse(order.items)
+        };
+      } catch (parseError) {
+        console.error('Ошибка парсинга JSON:', parseError.message);
+        return {
+          ...order,
+          items: order.items
+        };
+      }
+    });
+    console.log('Orders:', orders); // Логирование данных для отладки
+
+    // Проверка на корректность преобразования данных в JSON
+    res.json(orders);
+  } catch (err) {
+    console.error('Ошибка получения заказов:', err.message);
+    res.status(500).json({ error: 'Ошибка сервера', message: err.message });
   }
 });
 
