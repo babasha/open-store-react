@@ -125,6 +125,8 @@ app.post('/auth/register', async (req, res) => {
     const user = result.rows[0];
     res.status(201).json(user);
   } catch (err) {
+    console.error('Ошибка регистрации пользователя:', err.message);
+    
     if (err.code === '23505') { // Уникальное нарушение в PostgreSQL
       return res.status(400).json({ error: 'Email уже используется' });
     }
@@ -152,6 +154,30 @@ app.post('/auth/login', async (req, res) => {
   } catch (err) {
     console.error('Ошибка входа пользователя:', err.message);
     res.status(500).send('Ошибка сервера');
+  }
+});
+
+// Добавляем маршрут для получения данных текущего пользователя
+app.get('/auth/me', (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Токен не предоставлен' });
+
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    pool.query('SELECT id, first_name, last_name, email, address, phone, role FROM users WHERE id = $1', [decoded.id])
+      .then(result => {
+        if (result.rows.length === 0) {
+          return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+        const user = result.rows[0];
+        res.json({ user });
+      })
+      .catch(err => {
+        console.error('Ошибка при получении данных пользователя:', err.message);
+        res.status(500).json({ message: 'Ошибка сервера' });
+      });
+  } catch (error) {
+    res.status(400).json({ message: 'Неверный токен' });
   }
 });
 

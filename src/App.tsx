@@ -39,7 +39,7 @@ export function App() {
           <Routes>
           <Route path="/" element={<Shop />} />
           <Route path="/auth" element={<LoginComponent />} />
-          <Route path="/register" element={<RegisterComponent />} />
+          {/* <Route path="/register" element={<RegisterComponent />} /> */}
           <Route path="/admin" element={<ProtectedRoute element={<AdminPanel />} />} />
         </Routes>
     </AuthProvider>

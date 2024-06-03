@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../layout/autoeization/AuthContext';
 
-const RegisterComponent: React.FC = () => {
+interface RegisterComponentProps {
+  onAuthModeChange: (mode: 'login' | 'register' | '') => void;
+}
+
+const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -9,6 +14,8 @@ const RegisterComponent: React.FC = () => {
     phone: '',
     password: ''
   });
+  const [error, setError] = useState<string | null>(null);
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -19,6 +26,7 @@ const RegisterComponent: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null); // Сбрасываем ошибку перед новым запросом
     try {
       const response = await fetch('http://localhost:3001/auth/register', {
         method: 'POST',
@@ -31,11 +39,14 @@ const RegisterComponent: React.FC = () => {
       if (!response.ok) {
         throw new Error(data.error || 'Что-то пошло не так');
       }
+
+      // Переключаемся на режим авторизации после успешной регистрации
       alert('Регистрация прошла успешно');
+      onAuthModeChange('login');
     } catch (error) {
       const errorMessage = (error as Error).message;
-      console.error('Registration error:', errorMessage);
-      alert(errorMessage); // Отобразите сообщение об ошибке пользователю
+      console.error('Ошибка регистрации:', errorMessage);
+      setError(errorMessage); // Отобразите сообщение об ошибке пользователю
     }
   };
 
@@ -92,6 +103,7 @@ const RegisterComponent: React.FC = () => {
         />
         <button type="submit">Зарегистрироваться</button>
       </form>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 };

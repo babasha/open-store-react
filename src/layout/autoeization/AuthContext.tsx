@@ -19,7 +19,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Загрузите пользователя с использованием токена
       fetch('http://localhost:3001/auth/me', {
         method: 'GET',
         headers: {
@@ -29,6 +28,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .then(response => response.json())
         .then(data => {
           setUser(data.user);
+        })
+        .catch(error => {
+          console.error('Ошибка при получении данных пользователя:', error);
         });
     }
   }, []);
