@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { Header } from '../layout/header/header';
 
 interface Product {
@@ -31,6 +32,7 @@ const AdminPanel = () => {
   const [nameGeo, setNameGeo] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState<File | null>(null);
+  const [activeTab, setActiveTab] = useState<'products' | 'users'>('products');
 
   useEffect(() => {
     fetch('/products')
@@ -166,106 +168,149 @@ const AdminPanel = () => {
   };
 
   return (
-    <div>
-      <Header />
-      <h1>ADMIN PANEL</h1>
-      <div>
-        <h2>Add New Product</h2>
-        <input
-          type="text"
-          placeholder="Product Name (English)"
-          value={nameEn}
-          onChange={(e) => setNameEn(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Product Name (Russian)"
-          value={nameRu}
-          onChange={(e) => setNameRu(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Product Name (Georgian)"
-          value={nameGeo}
-          onChange={(e) => setNameGeo(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Product Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <input
-          type="file"
-          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-        />
-        <button onClick={handleAddProduct}>Add Product</button>
-      </div>
-      <div>
-        <h2>Products List</h2>
-        <ul>
-          {products.map((product) => (
-            <li key={product.id}>
-              <img src={product.image_url ?? ''} alt={product.name.en ?? ''} style={{ width: '50px', height: '50px' }} />
-              {editProductId === product.id ? (
-                <div>
-                  <input
-                    type="text"
-                    value={nameEn}
-                    onChange={(e) => setNameEn(e.target.value)}
-                    placeholder="Product Name (English)"
-                  />
-                  <input
-                    type="text"
-                    value={nameRu}
-                    onChange={(e) => setNameRu(e.target.value)}
-                    placeholder="Product Name (Russian)"
-                  />
-                  <input
-                    type="text"
-                    value={nameGeo}
-                    onChange={(e) => setNameGeo(e.target.value)}
-                    placeholder="Product Name (Georgian)"
-                  />
-                  <input
-                    type="text"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="Product Price"
-                  />
-                  <input
-                    type="file"
-                    onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-                  />
-                  <button onClick={() => handleSaveProduct(product.id)}>Save</button>
-                  <button onClick={() => setEditProductId(null)}>Cancel</button>
-                </div>
-              ) : (
-                <div>
-                  {product.name.en} - ${product.price}
-                  <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
-                  <button onClick={() => handleEditProduct(product.id)}>Edit</button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Users List</h2>
-        <ul>
-          {users.map((user) => (
-            <li key={user.id}>
-              {user.first_name} {user.last_name} - {user.email}
-              <p>Address: {user.address}</p>
-              <p>Phone: {user.phone}</p>
-              <p>Telegram: {user.telegram_username}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <AdminPanelContainer>
+      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      {activeTab === 'products' && (
+        <Section>
+          <SectionTitle>Products List</SectionTitle>
+          <List>
+            {products.map((product) => (
+              <ListItem key={product.id}>
+                <ProductDetails>
+                  <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
+                  {editProductId === product.id ? (
+                    <Form>
+                      <Input
+                        type="text"
+                        value={nameEn}
+                        onChange={(e) => setNameEn(e.target.value)}
+                        placeholder="Product Name (English)"
+                      />
+                      <Input
+                        type="text"
+                        value={nameRu}
+                        onChange={(e) => setNameRu(e.target.value)}
+                        placeholder="Product Name (Russian)"
+                      />
+                      <Input
+                        type="text"
+                        value={nameGeo}
+                        onChange={(e) => setNameGeo(e.target.value)}
+                        placeholder="Product Name (Georgian)"
+                      />
+                      <Input
+                        type="text"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="Product Price"
+                      />
+                      <Input
+                        type="file"
+                        onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+                      />
+                      <Button onClick={() => handleSaveProduct(product.id)}>Save</Button>
+                      <Button onClick={() => setEditProductId(null)}>Cancel</Button>
+                    </Form>
+                  ) : (
+                    <>
+                      {product.name.en} - ${product.price}
+                      <Button onClick={() => handleDeleteProduct(product.id)}>Delete</Button>
+                      <Button onClick={() => handleEditProduct(product.id)}>Edit</Button>
+                    </>
+                  )}
+                </ProductDetails>
+              </ListItem>
+            ))}
+          </List>
+        </Section>
+      )}
+      {activeTab === 'users' && (
+        <Section>
+          <SectionTitle>Users List</SectionTitle>
+          <List>
+            {users.map((user) => (
+              <ListItem key={user.id}>
+                {user.first_name} {user.last_name} - {user.email}
+                <UserDetails>
+                  <p>Address: {user.address}</p>
+                  <p>Phone: {user.phone}</p>
+                  <p>Telegram: {user.telegram_username}</p>
+                </UserDetails>
+              </ListItem>
+            ))}
+          </List>
+        </Section>
+      )}
+    </AdminPanelContainer>
   );
 };
+
+const AdminPanelContainer = styled.div`
+  padding: 20px;
+`;
+
+const Section = styled.section`
+  margin-top: 20px;
+`;
+
+const SectionTitle = styled.h2`
+  margin-bottom: 20px;
+`;
+
+const Form = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const Input = styled.input`
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+`;
+
+const Button = styled.button`
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const List = styled.ul`
+  list-style-type: none;
+  padding: 0;
+`;
+
+const ListItem = styled.li`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+`;
+
+const ProductImage = styled.img`
+  width: 50px;
+  height: 50px;
+`;
+
+const ProductDetails = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
+
+const UserDetails = styled.div`
+  margin-top: 10px;
+`;
 
 export default AdminPanel;

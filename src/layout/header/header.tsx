@@ -7,8 +7,12 @@ import Modal from '../../components/modal/modal';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 
+interface HeaderProps {
+  activeTab?: 'products' | 'users';
+  setActiveTab?: (tab: 'products' | 'users') => void;
+}
 
-export const Header: React.FC = () => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -32,47 +36,57 @@ export const Header: React.FC = () => {
     setCurrentLanguage(lng);
     setIsModalOpen(false);
   };
-    return (
-        <StyledHeader>
-            <FlexWrapper >  
-               <h1>Open market</h1>
-              </FlexWrapper>
-                 <FlexWrapper justify='center'>
-      <Button 
-      
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
+
+  return (
+    <StyledHeader>
+      <FlexWrapper>
+        <h1>Open Market</h1>
+        {activeTab && setActiveTab && (
+          <Nav>
+            <NavButton
+              onClick={() => setActiveTab('products')}
+              active={activeTab === 'products'}
+            >
+              Список товаров
+            </NavButton>
+            <NavButton
+              onClick={() => setActiveTab('users')}
+              active={activeTab === 'users'}
+            >
+              Список клиентов
+            </NavButton>
+          </Nav>
+        )}
+      </FlexWrapper>
+      <FlexWrapper justify='center'>
+        <Button
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           <p>{currentLanguage.toUpperCase()}</p>
-      </Button>
-      <Modal 
-        isOpen={isModalOpen}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <LanguageSwitcher onLanguageChange={handleLanguageChange} />
-      </Modal>
-    </FlexWrapper>
-
-
-        </StyledHeader>
-    );
+        </Button>
+        <Modal
+          isOpen={isModalOpen}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <LanguageSwitcher onLanguageChange={handleLanguageChange} />
+        </Modal>
+      </FlexWrapper>
+    </StyledHeader>
+  );
 };
-
 
 const StyledHeader = styled.header`
   display: flex;
-justify-content: space-between;
-  /* background-color: rgba(31,31,32, 0.9); */
-  background: rgba(255, 255, 255, .7);
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.7);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-padding: 20px 20px ;
-border-radius: 30px;
-margin: 15px 0px;
-`
-
-
+  padding: 20px 20px;
+  border-radius: 30px;
+  margin: 15px 0px;
+`;
 
 const Button = styled(motion.button)`
   padding: 10px 20px;
@@ -83,5 +97,23 @@ const Button = styled(motion.button)`
 
   &:hover {
     background-color: ${theme.colors.primaryBg};
+  }
+`;
+
+const Nav = styled.nav`
+  display: flex;
+  gap: 10px;
+`;
+
+const NavButton = styled.button<{ active: boolean }>`
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: ${props => (props.active ? '#007bff' : '#ccc')};
+  color: white;
+  cursor: pointer;
+  &:hover {
+    background-color: ${props => (props.active ? '#0056b3' : '#aaa')};
   }
 `;
