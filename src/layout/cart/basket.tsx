@@ -22,7 +22,6 @@ export const Basket: React.FC = () => {
   const deliveryCost = totalPrice > 30 ? 0 : 5;
 
   const totalWithDelivery = totalPrice + deliveryCost;
-
   return (
     <Container width={'100%'}>
       <CartdiInner>
