@@ -4,7 +4,10 @@ import { Section, SectionTitle, List, ListItem, OrderDetails } from '../../style
 interface Order {
   id: number;
   user_id: number;
-  items: Array<{ productId: number; quantity: number }>;
+  first_name: string;
+  last_name: string;
+  address: string;
+  items: Array<{ productId: number; productName: string; quantity: number }>;
   total: number;
   status: string;
   created_at: string;
@@ -45,13 +48,15 @@ const OrderList = () => {
               <OrderDetails>
                 <p>Order ID: {order.id}</p>
                 <p>User ID: {order.user_id}</p>
+                <p>User: {order.first_name} {order.last_name}</p>
+                <p>Address: {order.address}</p>
                 <p>Total: ${order.total}</p>
                 <p>Status: {order.status}</p>
                 <p>Products:</p>
                 <ul>
                   {order.items.map((item) => (
                     <li key={item.productId}>
-                      Product ID: {item.productId} - Quantity: {item.quantity}
+                      Product: {item.productName} (ID: {item.productId}) - Quantity: {item.quantity}
                     </li>
                   ))}
                 </ul>

@@ -207,24 +207,28 @@ app.post('/orders', (req, res) => {
 
 app.get('/orders', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM orders');
-    const orders = result.rows.map(order => {
-      try {
-        return {
-          ...order,
-          items: JSON.parse(order.items)
-        };
-      } catch (parseError) {
-        console.error('Ошибка парсинга JSON:', parseError.message);
-        return {
-          ...order,
-          items: order.items
-        };
-      }
-    });
-    console.log('Orders:', orders); // Логирование данных для отладки
+    const result = await pool.query(`
+      SELECT o.id, o.user_id, u.first_name, u.last_name, u.address, o.items, o.total, o.status, o.created_at
+      FROM orders o
+      JOIN users u ON o.user_id = u.id
+    `);
 
-    // Проверка на корректность преобразования данных в JSON
+    const orders = await Promise.all(result.rows.map(async (order) => {
+      const itemsWithNames = await Promise.all(order.items.map(async item => {
+        const productResult = await pool.query('SELECT name_en, name_ru, name_geo FROM products WHERE id = $1', [item.productId]);
+        const productNames = productResult.rows[0];
+        return {
+          ...item,
+          productNames,
+        };
+      }));
+
+      return {
+        ...order,
+        items: itemsWithNames,
+      };
+    }));
+
     res.json(orders);
   } catch (err) {
     console.error('Ошибка получения заказов:', err.message);
