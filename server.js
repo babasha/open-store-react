@@ -1,14 +1,19 @@
 const express = require('express');
+const http = require('http');
 const pool = require('./db');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const socketIo = require('socket.io');
+
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
 app.use(express.json());
 
-// Configure multer for file uploads
+// Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -19,7 +24,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Middleware to check if user is an admin
+// Middleware для проверки, является ли пользователь администратором
 const isAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -44,7 +49,7 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-// Get all products
+// Получение всех продуктов
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
@@ -63,7 +68,7 @@ app.get('/products', async (req, res) => {
   }
 });
 
-// Add a new product
+// Добавление нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -88,7 +93,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
-// Delete a product
+// Удаление продукта
 app.delete('/products/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   try {
@@ -100,7 +105,7 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
   }
 });
 
-// Update a product
+// Обновление продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
   const { nameEn, nameRu, nameGeo, price } = req.body;
@@ -126,7 +131,7 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
-// User registration
+// Регистрация пользователя
 app.post('/auth/register', async (req, res) => {
   const { firstName, lastName, email, address, phone, password } = req.body;
   try {
@@ -150,7 +155,7 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-// User login
+// Вход пользователя
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -173,7 +178,7 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// Get logged-in user's info
+// Получение информации о текущем пользователе
 app.get('/auth/me', (req, res) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'Токен не предоставлен' });
@@ -197,7 +202,7 @@ app.get('/auth/me', (req, res) => {
   }
 });
 
-// Create an order
+// Создание заказа
 app.post('/orders', (req, res) => {
   const { userId, items, total } = req.body;
 
@@ -209,34 +214,14 @@ app.post('/orders', (req, res) => {
         console.error('Ошибка при оформлении заказа:', error.message);
         return res.status(500).json({ error: 'Ошибка сервера' });
       }
-      res.status(201).json(results.rows[0]);
+      const newOrder = results.rows[0];
+      io.emit('newOrder', newOrder); // Emit event to clients
+      res.status(201).json(newOrder);
     }
   );
 });
 
-// Update order status
-app.put('/orders/:id/status', async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  try {
-    const result = await pool.query(
-      'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
-      [status, id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error updating order status:', error.message);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get all orders
+// Получение всех заказов
 app.get('/orders', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -293,7 +278,7 @@ app.get('/orders', async (req, res) => {
   }
 });
 
-// Get all users
+// Получение всех пользователей
 app.get('/users', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, first_name, last_name, email, address, phone FROM users');
@@ -304,10 +289,19 @@ app.get('/users', async (req, res) => {
   }
 });
 
-// Serve uploaded files
+// Подключение статических файлов
 app.use('/uploads', express.static('uploads'));
 
-// Start the server
-app.listen(3000, () => {
-  console.log('Сервер работает на порту 3000');
+// Запуск сервера
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Сервер работает на порту ${PORT}`);
+});
+
+io.on('connection', (socket) => {
+  console.log('Новое подключение');
+
+  socket.on('disconnect', () => {
+    console.log('Отключение');
+  });
 });
