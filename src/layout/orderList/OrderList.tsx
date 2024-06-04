@@ -4,10 +4,9 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
+import socket from '../../socket';
+
 import {
-  Container,
-  Title,
-  FlexContainer,
   SearchInput,
   DatePickers,
   StyledDatePicker,
@@ -17,8 +16,9 @@ import {
   OrderList as StyledOrderList,
   OrderListItem,
   OrderDetails,
-  StatusButton,
+  StatusButton
 } from '../../styles/OrderListStyles';
+import styled from 'styled-components';
 
 interface Item {
   productId: number;
@@ -46,11 +46,25 @@ const OrderList: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
+    socket.on('newOrder', (newOrder: Order) => {
+      setOrders((prevOrders) => [...prevOrders, newOrder]);
+    });
+    socket.on('orderUpdated', (updatedOrder: Order) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === updatedOrder.id ? updatedOrder : order
+        )
+      );
+    });
+    return () => {
+      socket.off('newOrder');
+      socket.off('orderUpdated');
+    };
   }, []);
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get('/orders');
+      const response = await axios.get('http://localhost:3000/orders', { withCredentials: true });
       setOrders(response.data);
     } catch (error: any) {
       console.error('Ошибка при получении заказов:', error.message);
@@ -63,7 +77,7 @@ const OrderList: React.FC = () => {
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
-      await axios.put(`/orders/${id}/status`, { status });
+      await axios.put(`http://localhost:3000/orders/${id}/status`, { status }, { withCredentials: true });
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === id ? { ...order, status } : order
@@ -75,11 +89,17 @@ const OrderList: React.FC = () => {
   };
 
   const filterOrders = () => {
-    let filteredOrders = orders.filter((order) =>
-      order.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.address.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filteredOrders = orders.filter((order) => {
+      const firstName = order.first_name || '';
+      const lastName = order.last_name || '';
+      const address = order.address || '';
+
+      return (
+        firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        address.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
 
     if (startDate) {
       filteredOrders = filteredOrders.filter(
@@ -178,3 +198,22 @@ const OrderList: React.FC = () => {
 };
 
 export default OrderList;
+
+export const Container = styled.div`
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 10px;
+`;
+
+export const Title = styled.h2`
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+export const FlexContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+`;

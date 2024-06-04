@@ -5,13 +5,26 @@ const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3001",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 
 app.use(express.json());
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  next();
+});
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -217,6 +230,26 @@ app.post('/orders', (req, res) => {
       const newOrder = results.rows[0];
       io.emit('newOrder', newOrder); // Emit event to clients
       res.status(201).json(newOrder);
+    }
+  );
+});
+
+// Обновление статуса заказа
+app.put('/orders/:id/status', (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  pool.query(
+    'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+    [status, id],
+    (error, results) => {
+      if (error) {
+        console.error('Ошибка при обновлении статуса заказа:', error.message);
+        return res.status(500).json({ error: 'Ошибка сервера' });
+      }
+      const updatedOrder = results.rows[0];
+      io.emit('orderUpdated', updatedOrder); // Emit event to clients
+      res.status(200).json(updatedOrder);
     }
   );
 });

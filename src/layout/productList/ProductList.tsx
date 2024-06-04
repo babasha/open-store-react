@@ -1,188 +1,206 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
-import io from 'socket.io-client';
+import { Section, SectionTitle, List, ListItem, ProductDetails, ProductImage, Form, Input, Button } from '../../styles/AdminPanelStyles';
 
-const socket = io('http://localhost:3000');
-import {
-  Section,
-  SectionTitle,
-  Controls,
-  SearchInput,
-  DatePickers,
-  StyledDatePicker,
-  SortButton,
-  ExportButton,
-  FilterTodayButton,
-  OrderList as StyledOrderList,  // <- Переименуйте, чтобы избежать конфликта
-  OrderListItem,
-  OrderDetails,
-  StatusButton
-} from '../../styles/OrderListStyles';
-interface Item {
-  productId: number;
-  productName: string;
-  quantity: number;
-}
-
-interface Order {
+interface Product {
   id: number;
-  user_id: number;
-  first_name: string;
-  last_name: string;
-  address: string;
-  total: string;
-  status: string;
-  created_at: string;
-  items: Item[];
+  name: {
+    en: string;
+    ru: string;
+    geo: string;
+  };
+  price: number;
+  image_url: string | null;
 }
 
-const OrderList: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+const ProductList = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [editProductId, setEditProductId] = useState<number | null>(null);
+  const [nameEn, setNameEn] = useState('');
+  const [nameRu, setNameRu] = useState('');
+  const [nameGeo, setNameGeo] = useState('');
+  const [price, setPrice] = useState('');
+  const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
-    fetchOrders();
-    socket.on('newOrder', (newOrder: Order) => {
-      setOrders((prevOrders) => [...prevOrders, newOrder]);
-    });
-    return () => {
-      socket.off('newOrder');
-    };
+    fetch('/products')
+      .then((response) => response.json())
+      .then((data) => {
+        const updatedProducts = data.map((product: any) => ({
+          ...product,
+          name: {
+            en: product.name_en,
+            ru: product.name_ru,
+            geo: product.name_geo
+          }
+        }));
+        setProducts(updatedProducts);
+      })
+      .catch((error) => console.error('Error fetching products:', error));
   }, []);
 
-  const fetchOrders = async () => {
-    try {
-      const response = await axios.get('/orders');
-      setOrders(response.data);
-    } catch (error: any) {
-      console.error('Ошибка при получении заказов:', error.message);
+  const handleAddProduct = () => {
+    const formData = new FormData();
+    formData.append('nameEn', nameEn);
+    formData.append('nameRu', nameRu);
+    formData.append('nameGeo', nameGeo);
+    formData.append('price', price);
+    if (image) {
+      formData.append('image', image);
+    }
+
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
+    fetch('/products', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+      },
+    })
+      .then((response) => response.json())
+      .then((newProduct) => {
+        const updatedProduct = {
+          ...newProduct,
+          name: {
+            en: newProduct.name_en,
+            ru: newProduct.name_ru,
+            geo: newProduct.name_geo
+          }
+        };
+        setProducts([...products, updatedProduct]);
+        setNameEn('');
+        setNameRu('');
+        setNameGeo('');
+        setPrice('');
+        setImage(null);
+      })
+      .catch((error) => console.error('Error adding product:', error));
+  };
+
+  const handleDeleteProduct = (id: number) => {
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
+    fetch(`/products/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+      },
+    })
+      .then(() => {
+        setProducts(products.filter((product) => product.id !== id));
+      })
+      .catch((error) => console.error('Error deleting product:', error));
+  };
+
+  const handleEditProduct = (id: number) => {
+    const product = products.find(p => p.id === id);
+    if (product) {
+      setEditProductId(id);
+      setNameEn(product.name.en);
+      setNameRu(product.name.ru);
+      setNameGeo(product.name.geo);
+      setPrice(product.price.toString());
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleStatusChange = async (id: number, status: string) => {
-    try {
-      await axios.put(`/orders/${id}/status`, { status });
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === id ? { ...order, status } : order
-        )
-      );
-    } catch (error: any) {
-      console.error('Ошибка при обновлении статуса заказа:', error.message);
-    }
-  };
-
-  const filterOrders = () => {
-    let filteredOrders = orders.filter((order) =>
-      order.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.address.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    if (startDate) {
-      filteredOrders = filteredOrders.filter(
-        (order) => new Date(order.created_at) >= startDate
-      );
+  const handleSaveProduct = (id: number) => {
+    const formData = new FormData();
+    formData.append('nameEn', nameEn);
+    formData.append('nameRu', nameRu);
+    formData.append('nameGeo', nameGeo);
+    formData.append('price', price);
+    if (image) {
+      formData.append('image', image);
     }
 
-    if (endDate) {
-      filteredOrders = filteredOrders.filter(
-        (order) => new Date(order.created_at) <= endDate
-      );
-    }
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
 
-    return filteredOrders;
-  };
-
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filterOrders());
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array',
-    });
-    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(data, 'orders.xlsx');
-  };
-
-  const renderOrderList = () => {
-    const filteredOrders = filterOrders();
-    return filteredOrders.map((order) => (
-      <OrderListItem key={order.id}>
-        <OrderDetails>
-          <p>Идентификатор заказа: {order.id}</p>
-          <p>Идентификатор пользователя: {order.user_id}</p>
-          <p>Пользователь: {order.first_name} {order.last_name}</p>
-          <p>Адрес: {order.address}</p>
-          <p>Итог: ${order.total}</p>
-          <p>Статус: {order.status}</p>
-          <Button onClick={() => handleStatusChange(order.id, order.status === 'pending' ? 'assembly' : 'pending')}>
-            {order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
-          </Button>
-          <p>Продукты:</p>
-          <ul>
-            {order.items.map((item) => (
-              <li key={item.productId}>
-                Продукт: {item.productName} (ID: {item.productId}) - Количество: {item.quantity}
-              </li>
-            ))}
-          </ul>
-          <p>Создано: {new Date(order.created_at).toLocaleString()}</p>
-        </OrderDetails>
-      </OrderListItem>
-    ));
+    fetch(`/products/${id}`, {
+      method: 'PUT',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+      },
+    })
+      .then((response) => response.json())
+      .then((updatedProduct) => {
+        const updatedProducts = products.map((product) =>
+          product.id === id
+            ? {
+                ...updatedProduct,
+                name: {
+                  en: updatedProduct.name_en,
+                  ru: updatedProduct.name_ru,
+                  geo: updatedProduct.name_geo
+                }
+              }
+            : product
+        );
+        setProducts(updatedProducts);
+        setEditProductId(null);
+        setNameEn('');
+        setNameRu('');
+        setNameGeo('');
+        setPrice('');
+        setImage(null);
+      })
+      .catch((error) => console.error('Error updating product:', error));
   };
 
   return (
-    <Container>
-      <Title>Список заказов</Title>
-      <FlexContainer>
-        <SearchInput
-          type="text"
-          placeholder="Поиск заказов..."
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        <DatePickers>
-          <StyledDatePicker
-            selected={startDate}
-            onChange={(date: Date | null) => setStartDate(date)}
-            placeholderText="Дата начала"
-          />
-          <StyledDatePicker
-            selected={endDate}
-            onChange={(date: Date | null) => setEndDate(date)}
-            placeholderText="Дата окончания"
-          />
-        </DatePickers>
-        <SortButton onClick={() => setOrders([...orders].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()))}>
-          Сортировать по дате
-        </SortButton>
-        <ExportButton onClick={exportToExcel}>Экспорт в Excel</ExportButton>
-        <FilterTodayButton onClick={() => {
-          const today = new Date();
-          setStartDate(new Date(today.setHours(0, 0, 0, 0)));
-          setEndDate(new Date(today.setHours(23, 59, 59, 999)));
-        }}>
-          Показать сегодняшние заказы
-        </FilterTodayButton>
-      </FlexContainer>
-      <StyledOrderList>
-        {renderOrderList()}
-      </StyledOrderList>
-    </Container>
+    <Section>
+      <SectionTitle>Products List</SectionTitle>
+      <List>
+        {products.map((product) => (
+          <ListItem key={product.id}>
+            <ProductDetails>
+              <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
+              {editProductId === product.id ? (
+                <Form>
+                  <Input
+                    type="text"
+                    value={nameEn}
+                    onChange={(e) => setNameEn(e.target.value)}
+                    placeholder="Product Name (English)"
+                  />
+                  <Input
+                    type="text"
+                    value={nameRu}
+                    onChange={(e) => setNameRu(e.target.value)}
+                    placeholder="Product Name (Russian)"
+                  />
+                  <Input
+                    type="text"
+                    value={nameGeo}
+                    onChange={(e) => setNameGeo(e.target.value)}
+                    placeholder="Product Name (Georgian)"
+                  />
+                  <Input
+                    type="text"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="Product Price"
+                  />
+                  <Input
+                    type="file"
+                    onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+                  />
+                  <Button onClick={() => handleSaveProduct(product.id)}>Save</Button>
+                  <Button onClick={() => setEditProductId(null)}>Cancel</Button>
+                </Form>
+              ) : (
+                <>
+                  {product.name.en} - ${product.price}
+                  <Button onClick={() => handleDeleteProduct(product.id)}>Delete</Button>
+                  <Button onClick={() => handleEditProduct(product.id)}>Edit</Button>
+                </>
+              )}
+            </ProductDetails>
+          </ListItem>
+        ))}
+      </List>
+    </Section>
   );
 };
 
-export default OrderList;
+export default ProductList;
