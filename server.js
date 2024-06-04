@@ -214,6 +214,28 @@ app.post('/orders', (req, res) => {
   );
 });
 
+// Update order status
+app.put('/orders/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+      [status, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating order status:', error.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get all orders
 app.get('/orders', async (req, res) => {
   try {

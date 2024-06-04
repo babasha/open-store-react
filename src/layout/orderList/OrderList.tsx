@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Section, SectionTitle, Controls, SearchInput, DatePickers, StyledDatePicker, SortButton, ExportButton, FilterTodayButton, OrderList as List, OrderListItem as ListItem, OrderDetails } from '../../styles/OrderListStyles';
+import axios from 'axios';
+import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
+import {
+  Container,
+  Title,
+  FlexContainer,
+  SearchInput,
+  DatePickers,
+  StyledDatePicker,
+  SortButton,
+  ExportButton,
+  FilterTodayButton,
+  OrderList as StyledOrderList,
+  OrderListItem,
+  OrderDetails,
+  StatusButton,
+} from '../../styles/OrderListStyles';
 
 interface Item {
   productId: number;
@@ -16,151 +32,166 @@ interface Order {
   first_name: string;
   last_name: string;
   address: string;
-  items: Item[];
-  total: number;
+  total: string;
   status: string;
   created_at: string;
+  items: Item[];
 }
 
 const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [filterToday, setFilterToday] = useState(false);
 
   useEffect(() => {
-    fetch('/orders', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then(err => { throw new Error(err.message) });
-        }
-        return response.json();
-      })
-      .then((data: Order[]) => {
-        setOrders(data);
-      })
-      .catch((error) => {
-        console.error('Error fetching orders:', error);
-        alert(`Error fetching orders: ${error.message}`);
-      });
+    fetchOrders();
   }, []);
 
-  const getTodayDate = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today;
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get('/orders');
+      setOrders(response.data);
+    } catch (error: any) {
+      console.error('Ошибка при получении заказов:', error.message);
+    }
   };
 
-  const filteredOrders = orders.filter(order => {
-    const orderDate = new Date(order.created_at);
-    const searchLower = search.toLowerCase();
-    const matchesSearch = search
-      ? order.first_name.toLowerCase().includes(searchLower) ||
-        order.last_name.toLowerCase().includes(searchLower) ||
-        order.address.toLowerCase().includes(searchLower) ||
-        order.items.some(item => item.productName.toLowerCase().includes(searchLower))
-      : true;
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
 
-    const matchesDateRange = startDate && endDate
-      ? orderDate >= startDate && orderDate <= endDate
-      : true;
-
-    const matchesToday = filterToday
-      ? orderDate >= getTodayDate()
-      : true;
-
-    return matchesSearch && matchesDateRange && matchesToday;
-  });
-
-  const sortedOrders = [...filteredOrders].sort((a, b) => {
-    if (sortOrder === 'asc') {
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-    } else {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  const handleStatusChange = async (id: number, status: string) => {
+    try {
+      await axios.put(`/orders/${id}/status`, { status });
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === id ? { ...order, status } : order
+        )
+      );
+    } catch (error: any) {
+      console.error('Ошибка при обновлении статуса заказа:', error.message);
     }
-  });
+  };
 
-  const handleExportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(sortedOrders);
+  const filterOrders = () => {
+    let filteredOrders = orders.filter((order) =>
+      order.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.address.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (startDate) {
+      filteredOrders = filteredOrders.filter(
+        (order) => new Date(order.created_at) >= startDate
+      );
+    }
+
+    if (endDate) {
+      filteredOrders = filteredOrders.filter(
+        (order) => new Date(order.created_at) <= endDate
+      );
+    }
+
+    return filteredOrders;
+  };
+
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filterOrders());
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, 'orders.xlsx');
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(data, 'orders.xlsx');
+  };
+
+  const renderOrderList = () => {
+    const filteredOrders = filterOrders();
+    return filteredOrders.map((order) => {
+      const orderAgeInMinutes = (new Date().getTime() - new Date(order.created_at).getTime()) / 60000;
+      const backgroundColor =
+        order.status === 'pending'
+          ? orderAgeInMinutes > 5
+            ? '#FFC1C1'
+            : '#FFF3C1'
+          : order.status === 'assembly'
+          ? orderAgeInMinutes > 10
+            ? '#FFC1C1'
+            : '#C1FFC1'
+          : 'white';
+
+      return (
+        <OrderListItem
+          key={order.id}
+          status={order.status}
+          elapsedTime={orderAgeInMinutes}
+        >
+          <OrderDetails>
+            <p>Идентификатор заказа: {order.id}</p>
+            <p>Идентификатор пользователя: {order.user_id}</p>
+            <p>Пользователь: {order.first_name} {order.last_name}</p>
+            <p>Адрес: {order.address}</p>
+            <p>Итог: ${order.total}</p>
+            <p>Статус: {order.status}</p>
+            <StatusButton onClick={() => handleStatusChange(order.id, order.status === 'pending' ? 'assembly' : 'pending')}>
+              {order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
+            </StatusButton>
+            <p>Продукты:</p>
+            <ul>
+              {order.items.map((item) => (
+                <li key={item.productId}>
+                  Продукт: {item.productName} (ID: {item.productId}) - Количество: {item.quantity}
+                </li>
+              ))}
+            </ul>
+            <p>Создано: {new Date(order.created_at).toLocaleString()}</p>
+          </OrderDetails>
+        </OrderListItem>
+      );
+    });
   };
 
   return (
-    <Section>
-      <SectionTitle>Orders List</SectionTitle>
-      <Controls>
-        <SearchInput 
-          type="text" 
-          placeholder="Search orders..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)} 
+    <Container>
+      <Title>Список заказов</Title>
+      <FlexContainer>
+        <SearchInput
+          type="text"
+          placeholder="Поиск заказов..."
+          value={searchTerm}
+          onChange={handleSearch}
         />
         <DatePickers>
           <StyledDatePicker
             selected={startDate}
             onChange={(date: Date | null) => setStartDate(date)}
-            selectsStart
-            startDate={startDate}
-            endDate={endDate}
-            placeholderText="Start Date"
+            placeholderText="Дата начала"
           />
           <StyledDatePicker
             selected={endDate}
             onChange={(date: Date | null) => setEndDate(date)}
-            selectsEnd
-            startDate={startDate}
-            endDate={endDate}
-            placeholderText="End Date"
+            placeholderText="Дата окончания"
           />
         </DatePickers>
-        <SortButton onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-          Sort by Date {sortOrder === 'asc' ? '▲' : '▼'}
+        <SortButton onClick={() => setOrders([...orders].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()))}>
+          Сортировать по дате
         </SortButton>
-        <ExportButton onClick={handleExportToExcel}>
-          Export to Excel
-        </ExportButton>
-        <FilterTodayButton onClick={() => setFilterToday(!filterToday)}>
-          {filterToday ? 'Show All Orders' : 'Show Today\'s Orders'}
+        <ExportButton onClick={exportToExcel}>Экспорт в Excel</ExportButton>
+        <FilterTodayButton onClick={() => {
+          const today = new Date();
+          setStartDate(new Date(today.setHours(0, 0, 0, 0)));
+          setEndDate(new Date(today.setHours(23, 59, 59, 999)));
+        }}>
+          Показать сегодняшние заказы
         </FilterTodayButton>
-      </Controls>
-      <List>
-        {sortedOrders.length > 0 ? (
-          sortedOrders.map((order) => (
-            <ListItem key={order.id}>
-              <OrderDetails>
-                <p>Order ID: {order.id}</p>
-                <p>User ID: {order.user_id}</p>
-                <p>User: {order.first_name} {order.last_name}</p>
-                <p>Address: {order.address}</p>
-                <p>Total: ${order.total}</p>
-                <p>Status: {order.status}</p>
-                <p>Products:</p>
-                <ul>
-                  {order.items.map((item: Item) => (
-                    <li key={item.productId}>
-                      Product: {item.productName} (ID: {item.productId}) - Quantity: {item.quantity}
-                    </li>
-                  ))}
-                </ul>
-                <p>Created At: {new Date(order.created_at).toLocaleString()}</p>
-              </OrderDetails>
-            </ListItem>
-          ))
-        ) : (
-          <p>No orders found.</p>
-        )}
-      </List>
-    </Section>
+      </FlexContainer>
+      <StyledOrderList>
+        {renderOrderList()}
+      </StyledOrderList>
+    </Container>
   );
 };
 
