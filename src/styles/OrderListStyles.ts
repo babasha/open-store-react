@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import DatePicker from 'react-datepicker';
 
-// Добавление недостающих экспортов
 export const Container = styled.div`
   padding: 20px;
   background: #f5f5f5;
@@ -102,29 +101,13 @@ export const FilterTodayButton = styled.button`
   }
 `;
 
-const getStatusColor = (status: string, elapsedTime: number) => {
-  if (status === 'pending') {
-    if (elapsedTime > 5) {
-      return '#ffcccb'; // Light red
-    }
-    return '#fffacd'; // Light yellow
-  }
-  if (status === 'assembly') {
-    if (elapsedTime > 10) {
-      return '#ffcccb'; // Light red
-    }
-    return '#d3ffd3'; // Light green
-  }
-  return '#ffffff'; // Default white
-};
-
 export const OrderList = styled.ul`
   list-style: none;
   padding: 0;
 `;
 
-export const OrderListItem = styled.li<{ status: string, elapsedTime: number }>`
-  background: ${({ status, elapsedTime }) => getStatusColor(status, elapsedTime)};
+export const OrderListItem = styled.li`
+  background: #ffffff;
   padding: 20px;
   margin-bottom: 10px;
   border-radius: 5px;

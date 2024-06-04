@@ -110,48 +110,30 @@ const OrderList: React.FC = () => {
 
   const renderOrderList = () => {
     const filteredOrders = filterOrders();
-    return filteredOrders.map((order) => {
-      const orderAgeInMinutes = (new Date().getTime() - new Date(order.created_at).getTime()) / 60000;
-      const backgroundColor =
-        order.status === 'pending'
-          ? orderAgeInMinutes > 5
-            ? '#FFC1C1'
-            : '#FFF3C1'
-          : order.status === 'assembly'
-          ? orderAgeInMinutes > 10
-            ? '#FFC1C1'
-            : '#C1FFC1'
-          : 'white';
-
-      return (
-        <OrderListItem
-          key={order.id}
-          status={order.status}
-          elapsedTime={orderAgeInMinutes}
-        >
-          <OrderDetails>
-            <p>Идентификатор заказа: {order.id}</p>
-            <p>Идентификатор пользователя: {order.user_id}</p>
-            <p>Пользователь: {order.first_name} {order.last_name}</p>
-            <p>Адрес: {order.address}</p>
-            <p>Итог: ${order.total}</p>
-            <p>Статус: {order.status}</p>
-            <StatusButton onClick={() => handleStatusChange(order.id, order.status === 'pending' ? 'assembly' : 'pending')}>
-              {order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
-            </StatusButton>
-            <p>Продукты:</p>
-            <ul>
-              {order.items.map((item) => (
-                <li key={item.productId}>
-                  Продукт: {item.productName} (ID: {item.productId}) - Количество: {item.quantity}
-                </li>
-              ))}
-            </ul>
-            <p>Создано: {new Date(order.created_at).toLocaleString()}</p>
-          </OrderDetails>
-        </OrderListItem>
-      );
-    });
+    return filteredOrders.map((order) => (
+      <OrderListItem key={order.id}>
+        <OrderDetails>
+          <p>Идентификатор заказа: {order.id}</p>
+          <p>Идентификатор пользователя: {order.user_id}</p>
+          <p>Пользователь: {order.first_name} {order.last_name}</p>
+          <p>Адрес: {order.address}</p>
+          <p>Итог: ${order.total}</p>
+          <p>Статус: {order.status}</p>
+          <StatusButton onClick={() => handleStatusChange(order.id, order.status === 'pending' ? 'assembly' : 'pending')}>
+            {order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
+          </StatusButton>
+          <p>Продукты:</p>
+          <ul>
+            {order.items.map((item) => (
+              <li key={item.productId}>
+                Продукт: {item.productName} (ID: {item.productId}) - Количество: {item.quantity}
+              </li>
+            ))}
+          </ul>
+          <p>Создано: {new Date(order.created_at).toLocaleString()}</p>
+        </OrderDetails>
+      </OrderListItem>
+    ));
   };
 
   return (
