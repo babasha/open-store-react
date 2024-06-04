@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Section, SectionTitle, List, ListItem, OrderDetails } from '../../styles/AdminPanelStyles';
 
+interface Item {
+  productId: number;
+  productName: string;
+  quantity: number;
+}
+
 interface Order {
   id: number;
   user_id: number;
   first_name: string;
   last_name: string;
   address: string;
-  items: Array<{ productId: number; productName: string; quantity: number }>;
+  items: Item[];
   total: number;
   status: string;
   created_at: string;
 }
 
-const OrderList = () => {
+const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -28,8 +34,7 @@ const OrderList = () => {
         }
         return response.json();
       })
-      .then((data) => {
-        console.log('Fetched orders:', data); // Логирование полученных данных
+      .then((data: Order[]) => {
         setOrders(data);
       })
       .catch((error) => {
@@ -54,7 +59,7 @@ const OrderList = () => {
                 <p>Status: {order.status}</p>
                 <p>Products:</p>
                 <ul>
-                  {order.items.map((item) => (
+                  {order.items.map((item: Item) => (
                     <li key={item.productId}>
                       Product: {item.productName} (ID: {item.productId}) - Quantity: {item.quantity}
                     </li>

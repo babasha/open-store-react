@@ -8,6 +8,7 @@ const app = express();
 
 app.use(express.json());
 
+// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -16,9 +17,9 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
-
 const upload = multer({ storage: storage });
 
+// Middleware to check if user is an admin
 const isAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -43,6 +44,7 @@ const isAdmin = (req, res, next) => {
   }
 };
 
+// Get all products
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
@@ -61,6 +63,7 @@ app.get('/products', async (req, res) => {
   }
 });
 
+// Add a new product
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -85,6 +88,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
+// Delete a product
 app.delete('/products/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   try {
@@ -96,6 +100,7 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
   }
 });
 
+// Update a product
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
   const { nameEn, nameRu, nameGeo, price } = req.body;
@@ -121,6 +126,7 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
+// User registration
 app.post('/auth/register', async (req, res) => {
   const { firstName, lastName, email, address, phone, password } = req.body;
   try {
@@ -144,6 +150,7 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
+// User login
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -166,6 +173,7 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
+// Get logged-in user's info
 app.get('/auth/me', (req, res) => {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'Токен не предоставлен' });
@@ -189,6 +197,7 @@ app.get('/auth/me', (req, res) => {
   }
 });
 
+// Create an order
 app.post('/orders', (req, res) => {
   const { userId, items, total } = req.body;
 
@@ -205,29 +214,55 @@ app.post('/orders', (req, res) => {
   );
 });
 
+// Get all orders
 app.get('/orders', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT o.id, o.user_id, u.first_name, u.last_name, u.address, o.items, o.total, o.status, o.created_at
+      SELECT 
+        o.id AS order_id, 
+        o.user_id, 
+        u.first_name, 
+        u.last_name, 
+        u.address, 
+        o.items, 
+        o.total, 
+        o.status, 
+        o.created_at,
+        p.id AS product_id,
+        p.name_en AS product_name
       FROM orders o
       JOIN users u ON o.user_id = u.id
+      JOIN LATERAL jsonb_array_elements(o.items) item ON true
+      JOIN products p ON item->>'productId' = p.id::text
     `);
 
-    const orders = await Promise.all(result.rows.map(async (order) => {
-      const itemsWithNames = await Promise.all(order.items.map(async item => {
-        const productResult = await pool.query('SELECT name_en, name_ru, name_geo FROM products WHERE id = $1', [item.productId]);
-        const productNames = productResult.rows[0];
-        return {
-          ...item,
-          productNames,
-        };
-      }));
-
-      return {
-        ...order,
-        items: itemsWithNames,
-      };
-    }));
+    const orders = result.rows.reduce((acc, row) => {
+      const order = acc.find(o => o.id === row.order_id);
+      if (order) {
+        order.items.push({
+          productId: row.product_id,
+          productName: row.product_name,
+          quantity: row.items.find(i => i.productId === row.product_id).quantity
+        });
+      } else {
+        acc.push({
+          id: row.order_id,
+          user_id: row.user_id,
+          first_name: row.first_name,
+          last_name: row.last_name,
+          address: row.address,
+          total: row.total,
+          status: row.status,
+          created_at: row.created_at,
+          items: [{
+            productId: row.product_id,
+            productName: row.product_name,
+            quantity: row.items.find(i => i.productId === row.product_id).quantity
+          }]
+        });
+      }
+      return acc;
+    }, []);
 
     res.json(orders);
   } catch (err) {
@@ -236,6 +271,7 @@ app.get('/orders', async (req, res) => {
   }
 });
 
+// Get all users
 app.get('/users', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, first_name, last_name, email, address, phone FROM users');
@@ -246,8 +282,10 @@ app.get('/users', async (req, res) => {
   }
 });
 
+// Serve uploaded files
 app.use('/uploads', express.static('uploads'));
 
+// Start the server
 app.listen(3000, () => {
   console.log('Сервер работает на порту 3000');
 });
