@@ -6,6 +6,7 @@ import { theme } from '../../styles/Theme';
 import { useAuth } from '../autoeization/AuthContext';
 import LoginComponent from '../UserAuteriztion/UserCart';
 import RegisterComponent from '../../page/register/register';
+import MapPicker from '../../components/MapPicker';
 
 const AutorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
@@ -26,6 +27,10 @@ const AutorizationComponent: React.FC = () => {
     setIsEditingAddress(false);
   };
 
+  const handleMapAddressSelect = (address: string) => {
+    setNewAddress(address);
+  };
+
   return (
     <Container width={'100%'}>
       <CartdiInner>
@@ -42,6 +47,7 @@ const AutorizationComponent: React.FC = () => {
                 />
                 <button onClick={handleSaveAddress}>Сохранить</button>
                 <button onClick={() => setIsEditingAddress(false)}>Отмена</button>
+                <MapPicker onAddressSelect={handleMapAddressSelect} />
               </div>
             ) : (
               <div>
