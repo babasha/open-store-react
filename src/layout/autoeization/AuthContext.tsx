@@ -1,23 +1,12 @@
-// src/autoeization/AuthContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
-  address: string;
-  role: string; // Добавим поле role
-  // другие поля...
-}
+import socket from '../../socket'; // Импортируйте ваш socket
 
 interface AuthContextType {
-  user: User | null;
-  login: (userData: User, token: string) => void;
+  user: any;
+  login: (userData: any, token: string) => void;
   logout: () => void;
-  updateUser: (updates: Partial<User>) => Promise<void>;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -25,13 +14,13 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetch('http://localhost:3001/auth/me', {
+      fetch('http://localhost:3000/auth/me', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -47,37 +36,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const login = (userData: User, token: string) => {
+  const login = (userData: any, token: string) => {
     setUser(userData);
     localStorage.setItem('token', token);
+    socket.emit('login', userData.id); // Подключение к сокету при входе
   };
 
   const logout = () => {
+    socket.emit('logout', user.id); // Отключение от сокета при выходе
     setUser(null);
     localStorage.removeItem('token');
     navigate('/auth');
   };
 
-  const updateUser = async (updates: Partial<User>) => {
-    if (!user) return;
-    try {
-      const response = await fetch(`http://localhost:3001/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(updates),
-      });
-      const updatedUser = await response.json();
-      setUser({ ...user, ...updates });
-    } catch (error) {
-      console.error('Ошибка при обновлении пользователя:', error);
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

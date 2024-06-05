@@ -1,34 +1,51 @@
-// src/components/AutorizationComponent.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import styled from 'styled-components';
 import { Container } from '../../components/Container';
 import { theme } from '../../styles/Theme';
 import { useAuth } from '../autoeization/AuthContext';
 import LoginComponent from '../UserAuteriztion/UserCart';
 import RegisterComponent from '../../page/register/register';
-import MapPicker from '../../components/MapPicker';
+import { Order } from '../orderList/OrderList'; // Импортируйте тип Order
+import socket from '../../socket'; // Импортируйте ваш socket
 
 const AutorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState('');
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]); // Используйте тип Order
+
+  useEffect(() => {
+    if (user) {
+      fetchUserOrders();
+      socket.on('newOrder', (newOrder: Order) => {
+        setOrders(prevOrders => [...prevOrders, newOrder]);
+      });
+      socket.on('orderUpdated', (updatedOrder: Order) => {
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order.id === updatedOrder.id ? updatedOrder : order
+          )
+        );
+      });
+    }
+
+    return () => {
+      socket.off('newOrder');
+      socket.off('orderUpdated');
+    };
+  }, [user]);
+
+  const fetchUserOrders = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/orders/me', { withCredentials: true });
+      setOrders(response.data);
+    } catch (error: any) {
+      console.error('Ошибка при получении заказов пользователя:', error.message);
+    }
+  };
 
   const handleSetAuthMode = (mode: 'login' | 'register' | '') => {
     setAuthMode(mode);
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewAddress(e.target.value);
-  };
-
-  const handleSaveAddress = async () => {
-    await updateUser({ address: newAddress });
-    setIsEditingAddress(false);
-  };
-
-  const handleMapAddressSelect = (address: string) => {
-    setNewAddress(address);
   };
 
   return (
@@ -37,28 +54,19 @@ const AutorizationComponent: React.FC = () => {
         {user ? (
           <UserDetails>
             <h2>Добро пожаловать, {user.first_name} {user.last_name}</h2>
-            {isEditingAddress ? (
-              <div>
-                <input
-                  type="text"
-                  value={newAddress}
-                  onChange={handleAddressChange}
-                  placeholder="Введите новый адрес"
-                />
-                <button onClick={handleSaveAddress}>Сохранить</button>
-                <button onClick={() => setIsEditingAddress(false)}>Отмена</button>
-                <MapPicker onAddressSelect={handleMapAddressSelect} />
-              </div>
-            ) : (
-              <div>
-                <p>Адрес: {user.address}</p>
-                <button onClick={() => {
-                  setNewAddress(user.address);
-                  setIsEditingAddress(true);
-                }}>Изменить адрес</button>
-              </div>
-            )}
+            <p>Адрес: {user.address}</p>
             <button onClick={logout}>Выйти</button>
+            <h3>Ваши заказы</h3>
+            <ul>
+              {orders.map(order => (
+                <li key={order.id}>
+                  <p>Заказ #{order.id}</p>
+                  <p>Статус: {order.status}</p>
+                  <p>Общая сумма: ${order.total}</p>
+                  <p>Создан: {new Date(order.created_at).toLocaleString()}</p>
+                </li>
+              ))}
+            </ul>
           </UserDetails>
         ) : (
           <div>
@@ -106,13 +114,6 @@ const UserDetails = styled.div`
     &:hover {
       background-color: #0056b3;
     }
-  }
-  input {
-    padding: 10px;
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    margin-bottom: 10px;
   }
 `;
 

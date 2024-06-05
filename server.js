@@ -280,7 +280,7 @@ app.post('/orders', async (req, res) => {
       }))
     };
 
-    io.emit('newOrder', newOrder); // Emit event to clients
+    io.emit('newOrder', newOrder); // Эмитирование события для новых заказов
     res.status(201).json(newOrder);
   } catch (error) {
     console.error('Ошибка при оформлении заказа:', error.message);
@@ -302,7 +302,7 @@ app.put('/orders/:id/status', (req, res) => {
         return res.status(500).json({ error: 'Ошибка сервера' });
       }
       const updatedOrder = results.rows[0];
-      io.emit('orderUpdated', updatedOrder); // Emit event to clients
+      io.emit('orderUpdated', updatedOrder); // Эмитирование события для обновленных заказов
       res.status(200).json(updatedOrder);
     }
   );
@@ -362,6 +362,20 @@ app.get('/orders', async (req, res) => {
   } catch (err) {
     console.error('Ошибка получения заказов:', err.message);
     res.status(500).json({ error: 'Ошибка сервера', message: err.message });
+  }
+});
+
+// Получение заказов текущего пользователя
+app.get('/api/orders/me', isAuthenticated, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM orders WHERE user_id = $1',
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Ошибка получения заказов пользователя:', err.message);
+    res.status(500).send('Ошибка сервера');
   }
 });
 

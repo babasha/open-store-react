@@ -20,13 +20,13 @@ import {
   OrderList as StyledOrderList
 } from '../../styles/OrderListStyles';
 
-interface Item {
+export  interface Item {
   productId: number;
   productName: string;
   quantity: number;
 }
 
-interface Order {
+export  interface Order {
   id: number;
   user_id: number;
   first_name: string;
