@@ -1,3 +1,4 @@
+// src/components/AutorizationComponent.tsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Container } from '../../components/Container';
@@ -8,10 +9,21 @@ import RegisterComponent from '../../page/register/register';
 
 const AutorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
-  const { user, logout } = useAuth();
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState('');
+  const { user, logout, updateUser } = useAuth();
 
   const handleSetAuthMode = (mode: 'login' | 'register' | '') => {
     setAuthMode(mode);
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewAddress(e.target.value);
+  };
+
+  const handleSaveAddress = async () => {
+    await updateUser({ address: newAddress });
+    setIsEditingAddress(false);
   };
 
   return (
@@ -20,7 +32,26 @@ const AutorizationComponent: React.FC = () => {
         {user ? (
           <UserDetails>
             <h2>Добро пожаловать, {user.first_name} {user.last_name}</h2>
-            <p>Адрес: {user.address}</p>
+            {isEditingAddress ? (
+              <div>
+                <input
+                  type="text"
+                  value={newAddress}
+                  onChange={handleAddressChange}
+                  placeholder="Введите новый адрес"
+                />
+                <button onClick={handleSaveAddress}>Сохранить</button>
+                <button onClick={() => setIsEditingAddress(false)}>Отмена</button>
+              </div>
+            ) : (
+              <div>
+                <p>Адрес: {user.address}</p>
+                <button onClick={() => {
+                  setNewAddress(user.address);
+                  setIsEditingAddress(true);
+                }}>Изменить адрес</button>
+              </div>
+            )}
             <button onClick={logout}>Выйти</button>
           </UserDetails>
         ) : (
@@ -69,6 +100,13 @@ const UserDetails = styled.div`
     &:hover {
       background-color: #0056b3;
     }
+  }
+  input {
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-bottom: 10px;
   }
 `;
 

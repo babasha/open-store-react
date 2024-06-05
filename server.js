@@ -62,6 +62,24 @@ const isAdmin = (req, res, next) => {
   }
 };
 
+// Middleware для проверки авторизации пользователя
+const isAuthenticated = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Токен не предоставлен' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Ошибка при проверке токена:', error.message);
+    res.status(400).json({ message: 'Неверный токен' });
+  }
+};
+
 // Получение всех продуктов
 app.get('/products', async (req, res) => {
   try {
@@ -192,26 +210,39 @@ app.post('/auth/login', async (req, res) => {
 });
 
 // Получение информации о текущем пользователе
-app.get('/auth/me', (req, res) => {
-  const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Токен не предоставлен' });
+app.get('/auth/me', isAuthenticated, (req, res) => {
+  pool.query('SELECT id, first_name, last_name, email, address, phone, role FROM users WHERE id = $1', [req.user.id])
+    .then(result => {
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: 'Пользователь не найден' });
+      }
+      const user = result.rows[0];
+      res.json({ user });
+    })
+    .catch(err => {
+      console.error('Ошибка при получении данных пользователя:', err.message);
+      res.status(500).json({ message: 'Ошибка сервера' });
+    });
+});
+
+// Обновление данных пользователя (например, адреса)
+app.put('/api/users/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  const { address } = req.body;
+
+  if (req.user.id !== parseInt(id, 10)) {
+    return res.status(403).json({ message: 'Нет доступа к изменению данного пользователя' });
+  }
 
   try {
-    const decoded = jwt.verify(token, 'secret_key');
-    pool.query('SELECT id, first_name, last_name, email, address, phone, role FROM users WHERE id = $1', [decoded.id])
-      .then(result => {
-        if (result.rows.length === 0) {
-          return res.status(404).json({ message: 'Пользователь не найден' });
-        }
-        const user = result.rows[0];
-        res.json({ user });
-      })
-      .catch(err => {
-        console.error('Ошибка при получении данных пользователя:', err.message);
-        res.status(500).json({ message: 'Ошибка сервера' });
-      });
-  } catch (error) {
-    res.status(400).json({ message: 'Неверный токен' });
+    const result = await pool.query(
+      'UPDATE users SET address = $1 WHERE id = $2 RETURNING *',
+      [address, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка при обновлении пользователя:', err.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 
@@ -256,6 +287,7 @@ app.post('/orders', async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
 // Обновление статуса заказа
 app.put('/orders/:id/status', (req, res) => {
   const { id } = req.params;
