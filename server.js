@@ -280,7 +280,7 @@ app.post('/orders', async (req, res) => {
       }))
     };
 
-    io.emit('newOrder', newOrder); // Эмитирование события для новых заказов
+    io.emit('newOrder', newOrder); // Emit event to clients
     res.status(201).json(newOrder);
   } catch (error) {
     console.error('Ошибка при оформлении заказа:', error.message);
@@ -289,23 +289,64 @@ app.post('/orders', async (req, res) => {
 });
 
 // Обновление статуса заказа
-app.put('/orders/:id/status', (req, res) => {
+app.put('/orders/:id/status', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  pool.query(
-    'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
-    [status, id],
-    (error, results) => {
-      if (error) {
-        console.error('Ошибка при обновлении статуса заказа:', error.message);
-        return res.status(500).json({ error: 'Ошибка сервера' });
+  try {
+    await pool.query(
+      'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+      [status, id]
+    );
+
+    const result = await pool.query(`
+      SELECT 
+        o.id AS order_id, 
+        o.user_id, 
+        u.first_name, 
+        u.last_name, 
+        u.address, 
+        o.items, 
+        o.total, 
+        o.status, 
+        o.created_at,
+        p.id AS product_id,
+        p.name_en AS product_name
+      FROM orders o
+      JOIN users u ON o.user_id = u.id
+      JOIN LATERAL jsonb_array_elements(o.items) item ON true
+      JOIN products p ON item->>'productId' = p.id::text
+      WHERE o.id = $1
+    `, [id]);
+
+    const updatedOrder = result.rows.reduce((acc, row) => {
+      if (!acc) {
+        acc = {
+          id: row.order_id,
+          user_id: row.user_id,
+          first_name: row.first_name,
+          last_name: row.last_name,
+          address: row.address,
+          total: row.total,
+          status: row.status,
+          created_at: row.created_at,
+          items: []
+        };
       }
-      const updatedOrder = results.rows[0];
-      io.emit('orderUpdated', updatedOrder); // Эмитирование события для обновленных заказов
-      res.status(200).json(updatedOrder);
-    }
-  );
+      acc.items.push({
+        productId: row.product_id,
+        productName: row.product_name,
+        quantity: row.items.find(i => i.productId === row.product_id).quantity
+      });
+      return acc;
+    }, null);
+
+    io.emit('orderUpdated', updatedOrder); // Emit event to clients
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    console.error('Ошибка при обновлении статуса заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
 });
 
 // Получение всех заказов

@@ -6,33 +6,21 @@ import { theme } from '../../styles/Theme';
 import { useAuth } from '../autoeization/AuthContext';
 import LoginComponent from '../UserAuteriztion/UserCart';
 import RegisterComponent from '../../page/register/register';
-import { Order } from '../orderList/OrderList'; // Импортируйте тип Order
-import socket from '../../socket'; // Импортируйте ваш socket
+import { Order } from '../orderList/OrderList';
+import socket from '../../socket';
+import MapPicker from '../../components/MapPicker';
 
 const AutorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
-  const { user, logout } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]); // Используйте тип Order
+  const { user, logout, login } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState('');
 
   useEffect(() => {
     if (user) {
       fetchUserOrders();
-      socket.on('newOrder', (newOrder: Order) => {
-        setOrders(prevOrders => [...prevOrders, newOrder]);
-      });
-      socket.on('orderUpdated', (updatedOrder: Order) => {
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
-            order.id === updatedOrder.id ? updatedOrder : order
-          )
-        );
-      });
     }
-
-    return () => {
-      socket.off('newOrder');
-      socket.off('orderUpdated');
-    };
   }, [user]);
 
   const fetchUserOrders = async () => {
@@ -44,8 +32,51 @@ const AutorizationComponent: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const handleNewOrder = (newOrder: Order) => {
+      if (newOrder.user_id === user?.id) {
+        setOrders((prevOrders) => [...prevOrders, newOrder]);
+      }
+    };
+
+    const handleOrderUpdated = (updatedOrder: Order) => {
+      if (updatedOrder.user_id === user?.id) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === updatedOrder.id ? updatedOrder : order
+          )
+        );
+      }
+    };
+
+    socket.on('newOrder', handleNewOrder);
+    socket.on('orderUpdated', handleOrderUpdated);
+
+    return () => {
+      socket.off('newOrder', handleNewOrder);
+      socket.off('orderUpdated', handleOrderUpdated);
+    };
+  }, [user]);
+
   const handleSetAuthMode = (mode: 'login' | 'register' | '') => {
     setAuthMode(mode);
+  };
+
+  const handleAddressSave = async () => {
+    if (user && newAddress) {
+      try {
+        const response = await axios.put(
+          `http://localhost:3000/api/users/${user.id}`,
+          { address: newAddress },
+          { withCredentials: true }
+        );
+        // Обновляем данные пользователя в контексте
+        login(response.data, localStorage.getItem('token') || '');
+        setIsEditingAddress(false);
+      } catch (error: any) {
+        console.error('Ошибка при обновлении адреса:', error.message);
+      }
+    }
   };
 
   return (
@@ -56,6 +87,14 @@ const AutorizationComponent: React.FC = () => {
             <h2>Добро пожаловать, {user.first_name} {user.last_name}</h2>
             <p>Адрес: {user.address}</p>
             <button onClick={logout}>Выйти</button>
+            <button onClick={() => setIsEditingAddress(true)}>Редактировать адрес</button>
+            {isEditingAddress && (
+              <div>
+                <MapPicker onAddressSelect={(address: string) => setNewAddress(address)} />
+                <button onClick={handleAddressSave}>Сохранить адрес</button>
+                <button onClick={() => setIsEditingAddress(false)}>Отмена</button>
+              </div>
+            )}
             <h3>Ваши заказы</h3>
             <ul>
               {orders.map(order => (

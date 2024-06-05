@@ -1,51 +1,62 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+// src/autoeization/AuthContext.tsx
+import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import socket from '../../socket'; // Импортируйте ваш socket
+import socket from '../../socket';
+
+interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  address: string;
+  phone: string;
+  role: string;
+}
 
 interface AuthContextType {
-  user: any;
-  login: (userData: any, token: string) => void;
+  user: User | null;
+  login: (user: User, token: string) => void;
   logout: () => void;
 }
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<any>(null);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch('http://localhost:3000/auth/me', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
-          setUser(data.user);
-        })
-        .catch(error => {
-          console.error('Ошибка при получении данных пользователя:', error);
-        });
+    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token');
+    if (storedUser && storedToken) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        socket.emit('login', parsedUser.id); // Подключение к сокету при восстановлении
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+      }
     }
   }, []);
 
-  const login = (userData: any, token: string) => {
-    setUser(userData);
+  const login = (user: User, token: string) => {
+    setUser(user);
+    localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('token', token);
-    socket.emit('login', userData.id); // Подключение к сокету при входе
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    socket.emit('login', user.id); // Подключение к сокету при входе
   };
 
   const logout = () => {
-    socket.emit('logout', user.id); // Отключение от сокета при выходе
+    if (user) {
+      socket.emit('logout', user.id); // Отключение от сокета при выходе
+    }
     setUser(null);
+    localStorage.removeItem('user');
     localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
     navigate('/auth');
   };
 
@@ -58,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
