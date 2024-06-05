@@ -228,6 +228,16 @@ app.post('/orders', async (req, res) => {
       [userId, JSON.stringify(items), total]
     );
 
+    const orderId = orderResult.rows[0].id;
+
+    const productIds = items.map(item => item.productId);
+    const productResult = await pool.query('SELECT id, name_en FROM products WHERE id = ANY($1)', [productIds]);
+
+    const products = productResult.rows.reduce((acc, product) => {
+      acc[product.id] = product.name_en;
+      return acc;
+    }, {});
+
     const newOrder = {
       ...orderResult.rows[0],
       first_name: user.first_name,
@@ -235,7 +245,7 @@ app.post('/orders', async (req, res) => {
       address: user.address,
       items: items.map(item => ({
         ...item,
-        productName: item.productName // добавление имени продукта
+        productName: products[item.productId]
       }))
     };
 
