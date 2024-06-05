@@ -1,3 +1,4 @@
+// src/styles/OrderListStyles.ts
 import styled from 'styled-components';
 import DatePicker from 'react-datepicker';
 
@@ -114,7 +115,7 @@ export const OrderListItem = styled.li`
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
 `;
 
-export const OrderDetails = styled.div`
+export const OrderDetailsContainer = styled.div`
   p {
     margin: 5px 0;
   }
