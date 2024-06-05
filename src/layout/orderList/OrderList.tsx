@@ -217,3 +217,4 @@ export const FlexContainer = styled.div`
   flex-wrap: wrap;
   gap: 10px;
 `;
+

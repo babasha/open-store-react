@@ -216,24 +216,36 @@ app.get('/auth/me', (req, res) => {
 });
 
 // Создание заказа
-app.post('/orders', (req, res) => {
+app.post('/orders', async (req, res) => {
   const { userId, items, total } = req.body;
 
-  pool.query(
-    'INSERT INTO orders (user_id, items, total) VALUES ($1, $2, $3) RETURNING *',
-    [userId, JSON.stringify(items), total],
-    (error, results) => {
-      if (error) {
-        console.error('Ошибка при оформлении заказа:', error.message);
-        return res.status(500).json({ error: 'Ошибка сервера' });
-      }
-      const newOrder = results.rows[0];
-      io.emit('newOrder', newOrder); // Emit event to clients
-      res.status(201).json(newOrder);
-    }
-  );
-});
+  try {
+    const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
+    const user = userResult.rows[0];
 
+    const orderResult = await pool.query(
+      'INSERT INTO orders (user_id, items, total) VALUES ($1, $2, $3) RETURNING *',
+      [userId, JSON.stringify(items), total]
+    );
+
+    const newOrder = {
+      ...orderResult.rows[0],
+      first_name: user.first_name,
+      last_name: user.last_name,
+      address: user.address,
+      items: items.map(item => ({
+        ...item,
+        productName: item.productName // добавление имени продукта
+      }))
+    };
+
+    io.emit('newOrder', newOrder); // Emit event to clients
+    res.status(201).json(newOrder);
+  } catch (error) {
+    console.error('Ошибка при оформлении заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
 // Обновление статуса заказа
 app.put('/orders/:id/status', (req, res) => {
   const { id } = req.params;
