@@ -6,6 +6,7 @@ import { useAuth } from '../autoeization/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 import { FlexWrapper } from '../../components/FlexWrapper';
+import TimeSlider from '../../components/dateSlider/TimeSlider';
 
 export const Basket: React.FC = () => {
   const { t } = useTranslation();
@@ -97,10 +98,13 @@ export const Basket: React.FC = () => {
             <FlexWrapper justify='space-between'>
               <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
               <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
+
             </FlexWrapper>
             {error && <ErrorText>{error}</ErrorText>}
           </>
         )}
+                      <TimeSlider  />
+
       </CartdiInner>
     </Container>
   );
