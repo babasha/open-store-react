@@ -7,6 +7,7 @@ import Modal from '../../components/modal/modal';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 import TextInput from '../../components/textinputs/TextInput';
+import DateSlider from '../../components/dateSlider/DateSlider';
 
 interface HeaderProps {
   activeTab?: 'products' | 'users' | 'orders';
@@ -43,6 +44,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
       <FlexWrapper>
         <h1>Open market</h1>
       </FlexWrapper>
+      <DateSlider/>
       {/* <TextInput  label="First Name"/> */}
       <FlexWrapper justify='center'>
         {setActiveTab && (
