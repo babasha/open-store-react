@@ -1,4 +1,3 @@
-// src/components/OrderItem.tsx
 import React from 'react';
 import axios from 'axios';
 import { OrderListItem, StatusButton } from '../../styles/OrderListStyles';
@@ -16,9 +15,11 @@ interface Order {
   first_name: string;
   last_name: string;
   address: string;
+  phone: string;  // Добавляем поле phone
   total: string;
   status: string;
   created_at: string;
+  delivery_time: string;
   items: Item[];
 }
 
@@ -48,8 +49,10 @@ const OrderItem: React.FC<Props> = ({ order, setOrders }) => {
         <p>Идентификатор пользователя: {order.user_id}</p>
         <p>Пользователь: {order.first_name} {order.last_name}</p>
         <p>Адрес: {order.address}</p>
+        <p>Телефон: <a href={`tel:${order.phone}`}><strong>{order.phone}</strong></a></p>
         <p>Итог: ${order.total}</p>
         <p>Статус: {order.status}</p>
+        <p>Время доставки: {order.delivery_time}</p>
         <StatusButton onClick={() => handleStatusChange(order.id, order.status === 'pending' ? 'assembly' : 'pending')}>
           {order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
         </StatusButton>

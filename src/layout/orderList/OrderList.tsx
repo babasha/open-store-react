@@ -1,4 +1,4 @@
-// src/components/OrderList.tsx
+// src/layout/orderList/OrderList.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
@@ -20,24 +20,26 @@ import {
   OrderList as StyledOrderList
 } from '../../styles/OrderListStyles';
 
-export  interface Item {
+
+interface Item {
   productId: number;
   productName: string;
   quantity: number;
 }
 
-export  interface Order {
+export interface Order {
   id: number;
   user_id: number;
   first_name: string;
   last_name: string;
   address: string;
+  phone: string;  // Добавляем поле phone
   total: string;
   status: string;
   created_at: string;
+  delivery_time: string;
   items: Item[];
 }
-
 const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,7 +67,11 @@ const OrderList: React.FC = () => {
   const fetchOrders = async () => {
     try {
       const response = await axios.get('http://localhost:3000/orders', { withCredentials: true });
-      setOrders(response.data);
+      const fetchedOrders = response.data.map((order: any) => ({
+        ...order,
+        delivery_time: order.delivery_time || '', // Убедитесь, что поле присутствует
+      }));
+      setOrders(fetchedOrders);
     } catch (error: any) {
       console.error('Ошибка при получении заказов:', error.message);
     }

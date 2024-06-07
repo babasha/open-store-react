@@ -248,15 +248,15 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
 
 // Создание заказа
 app.post('/orders', async (req, res) => {
-  const { userId, items, total } = req.body;
+  const { userId, items, total, deliveryTime } = req.body;
 
   try {
     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
     const orderResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total) VALUES ($1, $2, $3) RETURNING *',
-      [userId, JSON.stringify(items), total]
+      'INSERT INTO orders (user_id, items, total, delivery_time) VALUES ($1, $2, $3, $4) RETURNING *',
+      [userId, JSON.stringify(items), total, deliveryTime || null]
     );
 
     const orderId = orderResult.rows[0].id;
@@ -280,14 +280,13 @@ app.post('/orders', async (req, res) => {
       }))
     };
 
-    io.emit('newOrder', newOrder); // Emit event to clients
+    io.emit('newOrder', newOrder);
     res.status(201).json(newOrder);
   } catch (error) {
     console.error('Ошибка при оформлении заказа:', error.message);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
-
 // Обновление статуса заказа
 app.put('/orders/:id/status', async (req, res) => {
   const { id } = req.params;
@@ -359,10 +358,12 @@ app.get('/orders', async (req, res) => {
         u.first_name, 
         u.last_name, 
         u.address, 
+        u.phone,  -- Добавляем поле phone
         o.items, 
         o.total, 
         o.status, 
         o.created_at,
+        o.delivery_time,
         p.id AS product_id,
         p.name_en AS product_name
       FROM orders o
@@ -386,9 +387,11 @@ app.get('/orders', async (req, res) => {
           first_name: row.first_name,
           last_name: row.last_name,
           address: row.address,
+          phone: row.phone,  // Добавляем поле phone
           total: row.total,
           status: row.status,
           created_at: row.created_at,
+          delivery_time: row.delivery_time,
           items: [{
             productId: row.product_id,
             productName: row.product_name,

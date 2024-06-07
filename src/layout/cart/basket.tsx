@@ -14,6 +14,7 @@ export const Basket: React.FC = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
 
   const handleEditClick = () => {
     setIsEditing(!isEditing);
@@ -32,7 +33,7 @@ export const Basket: React.FC = () => {
       setError('Вы не авторизованы');
       return;
     }
-
+  
     const orderData = {
       userId: user.id,
       items: cartItems.map(item => ({
@@ -40,10 +41,11 @@ export const Basket: React.FC = () => {
         quantity: item.quantity,
       })),
       total: totalWithDelivery,
+      deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
     };
-
+  
     try {
-      const response = await fetch('http://localhost:3001/orders', {
+      const response = await fetch('http://localhost:3000/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,18 +53,19 @@ export const Basket: React.FC = () => {
         },
         body: JSON.stringify(orderData),
       });
-
+  
       if (!response.ok) {
         throw new Error('Ошибка при оформлении заказа');
       }
-
+  
       clearCart();
       alert('Заказ успешно оформлен');
     } catch (error) {
       setError('Ошибка при оформлении заказа');
     }
   };
-
+  
+  
   return (
     <Container width={'100%'}>
       <CartdiInner>
@@ -100,7 +103,13 @@ export const Basket: React.FC = () => {
               <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
             </FlexWrapper>
             {error && <ErrorText>{error}</ErrorText>}
-            <DataSwitch buttonText1='Как можно скорее' buttonText2='Ко времени' isActive1={false} isActive2={false} />
+            <DataSwitch 
+              buttonText1='Как можно скорее' 
+              buttonText2='Ко времени' 
+              isActive1={false} 
+              isActive2={false} 
+              onSelectedDelivery={setSelectedDelivery} // Обновление состояния selectedDelivery
+            />
           </>
         )}
       </CartdiInner>

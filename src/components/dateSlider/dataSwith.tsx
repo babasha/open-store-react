@@ -63,10 +63,11 @@ interface DataSwitchProps {
   buttonText2: string;
   isActive1: boolean;
   isActive2: boolean;
+  onSelectedDelivery: (delivery: { day: string; time: string }) => void;
 }
 
-const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isActive1, isActive2 }) => {
-  const [active, setActive] = useState(1); // Установить активное состояние на кнопку "Привет"
+const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isActive1, isActive2, onSelectedDelivery }) => {
+  const [active, setActive] = useState(1);
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
@@ -84,6 +85,8 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
     const formData = new FormData(event.currentTarget);
     const day = formData.get('day') as string;
     const time = formData.get('time') as string;
+
+    onSelectedDelivery({ day, time }); // Update state with selected delivery time
     setSelectedDelivery({ day, time });
     setIsModalOpen(false);
   };
