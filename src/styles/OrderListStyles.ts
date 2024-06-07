@@ -1,4 +1,3 @@
-// src/styles/OrderListStyles.ts
 import styled from 'styled-components';
 import DatePicker from 'react-datepicker';
 
@@ -7,6 +6,7 @@ export const Container = styled.div`
   background: #f5f5f5;
   border-radius: 10px;
 `;
+
 export const CancelButton = styled.button`
   padding: 10px 20px;
   border: none;
@@ -17,10 +17,12 @@ export const CancelButton = styled.button`
     background-color: #c9302c;
   }
 `;
+
 export const Title = styled.h2`
   margin-bottom: 20px;
   text-align: center;
 `;
+
 export const OrderListItem = styled.div<{ isCanceled: boolean }>`
   border: 1px solid #ddd;
   margin-bottom: 10px;
@@ -41,9 +43,15 @@ export const StatusButton = styled.button`
   }
 `;
 
-
-
-
+export const StatisticsContainer = styled.div`
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  h3 {
+    margin-bottom: 20px;
+  }
+`;
 
 export const OrderProductList = styled.ul`
   list-style-type: none;
@@ -55,7 +63,6 @@ export const OrderProductItem = styled.li`
   padding: 5px 0;
 `;
 
-// ... other styles
 export const FlexContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -150,6 +157,8 @@ export const OrderList = styled.ul`
   padding: 0;
 `;
 
+// Экспортируем StyledOrderList как OrderList для совместимости с существующим кодом
+export const StyledOrderList = OrderList;
 
 export const OrderDetailsContainer = styled.div`
   p {
