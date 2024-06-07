@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
@@ -6,7 +6,7 @@ import { useAuth } from '../autoeization/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 import { FlexWrapper } from '../../components/FlexWrapper';
-import TimeSlider from '../../components/dateSlider/TimeSlider';
+import DataSwitch from '../../components/dateSlider/dataSwith';
 
 export const Basket: React.FC = () => {
   const { t } = useTranslation();
@@ -98,13 +98,11 @@ export const Basket: React.FC = () => {
             <FlexWrapper justify='space-between'>
               <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
               <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
-
             </FlexWrapper>
             {error && <ErrorText>{error}</ErrorText>}
+            <DataSwitch buttonText1='Как можно скорее' buttonText2='Ко времени' isActive1={false} isActive2={false} />
           </>
         )}
-                      <TimeSlider  />
-
       </CartdiInner>
     </Container>
   );

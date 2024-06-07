@@ -2,22 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
+const SliderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  height: 100px; /* Фиксированная высота для лучшего выравнивания */
+`;
+
 const SliderContainer = styled.div`
-  width: 100%;
+  flex: 1;
   overflow: hidden;
   position: relative;
-  user-select: none;
+  display: flex;
 `;
 
 const Slider = styled(motion.div)`
-  width: 100%;
   display: flex;
-  flex-direction: row;
+  width: 100%;
   cursor: grab;
 `;
 
 const SlideButton = styled.button<{ clickable: boolean }>`
   min-width: 100%;
+  max-width: 100%; /* Фиксированная ширина */
   padding: 20px;
   box-sizing: border-box;
   background-color: #f0f0f0;
@@ -30,17 +36,12 @@ const SlideButton = styled.button<{ clickable: boolean }>`
 `;
 
 const NavigationButton = styled.button`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
   width: 40px;
-  height: 40px;
   background-color: rgba(0, 0, 0, 0.5);
   color: #fff;
   font-size: 24px;
   border: none;
   cursor: pointer;
-  z-index: 1;
   user-select: none;
 
   &:hover {
@@ -49,19 +50,19 @@ const NavigationButton = styled.button`
 `;
 
 const PrevButton = styled(NavigationButton)`
-  left: 10px;
+  margin-right: 10px;
 `;
 
 const NextButton = styled(NavigationButton)`
-  right: 10px;
+  margin-left: 10px;
 `;
 
 const TimeDropdownContainer = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 20px;
-  box-sizing: border-box;
   background-color: #f0f0f0;
 `;
 
@@ -70,6 +71,7 @@ const TimeDropdown = styled.select`
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  width: 100%; /* Фиксированная ширина */
 `;
 
 const generateTimeOptions = () => {
@@ -90,7 +92,7 @@ const TimeSlider: React.FC = () => {
   const x = useMotionValue(0);
   const width = constraintsRef.current?.offsetWidth || 350;
   const springX = useSpring(x, { stiffness: 300, damping: 30 });
-  const slides = ["Привет", "Выбери время"];
+  const slides = ["Привет", selectedTime ? `Время: ${selectedTime}` : "Выбери время"];
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: { offset: { x: number } }) => {
     const offset = info.offset.x;
@@ -101,7 +103,7 @@ const TimeSlider: React.FC = () => {
 
   useEffect(() => {
     x.set(-active * width);
-  }, [active, width, x]);
+  }, [active, width, x, selectedTime]);
 
   const updateActiveSlide = (direction: number) => {
     const newActive = (active + direction + slides.length) % slides.length;
@@ -122,34 +124,36 @@ const TimeSlider: React.FC = () => {
   };
 
   return (
-    <SliderContainer ref={constraintsRef}>
-      <Slider
-        style={{ x: springX }}
-        drag="x"
-        dragConstraints={{ left: -width * (slides.length - 1), right: 0 }}
-        onDragEnd={handleDragEnd}
-      >
-        <SlideButton clickable={false} key="greeting">
-          Привет
-        </SlideButton>
-        <TimeDropdownContainer key="select-time">
-          {selectedTime ? (
-            <span>{`Время: ${selectedTime}`}</span>
-          ) : (
-            <TimeDropdown onChange={handleTimeSelect} value={selectedTime || ''}>
-              <option value="" disabled>Выберите время</option>
-              {generateTimeOptions().map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </TimeDropdown>
-          )}
-        </TimeDropdownContainer>
-      </Slider>
+    <SliderWrapper>
       <PrevButton onClick={prevSlide}>&#10094;</PrevButton>
+      <SliderContainer ref={constraintsRef}>
+        <Slider
+          style={{ x: springX }}
+          drag="x"
+          dragConstraints={{ left: -width * (slides.length - 1), right: 0 }}
+          onDragEnd={handleDragEnd}
+        >
+          <SlideButton clickable={false} key="greeting">
+            Привет
+          </SlideButton>
+          <TimeDropdownContainer key="select-time">
+            {selectedTime ? (
+              <span>{`Время: ${selectedTime}`}</span>
+            ) : (
+              <TimeDropdown onChange={handleTimeSelect} value={selectedTime || ''}>
+                <option value="" disabled>Выберите время</option>
+                {generateTimeOptions().map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </TimeDropdown>
+            )}
+          </TimeDropdownContainer>
+        </Slider>
+      </SliderContainer>
       <NextButton onClick={nextSlide}>&#10095;</NextButton>
-    </SliderContainer>
+    </SliderWrapper>
   );
 };
 
