@@ -49,8 +49,10 @@ const AutorizationComponent: React.FC = () => {
       }
     };
 
-    socket.on('newOrder', handleNewOrder);
-    socket.on('orderUpdated', handleOrderUpdated);
+    if (user) {
+      socket.on('newOrder', handleNewOrder);
+      socket.on('orderUpdated', handleOrderUpdated);
+    }
 
     return () => {
       socket.off('newOrder', handleNewOrder);
@@ -103,6 +105,7 @@ const AutorizationComponent: React.FC = () => {
                   <p>Статус: {order.status}</p>
                   <p>Общая сумма: ${order.total}</p>
                   <p>Создан: {new Date(order.created_at).toLocaleString()}</p>
+                  <p>Время доставки: {order.delivery_time}</p>
                 </li>
               ))}
             </ul>
