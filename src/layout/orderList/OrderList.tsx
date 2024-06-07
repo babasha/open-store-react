@@ -1,4 +1,3 @@
-// src/layout/orderList/OrderList.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
@@ -20,7 +19,6 @@ import {
   OrderList as StyledOrderList
 } from '../../styles/OrderListStyles';
 
-
 interface Item {
   productId: number;
   productName: string;
@@ -33,18 +31,20 @@ export interface Order {
   first_name: string;
   last_name: string;
   address: string;
-  phone: string;  // Добавляем поле phone
+  phone: string;
   total: string;
   status: string;
   created_at: string;
   delivery_time: string;
   items: Item[];
 }
+
 const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Добавляем состояние для сортировки
 
   useEffect(() => {
     fetchOrders();
@@ -69,7 +69,7 @@ const OrderList: React.FC = () => {
       const response = await axios.get('http://localhost:3000/orders', { withCredentials: true });
       const fetchedOrders = response.data.map((order: any) => ({
         ...order,
-        delivery_time: order.delivery_time || '', // Убедитесь, что поле присутствует
+        delivery_time: order.delivery_time || '',
       }));
       setOrders(fetchedOrders);
     } catch (error: any) {
@@ -121,6 +121,16 @@ const OrderList: React.FC = () => {
     saveAs(data, 'orders.xlsx');
   };
 
+  const handleSort = () => {
+    const sortedOrders = [...orders].sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+    setOrders(sortedOrders);
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
   return (
     <Container>
       <Title>Список заказов</Title>
@@ -143,8 +153,8 @@ const OrderList: React.FC = () => {
             placeholderText="Дата окончания"
           />
         </DatePickers>
-        <SortButton onClick={() => setOrders([...orders].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()))}>
-          Сортировать по дате
+        <SortButton onClick={handleSort}>
+          Сортировать по дате {sortOrder === 'asc' ? '↑' : '↓'}
         </SortButton>
         <ExportButton onClick={exportToExcel}>Экспорт в Excel</ExportButton>
         <FilterTodayButton onClick={() => {

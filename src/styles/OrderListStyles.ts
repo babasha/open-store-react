@@ -7,12 +7,55 @@ export const Container = styled.div`
   background: #f5f5f5;
   border-radius: 10px;
 `;
-
+export const CancelButton = styled.button`
+  padding: 10px 20px;
+  border: none;
+  background-color: #d9534f;
+  color: white;
+  cursor: pointer;
+  &:hover {
+    background-color: #c9302c;
+  }
+`;
 export const Title = styled.h2`
   margin-bottom: 20px;
   text-align: center;
 `;
+export const OrderListItem = styled.div<{ isCanceled: boolean }>`
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: ${({ isCanceled }) => (isCanceled ? '#f0f0f0' : 'white')};
+`;
 
+export const StatusButton = styled.button`
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  margin-right: 10px;
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+
+
+
+
+export const OrderProductList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+`;
+
+export const OrderProductItem = styled.li`
+  border-bottom: 1px solid #ddd;
+  padding: 5px 0;
+`;
+
+// ... other styles
 export const FlexContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -107,13 +150,6 @@ export const OrderList = styled.ul`
   padding: 0;
 `;
 
-export const OrderListItem = styled.li`
-  background: #ffffff;
-  padding: 20px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-`;
 
 export const OrderDetailsContainer = styled.div`
   p {
@@ -123,20 +159,5 @@ export const OrderDetailsContainer = styled.div`
   ul {
     padding-left: 20px;
     list-style: disc;
-  }
-`;
-
-export const StatusButton = styled.button`
-  padding: 10px;
-  margin-top: 10px;
-  font-size: 14px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-  background: #7572d5;
-  color: white;
-
-  &:hover {
-    background: #5a52a4;
   }
 `;
