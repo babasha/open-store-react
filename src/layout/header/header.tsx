@@ -6,9 +6,6 @@ import { motion } from 'framer-motion';
 import Modal from '../../components/modal/modal';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
-import TextInput from '../../components/textinputs/TextInput';
-import DateSlider from '../../components/dateSlider/DateSlider';
-import TimeSlider from '../../components/dateSlider/TimeSlider';
 
 interface HeaderProps {
   activeTab?: 'products' | 'users' | 'orders';
