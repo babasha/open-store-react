@@ -1,11 +1,12 @@
 const express = require('express');
 const http = require('http');
-const pool = require('./db');
-const multer = require('multer');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const pool = require('./db'); // Подключение к базе данных
+const multer = require('multer'); // Для обработки загрузки файлов
+const bcrypt = require('bcryptjs'); // Для хеширования паролей
+const jwt = require('jsonwebtoken'); // Для создания и проверки JWT токенов
 const path = require('path');
-const { Server } = require('socket.io');
+const amqp = require('amqplib/callback_api'); // Библиотека для работы с RabbitMQ
+const { Server } = require('socket.io'); // Подключение WebSocket сервера
 
 const app = express();
 const server = http.createServer(app);
@@ -17,6 +18,7 @@ const io = new Server(server, {
   }
 });
 
+// Middleware для обработки JSON данных
 app.use(express.json());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
@@ -79,6 +81,38 @@ const isAuthenticated = (req, res, next) => {
     res.status(400).json({ message: 'Неверный токен' });
   }
 };
+
+// Добавляем обработчик для маршрута /send
+app.post('/send', (req, res) => {
+  const { message } = req.body;
+  console.log('Received message:', message);
+
+  // Подключение к RabbitMQ и отправка сообщения в очередь
+  amqp.connect('amqps://vwqkiirc:v_wOcr-d7J8f9wE2kLSdMXJa-sAmxPW0@goose.rmq2.cloudamqp.com/vwqkiirc', (error0, connection) => {
+    if (error0) {
+      throw error0;
+    }
+    connection.createChannel((error1, channel) => {
+      if (error1) {
+        throw error1;
+      }
+      const queue = 'messages';
+
+      channel.assertQueue(queue, {
+        durable: false
+      });
+
+      channel.sendToQueue(queue, Buffer.from(message));
+      console.log(" [x] Sent %s", message);
+    });
+
+    setTimeout(() => {
+      connection.close();
+    }, 500);
+  });
+
+  res.status(200).send({ status: 'Message received', message });
+});
 
 // Получение всех продуктов
 app.get('/products', async (req, res) => {
@@ -287,6 +321,7 @@ app.post('/orders', async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
 // Обновление статуса заказа
 app.put('/orders/:id/status', async (req, res) => {
   const { id } = req.params;
