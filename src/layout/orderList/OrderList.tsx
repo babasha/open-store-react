@@ -4,17 +4,10 @@ import axios from 'axios';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import socket from '../../socket';
-import OrderItem from './OrderItem';
-import FilterControls from './FilterControls';
-import Statistics from './Statistics';
-import {
-  Container,
-  Title,
-  StyledOrderList,
-  CanceledOrderList,
-  SectionTitle,
-  ToggleButton,
-} from '../../styles/OrderListStyles';
+import FilterSection from './FilterSection';
+import OrderSection from './OrderSection';
+import StatisticsSection from './StatisticsSection';
+import { Container, Title } from '../../styles/OrderListStyles';
 
 interface Item {
   productId: number;
@@ -224,7 +217,7 @@ const OrderList: React.FC = () => {
   return (
     <Container>
       <Title>Список заказов</Title>
-      <FilterControls
+      <FilterSection
         searchTerm={searchTerm}
         setSearchTerm={handleSearch}
         startDate={startDate}
@@ -238,26 +231,20 @@ const OrderList: React.FC = () => {
         exportToExcel={exportToExcel}
         filterToday={filterToday}
       />
-      <SectionTitle>Активные заказы</SectionTitle>
-      <StyledOrderList>
-        {activeOrders.map((order) => (
-          <OrderItem key={order.id} order={order} setOrders={setOrders} />
-        ))}
-      </StyledOrderList>
-      <ToggleButton onClick={() => setShowCanceledOrders(!showCanceledOrders)}>
-        {showCanceledOrders ? 'Скрыть отмененные заказы' : 'Показать отмененные заказы'}
-      </ToggleButton>
-      {showCanceledOrders && (
-        <>
-          <SectionTitle>Отмененные заказы</SectionTitle>
-          <CanceledOrderList>
-            {canceledOrders.map((order) => (
-              <OrderItem key={order.id} order={order} setOrders={setOrders} disableTimers />
-            ))}
-          </CanceledOrderList>
-        </>
-      )}
-      <Statistics
+      <OrderSection
+        title="Активные заказы"
+        orders={activeOrders}
+        setOrders={setOrders}
+      />
+      <OrderSection
+        title="Отмененные заказы"
+        orders={canceledOrders}
+        setOrders={setOrders}
+        showCanceledOrders={showCanceledOrders}
+        setShowCanceledOrders={setShowCanceledOrders}
+        disableTimers
+      />
+      <StatisticsSection
         avgPendingTime={avgPendingTime}
         hourChartData={hourChartData}
         dayChartData={dayChartData}
