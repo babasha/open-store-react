@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Container } from '../../components/Container';
 import { theme } from '../../styles/Theme';
 import { useAuth } from '../autoeization/AuthContext';
@@ -16,6 +17,10 @@ const AutorizationComponent: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState('');
+  const [displayedCanceledCount, setDisplayedCanceledCount] = useState(3);
+  const [displayedCompletedCount, setDisplayedCompletedCount] = useState(3);
+  const [isCanceledOpen, setIsCanceledOpen] = useState(false);
+  const [isCompletedOpen, setIsCompletedOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -26,6 +31,7 @@ const AutorizationComponent: React.FC = () => {
   const fetchUserOrders = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/orders/me', { withCredentials: true });
+      console.log('Fetched orders:', response.data); // Логирование данных заказов
       setOrders(response.data);
     } catch (error: any) {
       console.error('Ошибка при получении заказов пользователя:', error.message);
@@ -81,6 +87,33 @@ const AutorizationComponent: React.FC = () => {
     }
   };
 
+  const loadMoreCanceledOrders = () => {
+    setDisplayedCanceledCount(displayedCanceledCount + 10);
+  };
+
+  const loadMoreCompletedOrders = () => {
+    setDisplayedCompletedCount(displayedCompletedCount + 10);
+  };
+
+  const renderOrder = (order: Order) => (
+    <OrderCard
+      key={order.id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <p>Заказ #{order.id}</p>
+      <p>Статус: {order.status}</p>
+      <p>Общая сумма: ${order.total}</p>
+      <p>Создан: {new Date(order.created_at).toLocaleString()}</p>
+      <p>Время доставки: {order.delivery_time}</p>
+    </OrderCard>
+  );
+
+  const currentOrders = orders.filter(order => order.status === 'pending' || order.status === 'assembly');
+  const canceledOrders = orders.filter(order => order.status === 'canceled').slice(0, displayedCanceledCount);
+  const completedOrders = orders.filter(order => order.status === 'completed').slice(0, displayedCompletedCount);
+
   return (
     <Container width={'100%'}>
       <CartdiInner>
@@ -97,18 +130,72 @@ const AutorizationComponent: React.FC = () => {
                 <button onClick={() => setIsEditingAddress(false)}>Отмена</button>
               </div>
             )}
-            <h3>Ваши заказы</h3>
-            <ul>
-              {orders.map(order => (
-                <li key={order.id}>
-                  <p>Заказ #{order.id}</p>
-                  <p>Статус: {order.status}</p>
-                  <p>Общая сумма: ${order.total}</p>
-                  <p>Создан: {new Date(order.created_at).toLocaleString()}</p>
-                  <p>Время доставки: {order.delivery_time}</p>
-                </li>
-              ))}
-            </ul>
+            <h3>Ваши активные заказы</h3>
+            <OrderList>
+              {currentOrders.map(renderOrder)}
+            </OrderList>
+            <Accordion>
+              <motion.div layout>
+                <AccordionHeader
+                  onClick={() => setIsCanceledOpen(!isCanceledOpen)}
+                  aria-expanded={isCanceledOpen}
+                >
+                  Отмененные заказы
+                </AccordionHeader>
+                <AnimatePresence initial={false}>
+                  {isCanceledOpen && (
+                    <motion.div
+                      key="canceledOrders"
+                      initial="collapsed"
+                      animate="open"
+                      exit="collapsed"
+                      variants={{
+                        open: { opacity: 1, height: "auto" },
+                        collapsed: { opacity: 0, height: 0 }
+                      }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    >
+                      <OrderList>
+                        {canceledOrders.map(renderOrder)}
+                      </OrderList>
+                      {canceledOrders.length < orders.filter(order => order.status === 'canceled').length && (
+                        <LoadMoreButton onClick={loadMoreCanceledOrders}>Загрузить еще</LoadMoreButton>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+              <motion.div layout>
+                <AccordionHeader
+                  onClick={() => setIsCompletedOpen(!isCompletedOpen)}
+                  aria-expanded={isCompletedOpen}
+                >
+                  Завершенные заказы
+                </AccordionHeader>
+                <AnimatePresence initial={false}>
+                  {isCompletedOpen && (
+                    <motion.div
+                      key="completedOrders"
+                      initial="collapsed"
+                      animate="open"
+                      exit="collapsed"
+                      variants={{
+                        open: { opacity: 1, height: "auto" },
+                        collapsed: { opacity: 0, height: 0 }
+                      }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    >
+                      <OrderList>
+                        {completedOrders.map(renderOrder)}
+                      </OrderList>
+                      {completedOrders.length < orders.filter(order => order.status === 'completed').length && (
+                        <LoadMoreButton onClick={loadMoreCompletedOrders}>Загрузить еще</LoadMoreButton>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </Accordion>
           </UserDetails>
         ) : (
           <div>
@@ -165,6 +252,49 @@ const CartdiInner = styled.div`
   padding: 20px;
   border-radius: 10px;
   width: 100%;
+`;
+
+const Accordion = styled.div`
+  margin-top: 20px;
+`;
+
+const AccordionHeader = styled(motion.summary)`
+  cursor: pointer;
+  font-weight: bold;
+  padding: 10px;
+  background: #f0f0f0;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  &:hover {
+    background: #e0e0e0;
+  }
+`;
+
+const OrderList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const OrderCard = styled(motion.li)`
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const LoadMoreButton = styled.button`
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
 
 export default AutorizationComponent;
