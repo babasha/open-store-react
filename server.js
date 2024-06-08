@@ -1,10 +1,10 @@
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const pool = require('./db'); // Подключение к базе данных
 const multer = require('multer'); // Для обработки загрузки файлов
 const bcrypt = require('bcryptjs'); // Для хеширования паролей
 const jwt = require('jsonwebtoken'); // Для создания и проверки JWT токенов
-const path = require('path');
 const amqp = require('amqplib/callback_api'); // Библиотека для работы с RabbitMQ
 const { Server } = require('socket.io'); // Подключение WebSocket сервера
 const cors = require('cors');
@@ -471,6 +471,13 @@ app.get('/users', async (req, res) => {
 
 // Подключение статических файлов
 app.use('/uploads', express.static('uploads'));
+
+// Обслуживание статических файлов React
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 // Запуск сервера
 const PORT = process.env.PORT || 3000;
