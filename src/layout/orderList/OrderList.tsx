@@ -1,3 +1,4 @@
+// src/components/OrderList.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
@@ -24,7 +25,7 @@ export interface Order {
   first_name: string;
   last_name: string;
   address: string;
-  phone: string;  
+  phone: string;
   total: string;
   status: string;
   created_at: string;
@@ -66,7 +67,7 @@ const OrderList: React.FC = () => {
       const response = await axios.get('http://localhost:3000/orders', { withCredentials: true });
       const fetchedOrders = response.data.map((order: any) => ({
         ...order,
-        delivery_time: order.delivery_time || '', 
+        delivery_time: order.delivery_time || '',
       }));
       setOrders(fetchedOrders);
       calculateAvgPendingTime(fetchedOrders);
