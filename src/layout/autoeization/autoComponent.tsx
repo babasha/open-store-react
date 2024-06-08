@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Container } from '../../components/Container';
 import { theme } from '../../styles/Theme';
 import { useAuth } from '../autoeization/AuthContext';
@@ -10,6 +9,8 @@ import RegisterComponent from '../../page/register/register';
 import { Order } from '../orderList/OrderList';
 import socket from '../../socket';
 import MapPicker from '../../components/MapPicker';
+import Accordion from './Accordion';
+import OrderCard from './OrderCard';
 
 const AutorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
@@ -94,21 +95,6 @@ const AutorizationComponent: React.FC = () => {
     setDisplayedCompletedCount(displayedCompletedCount + 10);
   };
 
-  const renderOrder = (order: Order) => (
-    <OrderCard
-      key={order.id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <p>Заказ #{order.id}</p>
-      <p>Статус: {order.status}</p>
-      <p>Общая сумма: ${order.total}</p>
-      <p>Создан: {new Date(order.created_at).toLocaleString()}</p>
-      <p>Время доставки: {order.delivery_time}</p>
-    </OrderCard>
-  );
-
   const currentOrders = orders.filter(order => order.status === 'pending' || order.status === 'assembly');
   const canceledOrders = orders.filter(order => order.status === 'canceled').slice(0, displayedCanceledCount);
   const completedOrders = orders.filter(order => order.status === 'completed').slice(0, displayedCompletedCount);
@@ -131,7 +117,9 @@ const AutorizationComponent: React.FC = () => {
             )}
             <h3>Ваши активные заказы</h3>
             <OrderList>
-              {currentOrders.map(renderOrder)}
+              {currentOrders.map(order => (
+                <OrderCard key={order.id} order={order} />
+              ))}
             </OrderList>
             <Accordion
               title="Отмененные заказы"
@@ -140,7 +128,6 @@ const AutorizationComponent: React.FC = () => {
               orders={canceledOrders}
               loadMore={loadMoreCanceledOrders}
               allOrdersCount={orders.filter(order => order.status === 'canceled').length}
-              renderOrder={renderOrder}
             />
             <Accordion
               title="Завершенные заказы"
@@ -149,7 +136,6 @@ const AutorizationComponent: React.FC = () => {
               orders={completedOrders}
               loadMore={loadMoreCompletedOrders}
               allOrdersCount={orders.filter(order => order.status === 'completed').length}
-              renderOrder={renderOrder}
             />
           </UserDetails>
         ) : (
@@ -178,44 +164,6 @@ const AutorizationComponent: React.FC = () => {
     </Container>
   );
 };
-
-const Accordion: React.FC<{
-  title: string;
-  isOpen: boolean;
-  onClick: () => void;
-  orders: Order[];
-  loadMore: () => void;
-  allOrdersCount: number;
-  renderOrder: (order: Order) => JSX.Element;
-}> = ({ title, isOpen, onClick, orders, loadMore, allOrdersCount, renderOrder }) => (
-  <motion.div layout>
-    <AccordionHeader onClick={onClick} aria-expanded={isOpen}>
-      {title}
-    </AccordionHeader>
-    <AnimatePresence initial={false}>
-      {isOpen && (
-        <motion.div
-          key={title}
-          initial="collapsed"
-          animate="open"
-          exit="collapsed"
-          variants={{
-            open: { opacity: 1, height: 'auto' },
-            collapsed: { opacity: 0, height: 0 },
-          }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
-        >
-          <OrderList>
-            {orders.map(renderOrder)}
-          </OrderList>
-          {orders.length < allOrdersCount && (
-            <LoadMoreButton onClick={loadMore}>Загрузить еще</LoadMoreButton>
-          )}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </motion.div>
-);
 
 const UserDetails = styled.div`
   text-align: left;
@@ -247,43 +195,10 @@ const CartdiInner = styled.div`
   width: 100%;
 `;
 
-const AccordionHeader = styled(motion.summary)`
-  cursor: pointer;
-  font-weight: bold;
-  padding: 10px;
-  background: #f0f0f0;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  &:hover {
-    background: #e0e0e0;
-  }
-`;
-
 const OrderList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
-`;
-
-const OrderCard = styled(motion.li)`
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const LoadMoreButton = styled.button`
-  padding: 10px;
-  margin-top: 10px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  &:hover {
-    background-color: #0056b3;
-  }
 `;
 
 export default AutorizationComponent;
