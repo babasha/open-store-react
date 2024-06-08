@@ -170,3 +170,26 @@ export const OrderDetailsContainer = styled.div`
     list-style: disc;
   }
 `;
+// src/styles/OrderListStyles.ts
+
+
+export const CanceledOrderList = styled.div`
+  margin-bottom: 20px;
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 5px;
+`;
+
+
+export const ToggleButton = styled.button`
+  margin: 10px 0;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+`;
+
+export const DisabledCancelButton = styled(CancelButton)`
+  cursor: not-allowed;
+  background-color: #e0e0e0;
+  color: #888;
+`;

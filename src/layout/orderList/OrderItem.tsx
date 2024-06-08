@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { OrderListItem, StatusButton, CancelButton } from '../../styles/OrderListStyles'; // Assuming CancelButton style is defined
+import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton } from '../../styles/OrderListStyles';
 import OrderDetails from './OrderDetails';
 
 interface Item {
@@ -27,14 +27,17 @@ interface Order {
 interface Props {
   order: Order;
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+  disableTimers?: boolean;
 }
 
-const OrderItem: React.FC<Props> = ({ order, setOrders }) => {
+const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
   const [timeSinceCreation, setTimeSinceCreation] = useState<string>('');
   const [timeUntilDelivery, setTimeUntilDelivery] = useState<string>('');
   const [timeInCurrentStatus, setTimeInCurrentStatus] = useState<string>('');
 
   useEffect(() => {
+    if (disableTimers) return;
+
     const calculateTimes = () => {
       const createdAt = new Date(order.created_at);
       const now = new Date();
@@ -80,7 +83,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders }) => {
     const intervalId = setInterval(calculateTimes, 1000);
 
     return () => clearInterval(intervalId);
-  }, [order]);
+  }, [order, disableTimers]);
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
@@ -121,13 +124,21 @@ const OrderItem: React.FC<Props> = ({ order, setOrders }) => {
         <p>Итог: ${order.total}</p>
         <p>Статус: {order.status}</p>
         <p>Время доставки: {order.delivery_time}</p>
-        <p>Время с момента создания: {timeSinceCreation}</p>
-        <p>Время до доставки: {timeUntilDelivery}</p>
-        <p>Время в текущем статусе: {timeInCurrentStatus}</p>
+        {!disableTimers && (
+          <>
+            <p>Время с момента создания: {timeSinceCreation}</p>
+            <p>Время до доставки: {timeUntilDelivery}</p>
+            <p>Время в текущем статусе: {timeInCurrentStatus}</p>
+          </>
+        )}
         <StatusButton onClick={() => handleStatusChange(order.id, order.status === 'pending' ? 'assembly' : 'pending')}>
           {order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
         </StatusButton>
-        <CancelButton onClick={() => handleCancelOrder(order.id)}>Отменить</CancelButton>
+        {order.status === 'canceled' ? (
+          <DisabledCancelButton disabled>Отменить</DisabledCancelButton>
+        ) : (
+          <CancelButton onClick={() => handleCancelOrder(order.id)}>Отменить</CancelButton>
+        )}
         <OrderDetails items={order.items} createdAt={order.created_at} />
       </div>
     </OrderListItem>

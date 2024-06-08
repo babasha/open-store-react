@@ -11,6 +11,9 @@ import {
   Container,
   Title,
   StyledOrderList,
+  CanceledOrderList,
+  SectionTitle,
+  ToggleButton,
 } from '../../styles/OrderListStyles';
 
 interface Item {
@@ -43,6 +46,7 @@ const OrderList: React.FC = () => {
   const [deliverySortOrder, setDeliverySortOrder] = useState<'asc' | 'desc'>('desc');
   const [avgPendingTime, setAvgPendingTime] = useState<string>('');
   const [orderStatistics, setOrderStatistics] = useState<{ hours: number[], days: number[] }>({ hours: [], days: [] });
+  const [showCanceledOrders, setShowCanceledOrders] = useState<boolean>(false);
 
   useEffect(() => {
     fetchOrders();
@@ -214,6 +218,9 @@ const OrderList: React.FC = () => {
     setEndDate(new Date(today.setHours(23, 59, 59, 999)));
   };
 
+  const activeOrders = filterOrders().filter(order => order.status !== 'canceled');
+  const canceledOrders = filterOrders().filter(order => order.status === 'canceled');
+
   return (
     <Container>
       <Title>Список заказов</Title>
@@ -231,11 +238,25 @@ const OrderList: React.FC = () => {
         exportToExcel={exportToExcel}
         filterToday={filterToday}
       />
+      <SectionTitle>Активные заказы</SectionTitle>
       <StyledOrderList>
-        {filterOrders().map((order) => (
+        {activeOrders.map((order) => (
           <OrderItem key={order.id} order={order} setOrders={setOrders} />
         ))}
       </StyledOrderList>
+      <ToggleButton onClick={() => setShowCanceledOrders(!showCanceledOrders)}>
+        {showCanceledOrders ? 'Скрыть отмененные заказы' : 'Показать отмененные заказы'}
+      </ToggleButton>
+      {showCanceledOrders && (
+        <>
+          <SectionTitle>Отмененные заказы</SectionTitle>
+          <CanceledOrderList>
+            {canceledOrders.map((order) => (
+              <OrderItem key={order.id} order={order} setOrders={setOrders} disableTimers />
+            ))}
+          </CanceledOrderList>
+        </>
+      )}
       <Statistics
         avgPendingTime={avgPendingTime}
         hourChartData={hourChartData}
