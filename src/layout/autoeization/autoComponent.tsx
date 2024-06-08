@@ -31,7 +31,7 @@ const AutorizationComponent: React.FC = () => {
   const fetchUserOrders = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/orders/me', { withCredentials: true });
-      console.log('Fetched orders:', response.data); // Логирование данных заказов
+      console.log('Fetched orders:', response.data);
       setOrders(response.data);
     } catch (error: any) {
       console.error('Ошибка при получении заказов пользователя:', error.message);
@@ -78,7 +78,6 @@ const AutorizationComponent: React.FC = () => {
           { address: newAddress },
           { withCredentials: true }
         );
-        // Обновляем данные пользователя в контексте
         login(response.data, localStorage.getItem('token') || '');
         setIsEditingAddress(false);
       } catch (error: any) {
@@ -134,68 +133,24 @@ const AutorizationComponent: React.FC = () => {
             <OrderList>
               {currentOrders.map(renderOrder)}
             </OrderList>
-            <Accordion>
-              <motion.div layout>
-                <AccordionHeader
-                  onClick={() => setIsCanceledOpen(!isCanceledOpen)}
-                  aria-expanded={isCanceledOpen}
-                >
-                  Отмененные заказы
-                </AccordionHeader>
-                <AnimatePresence initial={false}>
-                  {isCanceledOpen && (
-                    <motion.div
-                      key="canceledOrders"
-                      initial="collapsed"
-                      animate="open"
-                      exit="collapsed"
-                      variants={{
-                        open: { opacity: 1, height: "auto" },
-                        collapsed: { opacity: 0, height: 0 }
-                      }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                    >
-                      <OrderList>
-                        {canceledOrders.map(renderOrder)}
-                      </OrderList>
-                      {canceledOrders.length < orders.filter(order => order.status === 'canceled').length && (
-                        <LoadMoreButton onClick={loadMoreCanceledOrders}>Загрузить еще</LoadMoreButton>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-              <motion.div layout>
-                <AccordionHeader
-                  onClick={() => setIsCompletedOpen(!isCompletedOpen)}
-                  aria-expanded={isCompletedOpen}
-                >
-                  Завершенные заказы
-                </AccordionHeader>
-                <AnimatePresence initial={false}>
-                  {isCompletedOpen && (
-                    <motion.div
-                      key="completedOrders"
-                      initial="collapsed"
-                      animate="open"
-                      exit="collapsed"
-                      variants={{
-                        open: { opacity: 1, height: "auto" },
-                        collapsed: { opacity: 0, height: 0 }
-                      }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                    >
-                      <OrderList>
-                        {completedOrders.map(renderOrder)}
-                      </OrderList>
-                      {completedOrders.length < orders.filter(order => order.status === 'completed').length && (
-                        <LoadMoreButton onClick={loadMoreCompletedOrders}>Загрузить еще</LoadMoreButton>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </Accordion>
+            <Accordion
+              title="Отмененные заказы"
+              isOpen={isCanceledOpen}
+              onClick={() => setIsCanceledOpen(!isCanceledOpen)}
+              orders={canceledOrders}
+              loadMore={loadMoreCanceledOrders}
+              allOrdersCount={orders.filter(order => order.status === 'canceled').length}
+              renderOrder={renderOrder}
+            />
+            <Accordion
+              title="Завершенные заказы"
+              isOpen={isCompletedOpen}
+              onClick={() => setIsCompletedOpen(!isCompletedOpen)}
+              orders={completedOrders}
+              loadMore={loadMoreCompletedOrders}
+              allOrdersCount={orders.filter(order => order.status === 'completed').length}
+              renderOrder={renderOrder}
+            />
           </UserDetails>
         ) : (
           <div>
@@ -223,6 +178,44 @@ const AutorizationComponent: React.FC = () => {
     </Container>
   );
 };
+
+const Accordion: React.FC<{
+  title: string;
+  isOpen: boolean;
+  onClick: () => void;
+  orders: Order[];
+  loadMore: () => void;
+  allOrdersCount: number;
+  renderOrder: (order: Order) => JSX.Element;
+}> = ({ title, isOpen, onClick, orders, loadMore, allOrdersCount, renderOrder }) => (
+  <motion.div layout>
+    <AccordionHeader onClick={onClick} aria-expanded={isOpen}>
+      {title}
+    </AccordionHeader>
+    <AnimatePresence initial={false}>
+      {isOpen && (
+        <motion.div
+          key={title}
+          initial="collapsed"
+          animate="open"
+          exit="collapsed"
+          variants={{
+            open: { opacity: 1, height: 'auto' },
+            collapsed: { opacity: 0, height: 0 },
+          }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+        >
+          <OrderList>
+            {orders.map(renderOrder)}
+          </OrderList>
+          {orders.length < allOrdersCount && (
+            <LoadMoreButton onClick={loadMore}>Загрузить еще</LoadMoreButton>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </motion.div>
+);
 
 const UserDetails = styled.div`
   text-align: left;
@@ -252,10 +245,6 @@ const CartdiInner = styled.div`
   padding: 20px;
   border-radius: 10px;
   width: 100%;
-`;
-
-const Accordion = styled.div`
-  margin-top: 20px;
 `;
 
 const AccordionHeader = styled(motion.summary)`
