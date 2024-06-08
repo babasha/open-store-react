@@ -7,12 +7,13 @@ const jwt = require('jsonwebtoken'); // Для создания и провер�
 const path = require('path');
 const amqp = require('amqplib/callback_api'); // Библиотека для работы с RabbitMQ
 const { Server } = require('socket.io'); // Подключение WebSocket сервера
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3001",
+    origin: process.env.FRONTEND_URL || "http://localhost:3001",
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -20,13 +21,12 @@ const io = new Server(server, {
 
 // Middleware для обработки JSON данных
 app.use(express.json());
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  next();
-});
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:3001",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+}));
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -52,7 +52,7 @@ const isAdmin = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
     req.user = decoded;
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Доступ запрещен.' });
@@ -73,7 +73,7 @@ const isAuthenticated = (req, res, next) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
     req.user = decoded;
     next();
   } catch (error) {
@@ -88,7 +88,7 @@ app.post('/send', (req, res) => {
   console.log('Received message:', message);
 
   // Подключение к RabbitMQ и отправка сообщения в очередь
-  amqp.connect('amqps://vwqkiirc:v_wOcr-d7J8f9wE2kLSdMXJa-sAmxPW0@goose.rmq2.cloudamqp.com/vwqkiirc', (error0, connection) => {
+  amqp.connect(process.env.RABBITMQ_URL, (error0, connection) => {
     if (error0) {
       throw error0;
     }
@@ -235,7 +235,7 @@ app.post('/auth/login', async (req, res) => {
       return res.status(400).json({ message: 'Неверные учетные данные' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, 'secret_key', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1h' });
     res.json({ token, user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email, address: user.address, phone: user.phone, role: user.role } });
   } catch (err) {
     console.error('Ошибка входа пользователя:', err.message);
@@ -473,7 +473,7 @@ app.get('/users', async (req, res) => {
 app.use('/uploads', express.static('uploads'));
 
 // Запуск сервера
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Сервер работает на порту ${PORT}`);
 });
