@@ -1,10 +1,10 @@
 import React from 'react';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css'; // импорт стилей
 import {
   FlexContainer,
   SearchInput,
   DatePickers,
-  StyledDatePicker,
   SortButton,
   ExportButton,
   FilterTodayButton,
@@ -48,12 +48,12 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         onChange={(e) => setSearchTerm(e.target.value)}
       />
       <DatePickers>
-        <StyledDatePicker
+        <DatePicker
           selected={startDate}
           onChange={(date: Date | null) => setStartDate(date)}
           placeholderText="Дата начала"
         />
-        <StyledDatePicker
+        <DatePicker
           selected={endDate}
           onChange={(date: Date | null) => setEndDate(date)}
           placeholderText="Дата окончания"
