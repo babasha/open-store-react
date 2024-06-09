@@ -287,6 +287,7 @@ app.post('/orders', async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
 // Обновление статуса заказа
 app.put('/orders/:id/status', async (req, res) => {
   const { id } = req.params;
@@ -344,6 +345,26 @@ app.put('/orders/:id/status', async (req, res) => {
     res.status(200).json(updatedOrder);
   } catch (error) {
     console.error('Ошибка при обновлении статуса заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Обновление количества товаров в заказе
+app.put('/orders/:id/items', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  const { items } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET items = $1 WHERE id = $2 RETURNING *',
+      [JSON.stringify(items), id]
+    );
+
+    const updatedOrder = result.rows[0];
+    io.emit('orderUpdated', updatedOrder); // Emit event to clients
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    console.error('Ошибка при обновлении количества товаров:', error.message);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });

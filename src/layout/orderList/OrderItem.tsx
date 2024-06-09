@@ -31,6 +31,12 @@ interface Props {
 }
 
 const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
+  const [localOrder, setLocalOrder] = useState<Order>(order);
+
+  useEffect(() => {
+    setLocalOrder(order);
+  }, [order]);
+
   const [timeSinceCreation, setTimeSinceCreation] = useState<string>('');
   const [timeUntilDelivery, setTimeUntilDelivery] = useState<string>('');
   const [timeInCurrentStatus, setTimeInCurrentStatus] = useState<string>('');
@@ -113,6 +119,25 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
     }
   };
 
+  const handleConfirmChange = async (productId: number, newQuantity: number) => {
+    try {
+      const updatedItems = localOrder.items.map(item =>
+        item.productId === productId ? { ...item, quantity: newQuantity } : item
+      );
+      const updatedOrder = { ...localOrder, items: updatedItems };
+      setLocalOrder(updatedOrder);
+
+      await axios.put(`http://localhost:3000/orders/${order.id}/items`, { items: updatedItems }, { withCredentials: true });
+      setOrders((prevOrders) =>
+        prevOrders.map((ord) =>
+          ord.id === order.id ? { ...ord, items: updatedItems } : ord
+        )
+      );
+    } catch (error: any) {
+      console.error('Ошибка при изменении количества продукта:', error.message);
+    }
+  };
+
   return (
     <OrderListItem isCanceled={order.status === 'canceled'}>
       <div>
@@ -139,7 +164,12 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
         ) : (
           <CancelButton onClick={() => handleCancelOrder(order.id)}>Отменить</CancelButton>
         )}
-        <OrderDetails items={order.items} createdAt={order.created_at} />
+        <OrderDetails 
+          items={localOrder.items} 
+          createdAt={order.created_at} 
+          handleQuantityChange={() => {}} 
+          handleConfirmChange={handleConfirmChange} 
+        />
       </div>
     </OrderListItem>
   );
