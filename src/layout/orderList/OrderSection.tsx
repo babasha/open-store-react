@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+// src/layout/orderList/OrderSection.tsx
+
+import React from 'react';
+import { Order } from './OrderList'; // Убедитесь, что импортируется правильный тип
 import OrderItem from './OrderItem';
 import { StyledOrderList, CanceledOrderList, SectionTitle, ToggleButton } from '../../styles/OrderListStyles';
-import { Order } from './OrderList';
 
 interface OrderSectionProps {
   title: string;
@@ -12,7 +14,14 @@ interface OrderSectionProps {
   disableTimers?: boolean;
 }
 
-const OrderSection: React.FC<OrderSectionProps> = ({ title, orders, setOrders, showCanceledOrders, setShowCanceledOrders, disableTimers }) => {
+const OrderSection: React.FC<OrderSectionProps> = ({
+  title,
+  orders,
+  setOrders,
+  showCanceledOrders,
+  setShowCanceledOrders,
+  disableTimers
+}) => {
   return (
     <div>
       <SectionTitle>{title}</SectionTitle>
@@ -24,7 +33,12 @@ const OrderSection: React.FC<OrderSectionProps> = ({ title, orders, setOrders, s
           {showCanceledOrders && (
             <CanceledOrderList>
               {orders.map((order) => (
-                <OrderItem key={order.id} order={order} setOrders={setOrders} disableTimers={disableTimers} />
+                <OrderItem
+                  key={order.id}
+                  order={order}
+                  setOrders={setOrders}
+                  disableTimers={disableTimers}
+                />
               ))}
             </CanceledOrderList>
           )}

@@ -1,28 +1,10 @@
+// src/layout/orderList/OrderItem.tsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton } from '../../styles/OrderListStyles';
 import OrderDetails from './OrderDetails';
-
-interface Item {
-  productId: number;
-  productName: string;
-  quantity: number;
-}
-
-interface Order {
-  id: number;
-  user_id: number;
-  first_name: string;
-  last_name: string;
-  address: string;
-  phone: string;
-  total: string;
-  status: string;
-  created_at: string;
-  delivery_time: string;
-  status_changed_at?: string;
-  items: Item[];
-}
+import { Order, Item } from './OrderList'; // Убедитесь, что импортируется правильный тип
 
 interface Props {
   order: Order;
@@ -31,10 +13,22 @@ interface Props {
 }
 
 const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
-  const [localOrder, setLocalOrder] = useState<Order>(order);
+  const [localOrder, setLocalOrder] = useState<Order>({
+    ...order,
+    items: order.items.map(item => ({
+      ...item,
+      ready: item.ready ?? false // Установка значения по умолчанию
+    }))
+  });
 
   useEffect(() => {
-    setLocalOrder(order);
+    setLocalOrder({
+      ...order,
+      items: order.items.map(item => ({
+        ...item,
+        ready: item.ready ?? false // Установка значения по умолчанию
+      }))
+    });
   }, [order]);
 
   const [timeSinceCreation, setTimeSinceCreation] = useState<string>('');
@@ -119,24 +113,50 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
     }
   };
 
+  const handleQuantityChange = (productId: number, newQuantity: number) => {
+    const updatedItems = localOrder.items.map(item =>
+      item.productId === productId ? { ...item, quantity: newQuantity } : item
+    );
+    setLocalOrder({ ...localOrder, items: updatedItems });
+  };
+
   const handleConfirmChange = async (productId: number, newQuantity: number) => {
     try {
       const updatedItems = localOrder.items.map(item =>
         item.productId === productId ? { ...item, quantity: newQuantity } : item
       );
       const updatedOrder = { ...localOrder, items: updatedItems };
-      setLocalOrder(updatedOrder);
+
+      // Убедитесь, что данные о пользователе не пропадают
+      const orderWithUserData = {
+        ...updatedOrder,
+        first_name: order.first_name,
+        last_name: order.last_name,
+        address: order.address,
+        phone: order.phone
+      };
+
+      setLocalOrder(orderWithUserData);
 
       await axios.put(`http://localhost:3000/orders/${order.id}/items`, { items: updatedItems }, { withCredentials: true });
       setOrders((prevOrders) =>
         prevOrders.map((ord) =>
-          ord.id === order.id ? { ...ord, items: updatedItems } : ord
+          ord.id === order.id ? orderWithUserData : ord
         )
       );
     } catch (error: any) {
       console.error('Ошибка при изменении количества продукта:', error.message);
     }
   };
+
+  const handleReadyChange = (productId: number, ready: boolean) => {
+    const updatedItems = localOrder.items.map(item =>
+      item.productId === productId ? { ...item, ready } : item
+    );
+    setLocalOrder({ ...localOrder, items: updatedItems });
+  };
+
+  const allItemsReady = localOrder.items.every(item => item.ready);
 
   return (
     <OrderListItem isCanceled={order.status === 'canceled'}>
@@ -156,8 +176,8 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
             <p>Время в текущем статусе: {timeInCurrentStatus}</p>
           </>
         )}
-        <StatusButton onClick={() => handleStatusChange(order.id, order.status === 'pending' ? 'assembly' : 'pending')}>
-          {order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
+        <StatusButton onClick={() => handleStatusChange(order.id, allItemsReady ? 'ready_for_delivery' : order.status === 'pending' ? 'assembly' : 'pending')}>
+          {allItemsReady ? 'Готово к передаче курьеру' : order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
         </StatusButton>
         {order.status === 'canceled' ? (
           <DisabledCancelButton disabled>Отменить</DisabledCancelButton>
@@ -167,8 +187,10 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
         <OrderDetails 
           items={localOrder.items} 
           createdAt={order.created_at} 
-          handleQuantityChange={() => {}} 
+          handleQuantityChange={handleQuantityChange} 
           handleConfirmChange={handleConfirmChange} 
+          handleReadyChange={handleReadyChange}
+          showCheckboxes={order.status === 'assembly'}
         />
       </div>
     </OrderListItem>
