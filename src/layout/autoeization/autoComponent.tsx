@@ -32,8 +32,30 @@ const AutorizationComponent: React.FC = () => {
   const fetchUserOrders = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/orders/me', { withCredentials: true });
-      console.log('Fetched orders:', response.data);
-      setOrders(response.data);
+      const ordersData: Order[] = response.data;
+
+      // Получение данных о продуктах, чтобы включить их названия в заказы
+      const productIds = ordersData.flatMap((order: Order) => order.items.map(item => item.productId));
+      const uniqueProductIds = Array.from(new Set(productIds));
+      const productsResponse = await axios.get('http://localhost:3000/products', { withCredentials: true });
+      const products = productsResponse.data;
+
+      // Создание словаря для быстрого поиска по productId
+      const productsMap = products.reduce((map: Record<number, any>, product: any) => {
+        map[product.id] = product;
+        return map;
+      }, {});
+
+      // Включение названий продуктов в заказы
+      const ordersWithProductNames = ordersData.map((order: Order) => ({
+        ...order,
+        items: order.items.map(item => ({
+          ...item,
+          productName: productsMap[item.productId]?.name?.ru || 'Неизвестный продукт'
+        }))
+      }));
+
+      setOrders(ordersWithProductNames);
     } catch (error: any) {
       console.error('Ошибка при получении заказов пользователя:', error.message);
     }

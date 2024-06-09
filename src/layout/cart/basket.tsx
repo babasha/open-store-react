@@ -33,7 +33,7 @@ export const Basket: React.FC = () => {
       setError('Вы не авторизованы');
       return;
     }
-  
+
     const orderData = {
       userId: user.id,
       items: cartItems.map(item => ({
@@ -43,7 +43,7 @@ export const Basket: React.FC = () => {
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
     };
-  
+
     try {
       const response = await fetch('http://localhost:3000/orders', {
         method: 'POST',
@@ -53,19 +53,19 @@ export const Basket: React.FC = () => {
         },
         body: JSON.stringify(orderData),
       });
-  
+
       if (!response.ok) {
         throw new Error('Ошибка при оформлении заказа');
       }
-  
+
       clearCart();
+      setSelectedDelivery(null); // Сброс выбранного времени доставки
       alert('Заказ успешно оформлен');
     } catch (error) {
       setError('Ошибка при оформлении заказа');
     }
   };
-  
-  
+
   return (
     <Container width={'100%'}>
       <CartdiInner>
