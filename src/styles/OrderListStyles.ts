@@ -160,17 +160,47 @@ export const OrderList = styled.ul`
 // Экспортируем StyledOrderList как OrderList для совместимости с существующим кодом
 export const StyledOrderList = OrderList;
 
+
+
+
 export const OrderDetailsContainer = styled.div`
-  p {
-    margin: 5px 0;
+  .order-header,
+  .order-user-info,
+  .order-summary,
+  .order-timers,
+  .order-actions {
+    margin-bottom: 12px;
   }
 
-  ul {
-    padding-left: 20px;
-    list-style: disc;
+  p {
+    margin: 4px 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  strong {
+    font-weight: bold;
+  }
+
+  .order-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 8px;
   }
 `;
-// src/styles/OrderListStyles.ts
+
+
+
+// export const OrderDetailsContainer = styled.div`
+//   p {
+//     margin: 5px 0;
+//   }
+
+//   ul {
+//     padding-left: 20px;
+//     list-style: disc;
+//   }
+// `;
 
 
 export const CanceledOrderList = styled.div`
@@ -193,3 +223,24 @@ export const DisabledCancelButton = styled(CancelButton)`
   background-color: #e0e0e0;
   color: #888;
 `;
+/* src/styles/OrderListStyles.js */
+
+
+
+// export const OrderListItem = styled.div`
+//   background-color: #fff;
+//   border: 1px solid #ddd;
+//   border-radius: 8px;
+//   margin-bottom: 16px;
+//   padding: 16px;
+//   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//   transition: box-shadow 0.3s;
+
+//   &:hover {
+//     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+//   }
+
+//   &.isCanceled {
+//     opacity: 0.6;
+//   }
+// `;

@@ -1,10 +1,10 @@
 // src/layout/orderList/OrderItem.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton } from '../../styles/OrderListStyles';
+import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton, OrderDetailsContainer } from '../../styles/OrderListStyles';
 import OrderDetails from './OrderDetails';
-import { Order, Item } from './OrderList'; // Убедитесь, что импортируется правильный тип
+import { Order } from './OrderList'; // Убедитесь, что импортируется правильный тип
 
 interface Props {
   order: Order;
@@ -35,35 +35,39 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
   const [timeUntilDelivery, setTimeUntilDelivery] = useState<string>('');
   const [timeInCurrentStatus, setTimeInCurrentStatus] = useState<string>('');
 
+  const formatDuration = useCallback((ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }, []);
+
   useEffect(() => {
     if (disableTimers) return;
 
+    const createdAt = new Date(order.created_at);
+    const statusChangedAt = new Date(order.status_changed_at || order.created_at);
+    
     const calculateTimes = () => {
-      const createdAt = new Date(order.created_at);
       const now = new Date();
-
-      let deliveryTime;
+      
+      let deliveryTime = new Date();
       if (order.delivery_time) {
         const [day, time] = order.delivery_time.split(', ');
         const [hours, minutes] = time.split(':').map(Number);
-        deliveryTime = new Date();
 
-        if (day === 'Сегодня') {
-          // Ничего не делаем, дата остается сегодняшней
-        } else if (day === 'Завтра') {
+        if (day === 'Завтра') {
           deliveryTime.setDate(deliveryTime.getDate() + 1);
         }
-
+        
         deliveryTime.setHours(hours);
         deliveryTime.setMinutes(minutes);
         deliveryTime.setSeconds(0);
-      } else {
-        deliveryTime = new Date(); // По умолчанию устанавливаем текущую дату
       }
 
       const timeSinceCreationMs = now.getTime() - createdAt.getTime();
       const timeUntilDeliveryMs = deliveryTime.getTime() - now.getTime();
-      const statusChangedAt = new Date(order.status_changed_at || order.created_at);
       const timeInCurrentStatusMs = now.getTime() - statusChangedAt.getTime();
 
       setTimeSinceCreation(formatDuration(timeSinceCreationMs));
@@ -71,19 +75,11 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
       setTimeInCurrentStatus(formatDuration(timeInCurrentStatusMs));
     };
 
-    const formatDuration = (ms: number) => {
-      const totalSeconds = Math.floor(ms / 1000);
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      return `${hours}h ${minutes}m ${seconds}s`;
-    };
-
     calculateTimes();
     const intervalId = setInterval(calculateTimes, 1000);
 
     return () => clearInterval(intervalId);
-  }, [order, disableTimers]);
+  }, [order, disableTimers, formatDuration]);
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
@@ -160,30 +156,38 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
 
   return (
     <OrderListItem isCanceled={order.status === 'canceled'}>
-      <div>
-        <p>Идентификатор заказа: {order.id}</p>
-        <p>Идентификатор пользователя: {order.user_id}</p>
-        <p>Пользователь: {order.first_name} {order.last_name}</p>
-        <p>Адрес: {order.address}</p>
-        <p>Телефон: <a href={`tel:${order.phone}`}><strong>{order.phone}</strong></a></p>
-        <p>Итог: ${order.total}</p>
-        <p>Статус: {order.status}</p>
-        <p>Время доставки: {order.delivery_time}</p>
+      <OrderDetailsContainer>
+        <div className="order-header">
+          <p>Идентификатор заказа: <strong>{order.id}</strong></p>
+          <p>Идентификатор пользователя: <strong>{order.user_id}</strong></p>
+        </div>
+        <div className="order-user-info">
+          <p>Пользователь: <strong>{order.first_name} {order.last_name}</strong></p>
+          <p>Адрес: <strong>{order.address}</strong></p>
+          <p>Телефон: <a href={`tel:${order.phone}`}><strong>{order.phone}</strong></a></p>
+        </div>
+        <div className="order-summary">
+          <p>Итог: <strong>${order.total}</strong></p>
+          <p>Статус: <strong>{order.status}</strong></p>
+          <p>Время доставки: <strong>{order.delivery_time}</strong></p>
+        </div>
         {!disableTimers && (
-          <>
-            <p>Время с момента создания: {timeSinceCreation}</p>
-            <p>Время до доставки: {timeUntilDelivery}</p>
-            <p>Время в текущем статусе: {timeInCurrentStatus}</p>
-          </>
+          <div className="order-timers">
+            <p>Время с момента создания: <strong>{timeSinceCreation}</strong></p>
+            <p>Время до доставки: <strong>{timeUntilDelivery}</strong></p>
+            <p>Время в текущем статусе: <strong>{timeInCurrentStatus}</strong></p>
+          </div>
         )}
-        <StatusButton onClick={() => handleStatusChange(order.id, allItemsReady ? 'ready_for_delivery' : order.status === 'pending' ? 'assembly' : 'pending')}>
-          {allItemsReady ? 'Готово к передаче курьеру' : order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
-        </StatusButton>
-        {order.status === 'canceled' ? (
-          <DisabledCancelButton disabled>Отменить</DisabledCancelButton>
-        ) : (
-          <CancelButton onClick={() => handleCancelOrder(order.id)}>Отменить</CancelButton>
-        )}
+        <div className="order-actions">
+          <StatusButton onClick={() => handleStatusChange(order.id, allItemsReady ? 'ready_for_delivery' : order.status === 'pending' ? 'assembly' : 'pending')}>
+            {allItemsReady ? 'Готово к передаче курьеру' : order.status === 'pending' ? 'Начать сборку' : 'Вернуться к состоянию ожидания'}
+          </StatusButton>
+          {order.status === 'canceled' ? (
+            <DisabledCancelButton disabled>Отменить</DisabledCancelButton>
+          ) : (
+            <CancelButton onClick={() => handleCancelOrder(order.id)}>Отменить</CancelButton>
+          )}
+        </div>
         <OrderDetails 
           items={localOrder.items} 
           createdAt={order.created_at} 
@@ -192,7 +196,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
           handleReadyChange={handleReadyChange}
           showCheckboxes={order.status === 'assembly'}
         />
-      </div>
+      </OrderDetailsContainer>
     </OrderListItem>
   );
 };

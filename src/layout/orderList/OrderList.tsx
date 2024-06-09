@@ -1,5 +1,4 @@
-// src/components/OrderList.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
@@ -44,23 +43,15 @@ const OrderList: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
-    socket.on('newOrder', (newOrder: Order) => {
-      setOrders((prevOrders) => [...prevOrders, newOrder]);
-    });
-    socket.on('orderUpdated', (updatedOrder: Order) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === updatedOrder.id ? updatedOrder : order
-        )
-      );
-    });
+    socket.on('newOrder', handleNewOrder);
+    socket.on('orderUpdated', handleOrderUpdated);
     return () => {
-      socket.off('newOrder');
-      socket.off('orderUpdated');
+      socket.off('newOrder', handleNewOrder);
+      socket.off('orderUpdated', handleOrderUpdated);
     };
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:3000/orders', { withCredentials: true });
       const fetchedOrders = response.data.map((order: any) => ({
@@ -73,13 +64,25 @@ const OrderList: React.FC = () => {
     } catch (error: any) {
       console.error('Ошибка при получении заказов:', error.message);
     }
-  };
+  }, []);
 
-  const handleSearch = (term: string) => {
+  const handleNewOrder = useCallback((newOrder: Order) => {
+    setOrders((prevOrders) => [...prevOrders, newOrder]);
+  }, []);
+
+  const handleOrderUpdated = useCallback((updatedOrder: Order) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === updatedOrder.id ? updatedOrder : order
+      )
+    );
+  }, []);
+
+  const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
-  };
+  }, []);
 
-  const filterOrders = () => {
+  const filterOrders = useMemo(() => {
     let filteredOrders = orders.filter((order) => {
       const firstName = order.first_name || '';
       const lastName = order.last_name || '';
@@ -107,10 +110,10 @@ const OrderList: React.FC = () => {
     }
 
     return filteredOrders;
-  };
+  }, [orders, searchTerm, startDate, endDate]);
 
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filterOrders());
+  const exportToExcel = useCallback(() => {
+    const worksheet = XLSX.utils.json_to_sheet(filterOrders);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
     const excelBuffer = XLSX.write(workbook, {
@@ -119,9 +122,9 @@ const OrderList: React.FC = () => {
     });
     const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(data, 'orders.xlsx');
-  };
+  }, [filterOrders]);
 
-  const handleSort = () => {
+  const handleSort = useCallback(() => {
     const sortedOrders = [...orders].sort((a, b) => {
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
@@ -129,9 +132,9 @@ const OrderList: React.FC = () => {
     });
     setOrders(sortedOrders);
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-  };
+  }, [orders, sortOrder]);
 
-  const parseDeliveryTime = (deliveryTime: string): Date => {
+  const parseDeliveryTime = useCallback((deliveryTime: string): Date => {
     const [day, time] = deliveryTime.split(', ');
     const [hours, minutes] = time.split(':').map(Number);
     const deliveryDate = new Date();
@@ -146,9 +149,9 @@ const OrderList: React.FC = () => {
     deliveryDate.setMinutes(minutes);
     deliveryDate.setSeconds(0);
     return deliveryDate;
-  };
+  }, []);
 
-  const handleDeliverySort = () => {
+  const handleDeliverySort = useCallback(() => {
     const sortedOrders = [...orders].sort((a, b) => {
       const deliveryA = a.delivery_time ? parseDeliveryTime(a.delivery_time).getTime() : 0;
       const deliveryB = b.delivery_time ? parseDeliveryTime(b.delivery_time).getTime() : 0;
@@ -156,9 +159,9 @@ const OrderList: React.FC = () => {
     });
     setOrders(sortedOrders);
     setDeliverySortOrder(deliverySortOrder === 'asc' ? 'desc' : 'asc');
-  };
+  }, [orders, deliverySortOrder, parseDeliveryTime]);
 
-  const calculateAvgPendingTime = (orders: Order[]) => {
+  const calculateAvgPendingTime = useCallback((orders: Order[]) => {
     const pendingOrders = orders.filter(order => order.status === 'pending');
     if (pendingOrders.length === 0) {
       setAvgPendingTime('N/A');
@@ -173,17 +176,17 @@ const OrderList: React.FC = () => {
 
     const avgPendingTimeMs = totalPendingTime / pendingOrders.length;
     setAvgPendingTime(formatDuration(avgPendingTimeMs));
-  };
+  }, []);
 
-  const formatDuration = (ms: number) => {
+  const formatDuration = useCallback((ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     return `${hours}h ${minutes}m ${seconds}s`;
-  };
+  }, []);
 
-  const calculateOrderStatistics = (orders: Order[]) => {
+  const calculateOrderStatistics = useCallback((orders: Order[]) => {
     const hours = new Array(24).fill(0);
     const days = new Array(7).fill(0);
 
@@ -194,26 +197,26 @@ const OrderList: React.FC = () => {
     });
 
     setOrderStatistics({ hours, days });
-  };
+  }, []);
 
-  const hourChartData = [
+  const hourChartData = useMemo(() => [
     ['Hour', 'Orders'],
     ...orderStatistics.hours.map((count, hour) => [`${hour}:00`, count]),
-  ];
+  ], [orderStatistics.hours]);
 
-  const dayChartData = [
+  const dayChartData = useMemo(() => [
     ['Day', 'Orders'],
     ...['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => [day, orderStatistics.days[index]]),
-  ];
+  ], [orderStatistics.days]);
 
-  const filterToday = () => {
+  const filterToday = useCallback(() => {
     const today = new Date();
     setStartDate(new Date(today.setHours(0, 0, 0, 0)));
     setEndDate(new Date(today.setHours(23, 59, 59, 999)));
-  };
+  }, []);
 
-  const activeOrders = filterOrders().filter(order => order.status !== 'canceled');
-  const canceledOrders = filterOrders().filter(order => order.status === 'canceled');
+  const activeOrders = useMemo(() => filterOrders.filter(order => order.status !== 'canceled'), [filterOrders]);
+  const canceledOrders = useMemo(() => filterOrders.filter(order => order.status === 'canceled'), [filterOrders]);
 
   return (
     <Container>
