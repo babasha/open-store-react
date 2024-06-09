@@ -9,10 +9,11 @@ import OrderSection from './OrderSection';
 import StatisticsSection from './StatisticsSection';
 import { Container, Title } from '../../styles/OrderListStyles';
 
-interface Item {
+export interface Item {
   productId: number;
   productName: string;
   quantity: number;
+  ready: boolean; // Поле ready теперь обязательно
 }
 
 export interface Order {
