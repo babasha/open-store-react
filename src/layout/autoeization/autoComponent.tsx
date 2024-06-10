@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Container } from '../../components/Container';
-import { useAuth } from '../autoeization/AuthContext';
+import { useAuth, AuthContextType, User } from '../autoeization/AuthContext';
 import LoginComponent from '../UserAuteriztion/UserCart';
 import RegisterComponent from '../../page/register/register';
 import { Order } from '../orderList/OrderList';
@@ -10,16 +10,26 @@ import socket from '../../socket';
 import MapPicker from '../../components/MapPicker';
 import Accordion from './Accordion';
 import OrderCard from './OrderCard';
-import { UserDetails, CardInner, OrderList } from './styledauth/AuthorizationStyles';
+import { UserDetails, CardInner, OrderList } from './styledauth/AuthorizationStyles' ;
+
+interface DisplayedCount {
+  canceled: number;
+  completed: number;
+}
+
+interface IsOpen {
+  canceled: boolean;
+  completed: boolean;
+}
 
 const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
-  const { user, logout, login } = useAuth();
+  const { user, logout, login } = useAuth() as AuthContextType;
   const [orders, setOrders] = useState<Order[]>([]);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState('');
-  const [displayedCount, setDisplayedCount] = useState({ canceled: 3, completed: 3 });
-  const [isOpen, setIsOpen] = useState({ canceled: false, completed: false });
+  const [displayedCount, setDisplayedCount] = useState<DisplayedCount>({ canceled: 3, completed: 3 });
+  const [isOpen, setIsOpen] = useState<IsOpen>({ canceled: false, completed: false });
 
   useEffect(() => {
     if (user) {
