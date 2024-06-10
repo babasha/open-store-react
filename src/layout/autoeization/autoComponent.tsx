@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+// src/components/AuthorizationComponent.tsx
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import styled from 'styled-components';
 import { Container } from '../../components/Container';
-import { theme } from '../../styles/Theme';
 import { useAuth } from '../autoeization/AuthContext';
 import LoginComponent from '../UserAuteriztion/UserCart';
 import RegisterComponent from '../../page/register/register';
@@ -11,17 +10,16 @@ import socket from '../../socket';
 import MapPicker from '../../components/MapPicker';
 import Accordion from './Accordion';
 import OrderCard from './OrderCard';
+import { UserDetails, CardInner, OrderList } from './styledauth/AuthorizationStyles';
 
-const AutorizationComponent: React.FC = () => {
+const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
   const { user, logout, login } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState('');
-  const [displayedCanceledCount, setDisplayedCanceledCount] = useState(3);
-  const [displayedCompletedCount, setDisplayedCompletedCount] = useState(3);
-  const [isCanceledOpen, setIsCanceledOpen] = useState(false);
-  const [isCompletedOpen, setIsCompletedOpen] = useState(false);
+  const [displayedCount, setDisplayedCount] = useState({ canceled: 3, completed: 3 });
+  const [isOpen, setIsOpen] = useState({ canceled: false, completed: false });
 
   useEffect(() => {
     if (user) {
@@ -29,24 +27,21 @@ const AutorizationComponent: React.FC = () => {
     }
   }, [user]);
 
-  const fetchUserOrders = async () => {
+  const fetchUserOrders = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/orders/me', { withCredentials: true });
-      const ordersData: Order[] = response.data;
+      const [ordersResponse, productsResponse] = await Promise.all([
+        axios.get('http://localhost:3000/api/orders/me', { withCredentials: true }),
+        axios.get('http://localhost:3000/products', { withCredentials: true })
+      ]);
 
-      // Получение данных о продуктах, чтобы включить их названия в заказы
-      const productIds = ordersData.flatMap((order: Order) => order.items.map(item => item.productId));
-      const uniqueProductIds = Array.from(new Set(productIds));
-      const productsResponse = await axios.get('http://localhost:3000/products', { withCredentials: true });
+      const ordersData: Order[] = ordersResponse.data;
       const products = productsResponse.data;
 
-      // Создание словаря для быстрого поиска по productId
       const productsMap = products.reduce((map: Record<number, any>, product: any) => {
         map[product.id] = product;
         return map;
       }, {});
 
-      // Включение названий продуктов в заказы
       const ordersWithProductNames = ordersData.map((order: Order) => ({
         ...order,
         items: order.items.map(item => ({
@@ -59,7 +54,7 @@ const AutorizationComponent: React.FC = () => {
     } catch (error: any) {
       console.error('Ошибка при получении заказов пользователя:', error.message);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handleNewOrder = (newOrder: Order) => {
@@ -71,9 +66,7 @@ const AutorizationComponent: React.FC = () => {
     const handleOrderUpdated = (updatedOrder: Order) => {
       if (updatedOrder.user_id === user?.id) {
         setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === updatedOrder.id ? updatedOrder : order
-          )
+          prevOrders.map((order) => (order.id === updatedOrder.id ? updatedOrder : order))
         );
       }
     };
@@ -109,21 +102,27 @@ const AutorizationComponent: React.FC = () => {
     }
   };
 
-  const loadMoreCanceledOrders = () => {
-    setDisplayedCanceledCount(displayedCanceledCount + 10);
+  const loadMoreOrders = (type: 'canceled' | 'completed') => {
+    setDisplayedCount((prevState) => ({
+      ...prevState,
+      [type]: prevState[type] + 10
+    }));
   };
 
-  const loadMoreCompletedOrders = () => {
-    setDisplayedCompletedCount(displayedCompletedCount + 10);
+  const toggleAccordion = (type: 'canceled' | 'completed') => {
+    setIsOpen((prevState) => ({
+      ...prevState,
+      [type]: !prevState[type]
+    }));
   };
 
   const currentOrders = orders.filter(order => order.status === 'pending' || order.status === 'assembly');
-  const canceledOrders = orders.filter(order => order.status === 'canceled').slice(0, displayedCanceledCount);
-  const completedOrders = orders.filter(order => order.status === 'completed').slice(0, displayedCompletedCount);
+  const canceledOrders = orders.filter(order => order.status === 'canceled').slice(0, displayedCount.canceled);
+  const completedOrders = orders.filter(order => order.status === 'completed').slice(0, displayedCount.completed);
 
   return (
     <Container width={'100%'}>
-      <CartdiInner>
+      <CardInner>
         {user ? (
           <UserDetails>
             <h2>Добро пожаловать, {user.first_name} {user.last_name}</h2>
@@ -145,18 +144,18 @@ const AutorizationComponent: React.FC = () => {
             </OrderList>
             <Accordion
               title="Отмененные заказы"
-              isOpen={isCanceledOpen}
-              onClick={() => setIsCanceledOpen(!isCanceledOpen)}
+              isOpen={isOpen.canceled}
+              onClick={() => toggleAccordion('canceled')}
               orders={canceledOrders}
-              loadMore={loadMoreCanceledOrders}
+              loadMore={() => loadMoreOrders('canceled')}
               allOrdersCount={orders.filter(order => order.status === 'canceled').length}
             />
             <Accordion
               title="Завершенные заказы"
-              isOpen={isCompletedOpen}
-              onClick={() => setIsCompletedOpen(!isCompletedOpen)}
+              isOpen={isOpen.completed}
+              onClick={() => toggleAccordion('completed')}
               orders={completedOrders}
-              loadMore={loadMoreCompletedOrders}
+              loadMore={() => loadMoreOrders('completed')}
               allOrdersCount={orders.filter(order => order.status === 'completed').length}
             />
           </UserDetails>
@@ -182,45 +181,9 @@ const AutorizationComponent: React.FC = () => {
             )}
           </div>
         )}
-      </CartdiInner>
+      </CardInner>
     </Container>
   );
 };
 
-const UserDetails = styled.div`
-  text-align: left;
-  margin-top: 20px;
-  h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-  p {
-    margin-bottom: 10px;
-  }
-  button {
-    padding: 10px 20px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    &:hover {
-      background-color: #0056b3;
-    }
-  }
-`;
-
-const CartdiInner = styled.div`
-  background-color: ${theme.colors.mainBg};
-  margin-top: 10px;
-  padding: 20px;
-  border-radius: 10px;
-  width: 100%;
-`;
-
-const OrderList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-export default AutorizationComponent;
+export default AuthorizationComponent;
