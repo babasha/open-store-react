@@ -1,9 +1,10 @@
+// src/components/autoeization/AuthContext.ts
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import socket from '../../socket';
 
-interface User {
+export interface User {
   id: number;
   first_name: string;
   last_name: string;
@@ -13,7 +14,7 @@ interface User {
   role: string;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   login: (user: User, token: string) => void;
   logout: () => void;
