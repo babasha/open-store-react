@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { ProductCart } from '../layout/prouctCart/cart';
-import { Basket } from '../layout/cart/basket';
-import { theme } from '../styles/Theme';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../styles/Theme';
+import { ProductCart } from '../layout/prouctCart/cart';
+import Basket from '../layout/cart/basket';
 import AutorizationComponent from '../layout/autoeization/autoComponent';
-
 
 type Product = {
   id: number;
@@ -26,6 +25,7 @@ const Products = () => {
   const [nameGeo, setNameGeo] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState<File | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
 
   useEffect(() => {
     fetch('/products')
@@ -88,11 +88,12 @@ const Products = () => {
             title={product.name[i18n.language as 'en' | 'ru' | 'geo'] || product.name.en}
             price={product.price}
             imageUrl={product.image_url}
+            titles={product.name} // Added titles property
           />
         ))}
       </ShopInner>
       <MenuWrapper>
-        <Basket />
+        <Basket currentLanguage={currentLanguage} />
         <AutorizationComponent />
       </MenuWrapper>
     </Showcase>

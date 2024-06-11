@@ -1,10 +1,22 @@
 {
-    "welcome": "კეთილი იყოს თქვენი მობრძანება",
-    "add_to_cart": "კალათაში დამატება",
-    "added": "დამატებულია",
-    "edit": "Ред",
-    "total": "Total",
-    "delivery": "Доставка",
-    "finishEditing": "Edit"
-
+  "cart": {
+    "title": "კალათა",
+    "empty": "კალათა ცარიელია",
+    "clear": "კალათის გასუფთავება",
+    "remove": "წაშლა",
+    "edit": "რედაქტირება",
+    "total": "ჯამი",
+    "delivery": "მიტანა",
+    "finishEditing": "რედაქტირების დასრულება",
+    "purchase": "ყიდვა",
+    "free": "უფასო",
+    "notAuthorized": "თქვენ არ ხართ ავტორიზებული",
+    "orderError": "შეკვეთის გაფორმების შეცდომა",
+    "orderSuccess": "შეკვეთა წარმატებით გაფორმდა"
+  },
+  "as_soon_as_possible": "როგორც კი შესაძლებელია",
+  "schedule_delivery": "მიტანის დაგეგმვა",
+  "choose_delivery_time": "მიტანის დროის არჩევა",
+  "added": "დამატებულია",
+  "add_to_cart": "კალათაში დამატება"
 }
