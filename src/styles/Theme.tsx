@@ -6,15 +6,15 @@ export const theme = {
       ShopWindowBg: "#F0F4F8",
       
       accent: "#7572D5",
-      font: "#181818"
+      font: "#181818",
     },
     media: {
-      tablet: "screen and (max-width:768px)"
+      tablet: "screen and (max-width:768px)",
     },
     button: {
-      buttonActive: "#0098EA"
-
-
+      buttonActive: "#0098EA",
+      buttonHover: "#0098eac4",
+      buttonDisabled: "#808080"
   },
 };
   

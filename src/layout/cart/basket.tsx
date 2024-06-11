@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import DataSwitch from '../../components/dateSlider/dataSwith';
+import { EditButton } from '../../styles/btns/secondBtns';
 
 export const Basket: React.FC = () => {
   const { t } = useTranslation();
@@ -93,16 +94,12 @@ export const Basket: React.FC = () => {
           <>
             <CartItem>
               <ItemDetails>
+                
                 <span>{t('cart.delivery')}</span>
                 <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
               </ItemDetails>
             </CartItem>
-            <TotalPrice>{t('cart.total')}: {totalWithDelivery} ₾</TotalPrice>
-            <FlexWrapper justify='space-between'>
-              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
-              <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
-            </FlexWrapper>
-            {error && <ErrorText>{error}</ErrorText>}
+
             <DataSwitch 
               buttonText1='Как можно скорее' 
               buttonText2='Ко времени' 
@@ -110,6 +107,14 @@ export const Basket: React.FC = () => {
               isActive2={false} 
               onSelectedDelivery={setSelectedDelivery} // Обновление состояния selectedDelivery
             />
+            
+            <TotalPrice>{t('cart.total')}: {totalWithDelivery} ₾</TotalPrice>
+            <FlexWrapper justify='space-between'>
+              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
+              <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
+            </FlexWrapper>
+            {error && <ErrorText>{error}</ErrorText>}
+           
           </>
         )}
       </CartdiInner>
@@ -153,10 +158,7 @@ const DeleteButton = styled.button<{ isEditing: boolean }>`
   }
 `;
 
-const EditButton = styled.button`
-  color: ${theme.button.buttonActive};
-  cursor: pointer;
-`;
+
 
 const PurchaseButton = styled.button`
   padding: 10px 20px;
