@@ -5,12 +5,18 @@
     "clear": "Clear cart",
     "remove": "Remove",
     "edit": "Edit",
-"total": "Total" ,
-"delivery": "delivery",
-"finishEditing": "Edit"
-
-
+    "total": "Total",
+    "delivery": "Delivery",
+    "finishEditing": "Finish editing",
+    "purchase": "Purchase",
+    "free": "Free",
+    "notAuthorized": "You are not authorized",
+    "orderError": "Error placing order",
+    "orderSuccess": "Order placed successfully"
   },
-  "add_to_cart": "Add to cart",
-  "added": "Added"
+  "as_soon_as_possible": "As soon as possible",
+  "schedule_delivery": "Schedule delivery",
+  "choose_delivery_time": "Choose delivery time",
+  "added": "Added",
+  "add_to_cart": "Add to cart"
 }

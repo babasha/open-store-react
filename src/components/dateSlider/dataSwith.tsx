@@ -95,40 +95,40 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
   return (
     <FlexWrapper direction='column'>
       <FlexWrapper>
-      <StyledButton
-        isActive={active === 1}
-        onClick={() => handleChange(1)}
-      >
-        {buttonText1}
-      </StyledButton>
-      <StyledButton
-        isActive={active === 2}
-        onClick={() => handleChange(2)}
-      >
-        {buttonText2}
-      </StyledButton>
+        <StyledButton
+          isActive={active === 1}
+          onClick={() => handleChange(1)}
+        >
+          {buttonText1}
+        </StyledButton>
+        <StyledButton
+          isActive={active === 2}
+          onClick={() => handleChange(2)}
+        >
+          {buttonText2}
+        </StyledButton>
       </FlexWrapper>
       <TextContainer>
         {active === 1 ? (
-          <ActiveText>{t('Как можно скорее')}</ActiveText>
+          <ActiveText>{t('as_soon_as_possible')}</ActiveText>
         ) : (
           selectedDelivery ? (
-            <ActiveText>{t(`Выбрано время для доставки: ${selectedDelivery.day}, ${selectedDelivery.time}`)}</ActiveText>
+            <ActiveText>{t('delivery_time_selected')}: {selectedDelivery.day}, {selectedDelivery.time}</ActiveText>
           ) : (
-            <ClickableText onClick={toggleModal}>{t('Выбрать время доставки')}</ClickableText>
+            <ClickableText onClick={toggleModal}>{t('choose_delivery_time')}</ClickableText>
           )
         )}
       </TextContainer>
       {isModalOpen && (
         <Modal onClose={toggleModal}>
           <ModalInnerContent>
-            <h2>{t('Выберите время доставки')}</h2>
+            <h2>{t('choose_delivery_time')}</h2>
             <form onSubmit={handleDeliverySelect}>
               <label>
                 {t('День доставки')}:
                 <select name="day">
-                  <option value="Сегодня">{t('Сегодня')}</option>
-                  <option value="Завтра">{t('Завтра')}</option>
+                  <option value="Сегодня">{t('today')}</option>
+                  <option value="Завтра">{t('tomorrow')}</option>
                 </select>
               </label>
               <label>
@@ -141,7 +141,7 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
                   })}
                 </select>
               </label>
-              <button type="submit">{t('Подтвердить')}</button>
+              <button type="submit">{t('confirm')}</button>
             </form>
           </ModalInnerContent>
         </Modal>
@@ -149,12 +149,6 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
     </FlexWrapper>
   );
 };
-
-// const SwitchContainer = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-// `;
 
 const StyledButton = styled.button<{ isActive: boolean }>`
   border-radius: 30px;
@@ -192,8 +186,7 @@ const ActiveText = styled.p`
 const ClickableText = styled.p`
   color: ${theme.button.buttonActive};;
   cursor: pointer;
-  /* text-decoration: underline; */
-  transition: color 0.2s ; 
+  transition: color 0.2s;
   &:hover {
     color:${theme.button.buttonHover}
   }

@@ -1,8 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface CartItem {
   id: number;
   title: string;
+  titles: {
+    en: string;
+    ru: string;
+    geo: string;
+  };
   price: number;
   quantity: number;
 }
@@ -30,7 +36,25 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
+  const { i18n } = useTranslation();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setCartItems((prevItems) =>
+        prevItems.map((item) => ({
+          ...item,
+          title: item.titles[i18n.language as 'en' | 'ru' | 'geo'],
+        }))
+      );
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   const addItemToCart = (item: CartItem) => {
     setCartItems((prevItems) => {

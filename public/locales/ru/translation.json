@@ -4,12 +4,19 @@
     "empty": "Корзина пуста",
     "clear": "Очистить корзину",
     "remove": "Удалить",
-    "edit": "ред",
+    "edit": "Редактировать",
     "total": "Итог",
     "delivery": "Доставка",
-    "finishEditing": "Edit"
-
+    "finishEditing": "Завершить редактирование",
+    "purchase": "Купить",
+    "free": "Бесплатно",
+    "notAuthorized": "Вы не авторизованы",
+    "orderError": "Ошибка при оформлении заказа",
+    "orderSuccess": "Заказ успешно оформлен"
   },
-  "add_to_cart": "В корзину",
-  "added": "Добавлено"
+  "as_soon_as_possible": "Как можно скорее",
+  "schedule_delivery": "Ко времени",
+  "choose_delivery_time": "Выбрать время доставки",
+  "added": "Добавлено",
+  "add_to_cart": "В корзину"
 }

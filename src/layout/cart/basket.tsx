@@ -9,7 +9,11 @@ import { FlexWrapper } from '../../components/FlexWrapper';
 import DataSwitch from '../../components/dateSlider/dataSwith';
 import { EditButton } from '../../styles/btns/secondBtns';
 
-export const Basket: React.FC = () => {
+interface BasketProps {
+  currentLanguage: string;
+}
+
+export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const { t } = useTranslation();
   const { cartItems, removeItemFromCart, clearCart } = useCart();
   const { user } = useAuth();
@@ -23,7 +27,7 @@ export const Basket: React.FC = () => {
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [cartItems]);
+  }, [cartItems, currentLanguage]); // Add currentLanguage as dependency
 
   const deliveryCost = totalPrice > 30 ? 0 : 5;
 
@@ -31,7 +35,7 @@ export const Basket: React.FC = () => {
 
   const handlePurchase = async () => {
     if (!user) {
-      setError('Вы не авторизованы');
+      setError(t('cart.notAuthorized'));
       return;
     }
 
@@ -56,14 +60,14 @@ export const Basket: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Ошибка при оформлении заказа');
+        throw new Error(t('cart.orderError'));
       }
 
       clearCart();
       setSelectedDelivery(null); // Сброс выбранного времени доставки
-      alert('Заказ успешно оформлен');
+      alert(t('cart.orderSuccess'));
     } catch (error) {
-      setError('Ошибка при оформлении заказа');
+      setError(t('cart.orderError'));
     }
   };
 
@@ -86,7 +90,7 @@ export const Basket: React.FC = () => {
               <ItemContext>{item.price * item.quantity} ₾</ItemContext>
             </ItemDetails>
             <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
-              {t('cart.delete')}
+              {t('cart.remove')}
             </DeleteButton>
           </CartItem>
         ))}
@@ -94,15 +98,14 @@ export const Basket: React.FC = () => {
           <>
             <CartItem>
               <ItemDetails>
-                
                 <span>{t('cart.delivery')}</span>
                 <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
               </ItemDetails>
             </CartItem>
 
             <DataSwitch 
-              buttonText1='Как можно скорее' 
-              buttonText2='Ко времени' 
+              buttonText1={t('as_soon_as_possible')} 
+              buttonText2={t('schedule_delivery')} 
               isActive1={false} 
               isActive2={false} 
               onSelectedDelivery={setSelectedDelivery} // Обновление состояния selectedDelivery
@@ -114,7 +117,6 @@ export const Basket: React.FC = () => {
               <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
             </FlexWrapper>
             {error && <ErrorText>{error}</ErrorText>}
-           
           </>
         )}
       </CartdiInner>
@@ -157,8 +159,6 @@ const DeleteButton = styled.button<{ isEditing: boolean }>`
     background-color: #c9302c;
   }
 `;
-
-
 
 const PurchaseButton = styled.button`
   padding: 10px 20px;
