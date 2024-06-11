@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
+import { FlexWrapper } from '../FlexWrapper';
 
 interface ModalProps {
   onClose: () => void;
@@ -64,7 +65,7 @@ interface DataSwitchProps {
   isActive1: boolean;
   isActive2: boolean;
   onSelectedDelivery: (delivery: { day: string; time: string }) => void;
-}
+}    
 
 const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isActive1, isActive2, onSelectedDelivery }) => {
   const [active, setActive] = useState(1);
@@ -92,7 +93,8 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
   };
 
   return (
-    <SwitchContainer>
+    <FlexWrapper direction='column'>
+      <FlexWrapper>
       <StyledButton
         isActive={active === 1}
         onClick={() => handleChange(1)}
@@ -105,6 +107,7 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
       >
         {buttonText2}
       </StyledButton>
+      </FlexWrapper>
       <TextContainer>
         {active === 1 ? (
           <ActiveText>{t('Как можно скорее')}</ActiveText>
@@ -143,15 +146,15 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
           </ModalInnerContent>
         </Modal>
       )}
-    </SwitchContainer>
+    </FlexWrapper>
   );
 };
 
-const SwitchContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
+// const SwitchContainer = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+// `;
 
 const StyledButton = styled.button<{ isActive: boolean }>`
   border-radius: 30px;
@@ -164,7 +167,7 @@ const StyledButton = styled.button<{ isActive: boolean }>`
   overflow: hidden;
   width: 120px;
   height: 35px;
-  transition: 0.2s;
+  transition: 0.3s;
   margin: 0 5px;
   pointer-events: auto;
 
@@ -178,17 +181,22 @@ const StyledButton = styled.button<{ isActive: boolean }>`
 `;
 
 const TextContainer = styled.div`
-  margin-top: 10px;
+  margin-top: 15px;
+  display: flex;
 `;
 
 const ActiveText = styled.p`
-  color: ${theme.button.buttonActive};
+  color: ${theme.button.buttonDisabled};
 `;
 
 const ClickableText = styled.p`
-  color: blue;
+  color: ${theme.button.buttonActive};;
   cursor: pointer;
-  text-decoration: underline;
+  /* text-decoration: underline; */
+  transition: color 0.2s ; 
+  &:hover {
+    color:${theme.button.buttonHover}
+  }
 `;
 
 export default DataSwitch;

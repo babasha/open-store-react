@@ -73,7 +73,7 @@ const Button = styled(motion.button)<{ isActive: boolean; isDisabled: boolean }>
   }
 
   &:disabled {
-    background-color: gray;
+    background-color: #808080;
   }
 `;
 
