@@ -1,7 +1,7 @@
 // src/components/Accordion.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import OrderCard from './OrderCard';
+import OrderCard from './OrderCart/OrderCard';
 import { Order } from '../orderList/OrderList';
 import { AccordionHeader, OrderList, LoadMoreButton } from './styledauth/AccordionStyles';
 
