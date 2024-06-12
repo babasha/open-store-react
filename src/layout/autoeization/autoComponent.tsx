@@ -151,6 +151,7 @@ const AuthorizationComponent: React.FC = () => {
           <UserDetails>
             <h2>Добро пожаловать, {user.first_name} {user.last_name}</h2>
             <p>Адрес: {user.address}</p>
+            <p>Телефон: {user.phone}</p>
             <button onClick={logout}>Выйти</button>
             <button onClick={() => setIsEditingAddress(true)}>Редактировать адрес</button>
             {isEditingAddress && (
