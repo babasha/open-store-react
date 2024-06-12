@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
 import styled from 'styled-components';
-import markerIcon from './path-to-your-marker-icon.png.png'; // Импорт вашего значка
+import markerIcon from './path-to-your-marker-icon.png'; // Импорт вашего значка
 
 const MapWrapper = styled.div`
   height: 300px;
@@ -17,11 +17,21 @@ const customIcon = new L.Icon({
   popupAnchor: [0, -30], // Точка всплывающего окна
 });
 
+const cache = new Map(); // Кэш для хранения результатов запросов
+
 const MapPicker = ({ onAddressSelect }) => {
   const [position, setPosition] = useState(null);
   const [address, setAddress] = useState('');
 
   const fetchAddress = async (lat, lon) => {
+    const cacheKey = `${lat},${lon}`;
+    if (cache.has(cacheKey)) {
+      const cachedAddress = cache.get(cacheKey);
+      setAddress(cachedAddress);
+      onAddressSelect(cachedAddress);
+      return;
+    }
+
     try {
       const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
         params: {
@@ -30,9 +40,11 @@ const MapPicker = ({ onAddressSelect }) => {
           format: 'json',
         },
       });
-      const address = response.data.display_name;
-      setAddress(address);
-      onAddressSelect(address);
+      const addressData = response.data.address;
+      const shortAddress = `${addressData.road || ''} ${addressData.house_number || ''}`.trim();
+      cache.set(cacheKey, shortAddress); // Сохранение результата в кэш
+      setAddress(shortAddress);
+      onAddressSelect(shortAddress);
     } catch (error) {
       console.error('Ошибка при получении адреса:', error);
     }
