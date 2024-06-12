@@ -1,10 +1,9 @@
-// src/components/OrderCard.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 import axios from 'axios';
 import { Order } from '../../orderList/OrderList';
-import { Card, ProductList, ProductItem } from '../styledauth/OrderCardStyles';
+import { Card, ProductList, ProductItem } from '../styledauth/OrderCardStyles' ;
 import OrderHeader from './OrderHeader';
 import OrderDetails from './OrderDetails';
 import CancelModal from './CancelModal';
@@ -77,9 +76,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
           <OrderDetails order={order} />
         )}
       </AnimatePresence>
-      {showModal && (
-        <CancelModal handleConfirmCancel={handleConfirmCancel} handleClose={() => setShowModal(false)} />
-      )}
+      <AnimatePresence>
+        {showModal && (
+          <CancelModal handleConfirmCancel={handleConfirmCancel} handleClose={() => setShowModal(false)} />
+        )}
+      </AnimatePresence>
     </Card>
   );
 };
