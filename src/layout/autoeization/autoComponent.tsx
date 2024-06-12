@@ -1,5 +1,6 @@
 // src/components/AuthorizationComponent.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { Container } from '../../components/Container';
 import { useAuth, AuthContextType, User } from '../autoeization/AuthContext';
@@ -10,7 +11,7 @@ import socket from '../../socket';
 import MapPicker from '../../components/MapPicker';
 import Accordion from './Accordion';
 import OrderCard from './OrderCard';
-import { UserDetails, CardInner, OrderList } from './styledauth/AuthorizationStyles' ;
+import { UserDetails, CardInner, OrderList } from './styledauth/AuthorizationStyles';
 
 interface DisplayedCount {
   canceled: number;
@@ -126,9 +127,22 @@ const AuthorizationComponent: React.FC = () => {
     }));
   };
 
-  const currentOrders = orders.filter(order => order.status === 'pending' || order.status === 'assembly');
-  const canceledOrders = orders.filter(order => order.status === 'canceled').slice(0, displayedCount.canceled);
-  const completedOrders = orders.filter(order => order.status === 'completed').slice(0, displayedCount.completed);
+  const filterOrders = useCallback((status: string[]) => {
+    return orders.filter(order => status.includes(order.status));
+  }, [orders]);
+
+  const currentOrders = useMemo(() => filterOrders(['pending', 'assembly', 'ready_for_delivery']), [filterOrders]);
+  const canceledOrders = useMemo(() => filterOrders(['canceled']).slice(0, displayedCount.canceled), [filterOrders, displayedCount.canceled]);
+  const completedOrders = useMemo(() => filterOrders(['completed']).slice(0, displayedCount.completed), [filterOrders, displayedCount.completed]);
+
+  const getStatusText = useCallback((status: string) => {
+    switch (status) {
+      case 'ready_for_delivery':
+        return 'готов к доставке';
+      default:
+        return status;
+    }
+  }, []);
 
   return (
     <Container width={'100%'}>
@@ -149,14 +163,14 @@ const AuthorizationComponent: React.FC = () => {
             <h3>Ваши активные заказы</h3>
             <OrderList>
               {currentOrders.map(order => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard key={order.id} order={{ ...order, status: getStatusText(order.status) }} />
               ))}
             </OrderList>
             <Accordion
               title="Отмененные заказы"
               isOpen={isOpen.canceled}
               onClick={() => toggleAccordion('canceled')}
-              orders={canceledOrders}
+              orders={canceledOrders.map(order => ({ ...order, status: getStatusText(order.status) }))}
               loadMore={() => loadMoreOrders('canceled')}
               allOrdersCount={orders.filter(order => order.status === 'canceled').length}
             />
@@ -164,7 +178,7 @@ const AuthorizationComponent: React.FC = () => {
               title="Завершенные заказы"
               isOpen={isOpen.completed}
               onClick={() => toggleAccordion('completed')}
-              orders={completedOrders}
+              orders={completedOrders.map(order => ({ ...order, status: getStatusText(order.status) }))}
               loadMore={() => loadMoreOrders('completed')}
               allOrdersCount={orders.filter(order => order.status === 'completed').length}
             />
