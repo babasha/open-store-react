@@ -10,7 +10,7 @@ import { Order } from '../orderList/OrderList';
 import socket from '../../socket';
 import MapPicker from '../../components/MapPicker';
 import Accordion from './Accordion';
-import OrderCard from './OrderCard';
+import OrderCard from './OrderCart/OrderCard';
 import { UserDetails, CardInner, OrderList } from './styledauth/AuthorizationStyles';
 
 interface DisplayedCount {
