@@ -19,9 +19,21 @@ const customIcon = new L.Icon({
 
 const cache = new Map(); // Кэш для хранения результатов запросов
 
+const LoadingIndicator = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1000;
+`;
+
 const MapPicker = ({ onAddressSelect }) => {
   const [position, setPosition] = useState(null);
   const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const fetchAddress = async (lat, lon) => {
     const cacheKey = `${lat},${lon}`;
@@ -29,6 +41,7 @@ const MapPicker = ({ onAddressSelect }) => {
       const cachedAddress = cache.get(cacheKey);
       setAddress(cachedAddress);
       onAddressSelect(cachedAddress);
+      setLoading(false);
       return;
     }
 
@@ -47,6 +60,8 @@ const MapPicker = ({ onAddressSelect }) => {
       onAddressSelect(shortAddress);
     } catch (error) {
       console.error('Ошибка при получении адреса:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,6 +69,7 @@ const MapPicker = ({ onAddressSelect }) => {
     useMapEvents({
       click(e) {
         setPosition(e.latlng);
+        setLoading(true);
         fetchAddress(e.latlng.lat, e.latlng.lng);
       },
     });
@@ -69,10 +85,11 @@ const MapPicker = ({ onAddressSelect }) => {
       <MapContainer center={[41.6168, 41.6367]} zoom={13} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png"
         />
         <LocationMarker />
       </MapContainer>
+      {loading && <LoadingIndicator>Загрузка...</LoadingIndicator>}
       {address && <p>Выбранный адрес: {address}</p>}
     </MapWrapper>
   );
