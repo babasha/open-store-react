@@ -1,16 +1,32 @@
-import React, { useState, useMemo } from 'react';
-import styled from 'styled-components';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
 import { useAuth } from '../autoeization/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { theme } from '../../styles/Theme';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import DataSwitch from '../../components/dateSlider/dataSwith';
 import { EditButton } from '../../styles/btns/secondBtns';
+import {
+  CartdiInner,
+  CartItemWrapper,
+  ItemDetails,
+  DeleteButton,
+  PurchaseButton,
+  TotalPrice,
+  ItemContext,
+  ItemContextTitle,
+  ErrorText
+} from './BasketStyles';
 
 interface BasketProps {
   currentLanguage: string;
+}
+
+interface CartItem {
+  id: number;
+  title: string;
+  quantity: number;
+  price: number;
 }
 
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
@@ -21,19 +37,22 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
 
-  const handleEditClick = () => {
-    setIsEditing(!isEditing);
-  };
+  const handleEditClick = () => setIsEditing(!isEditing);
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [cartItems, currentLanguage]); // Add currentLanguage as dependency
+  }, [cartItems]);
 
   const deliveryCost = totalPrice > 30 ? 0 : 5;
-
   const totalWithDelivery = totalPrice + deliveryCost;
 
-  const handlePurchase = async () => {
+  useEffect(() => {
+    if (user && error === t('cart.notAuthorized')) {
+      setError(null);
+    }
+  }, [user, error, t]);
+
+  const handlePurchase = useCallback(async () => {
     if (!user) {
       setError(t('cart.notAuthorized'));
       return;
@@ -47,7 +66,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
-      deliveryAddress: user.address // Добавлено: адрес доставки
+      deliveryAddress: user.address,
     };
 
     try {
@@ -65,12 +84,28 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       }
 
       clearCart();
-      setSelectedDelivery(null); // Сброс выбранного времени доставки
+      setSelectedDelivery(null);
       alert(t('cart.orderSuccess'));
     } catch (error) {
       setError(t('cart.orderError'));
     }
-  };
+  }, [user, cartItems, totalWithDelivery, selectedDelivery, t, clearCart]);
+
+  const renderCartItem = useCallback(
+    (item: CartItem) => (
+      <CartItemWrapper key={item.id}>
+        <ItemDetails>
+          <ItemContextTitle>{item.title}</ItemContextTitle>
+          <ItemContext>{item.quantity} кг</ItemContext>
+          <ItemContext>{item.price * item.quantity} ₾</ItemContext>
+        </ItemDetails>
+        <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
+          {t('cart.remove')}
+        </DeleteButton>
+      </CartItemWrapper>
+    ),
+    [isEditing, removeItemFromCart, t]
+  );
 
   return (
     <Container width={'100%'}>
@@ -82,43 +117,32 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
           </EditButton>
         </FlexWrapper>
 
-        {cartItems.length === 0 && <p>{t('cart.empty')}</p>}
-        {cartItems.map((item) => (
-          <CartItem key={item.id}>
-            <ItemDetails>
-              <ItemContextTitle>{item.title}</ItemContextTitle>
-              <ItemContext>{item.quantity} кг</ItemContext>
-              <ItemContext>{item.price * item.quantity} ₾</ItemContext>
-            </ItemDetails>
-            <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
-              {t('cart.remove')}
-            </DeleteButton>
-          </CartItem>
-        ))}
-        {cartItems.length > 0 && (
+        {cartItems.length === 0 ? (
+          <p>{t('cart.empty')}</p>
+        ) : (
           <>
-            <CartItem>
+            {cartItems.map(renderCartItem)}
+            <CartItemWrapper>
               <ItemDetails>
                 <span>{t('cart.delivery')}</span>
                 <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
               </ItemDetails>
-            </CartItem>
-
-            <CartItem>
-              <ItemDetails>
-                <span>{t('cart.delivery_address')}</span>
-                <span>{user?.address || t('cart.no_address')}</span>
-              </ItemDetails>
-            </CartItem>
-
+            </CartItemWrapper>
+            {user && (
+              <CartItemWrapper>
+                <ItemDetails>
+                  <span>{t('cart.delivery_address')}</span>
+                  <span>{user.address || t('cart.no_address')}</span>
+                </ItemDetails>
+              </CartItemWrapper>
+            )}
             <DataSwitch 
               buttonText1={t('as_soon_as_possible')} 
               buttonText2={t('schedule_delivery')} 
               isActive1={false} 
               isActive2={false} 
-              onSelectedDelivery={setSelectedDelivery} // Обновление состояния selectedDelivery
+              onSelectedDelivery={setSelectedDelivery} 
             />
-            
             <TotalPrice>{t('cart.total')}: {totalWithDelivery} ₾</TotalPrice>
             <FlexWrapper justify='space-between'>
               <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
@@ -131,76 +155,5 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     </Container>
   );
 };
-
-const CartdiInner = styled.div`
-  background-color: ${theme.colors.mainBg};
-  margin-top: 10px;
-  padding: 20px;
-  border-radius: 10px;
-  width: 100%;
-`;
-
-const CartItem = styled.div`
-  display: flex;
-  position: relative;
-  margin-top: 15px;
-  margin-bottom: 10px;
-`;
-
-const ItemDetails = styled.div`
-  flex-grow: 1;
-`;
-
-const DeleteButton = styled.button<{ isEditing: boolean }>`
-  position: absolute;
-  right: ${({ isEditing }) => (isEditing ? '0' : '-100px')};
-  opacity: ${({ isEditing }) => (isEditing ? 1 : 0)};
-  transition: right 0.3s ease-in-out, opacity 0.3s ease-in-out;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #d9534f;
-  color: white;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #c9302c;
-  }
-`;
-
-const PurchaseButton = styled.button`
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #5cb85c;
-  color: white;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #4cae4c;
-  }
-`;
-
-const TotalPrice = styled.div`
-  margin-top: 10px;
-  font-weight: bold;
-  font-size: 20px;
-`;
-
-const ItemContext = styled.span`
-  margin-right: 25px;
-  font-size: 16px;
-`;
-
-const ItemContextTitle = styled.span`
-  font-weight: bold;
-  margin-right: 25px;
-  font-size: 16px;
-`;
-
-const ErrorText = styled.p`
-  color: red;
-  margin-top: 10px;
-`;
 
 export default Basket;
