@@ -37,5 +37,18 @@
   "assembly": "Assembly",
   "completed": "Completed",
   "canceled": "Canceled",
-  "load_more": "Load more"
+  "load_more": "Load more",
+  "order_canceled": "Order canceled",
+  "cancel_order_error": "Error canceling order",
+  "product": "Product",
+  "quantity": "Quantity",
+  "order": "Order",
+  "status": "Status",
+  "total": "Total",
+  "delivery_time": "Delivery Time",
+  "hide_details": "Hide Details",
+  "show_details": "Show Details",
+  "cancel_order": "Cancel Order",
+  "cancel_warning": "The free cancellation period has expired. Only 95% of the total order amount will be refunded upon cancellation.",
+  "confirm": "Confirm"
 }

@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 import axios from 'axios';
 import { Order } from '../../orderList/OrderList';
-import { Card, ProductList, ProductItem } from '../styledauth/OrderCardStyles' ;
+import { Card, ProductList, ProductItem } from '../styledauth/OrderCardStyles';
 import OrderHeader from './OrderHeader';
 import OrderDetails from './OrderDetails';
 import CancelModal from './CancelModal';
+import { useTranslation } from 'react-i18next';
 
 interface OrderCardProps {
   order: Order;
@@ -16,6 +17,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCancelable, setIsCancelable] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -32,15 +34,15 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const cancelOrder = useCallback(async () => {
     try {
       await axios.put(`http://localhost:3000/orders/${order.id}/status`, { status: 'canceled' });
-      alert('Заказ отменен');
+      alert(t('order_canceled'));
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('Ошибка при отмене заказа:', error.message);
+        console.error(t('cancel_order_error'), error.message);
       } else {
-        console.error('Ошибка при отмене заказа:', error);
+        console.error(t('cancel_order_error'), error);
       }
     }
-  }, [order.id]);
+  }, [order.id, t]);
 
   const handleCancelClick = useCallback(() => {
     if (isCancelable) {
@@ -53,16 +55,16 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const handleConfirmCancel = useCallback(async () => {
     try {
       await axios.put(`http://localhost:3000/orders/${order.id}/status`, { status: 'canceled' });
-      alert('Заказ отменен');
+      alert(t('order_canceled'));
       setShowModal(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('Ошибка при отмене заказа:', error.message);
+        console.error(t('cancel_order_error'), error.message);
       } else {
-        console.error('Ошибка при отмене заказа:', error);
+        console.error(t('cancel_order_error'), error);
       }
     }
-  }, [order.id]);
+  }, [order.id, t]);
 
   return (
     <Card
