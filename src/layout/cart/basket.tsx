@@ -47,6 +47,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
+      deliveryAddress: user.address // Добавлено: адрес доставки
     };
 
     try {
@@ -100,6 +101,13 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
               <ItemDetails>
                 <span>{t('cart.delivery')}</span>
                 <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
+              </ItemDetails>
+            </CartItem>
+
+            <CartItem>
+              <ItemDetails>
+                <span>{t('cart.delivery_address')}</span>
+                <span>{user?.address || t('cart.no_address')}</span>
               </ItemDetails>
             </CartItem>
 

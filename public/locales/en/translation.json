@@ -12,7 +12,8 @@
     "free": "Free",
     "notAuthorized": "You are not authorized",
     "orderError": "Error placing order",
-    "orderSuccess": "Order placed successfully"
+    "orderSuccess": "Order placed successfully",
+    "delivery_address": "Delivery Address" 
   },
   "as_soon_as_possible": "As soon as possible",
   "schedule_delivery": "Schedule delivery",

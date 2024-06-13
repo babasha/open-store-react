@@ -12,7 +12,8 @@
     "free": "უფასო",
     "notAuthorized": "თქვენ არ ხართ ავტორიზებული",
     "orderError": "შეკვეთის გაფორმების შეცდომა",
-    "orderSuccess": "შეკვეთა წარმატებით გაფორმდა"
+    "orderSuccess": "შეკვეთა წარმატებით გაფორმდა",
+    "delivery_address": "მიტანის მისამართი"
   },
   "as_soon_as_possible": "როგორც კი შესაძლებელია",
   "schedule_delivery": "მიტანის დაგეგმვა",

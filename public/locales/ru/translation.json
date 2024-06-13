@@ -12,7 +12,8 @@
     "free": "Бесплатно",
     "notAuthorized": "Вы не авторизованы",
     "orderError": "Ошибка при оформлении заказа",
-    "orderSuccess": "Заказ успешно оформлен"
+    "orderSuccess": "Заказ успешно оформлен",
+    "delivery_address": "Адрес доставки" 
   },
   "as_soon_as_possible": "Как можно скорее",
   "schedule_delivery": "Ко времени",
