@@ -5,6 +5,7 @@ import L from 'leaflet';
 import axios from 'axios';
 import styled from 'styled-components';
 import markerIcon from './path-to-your-marker-icon.png'; // Импорт вашего значка
+import { useTranslation } from 'react-i18next';
 
 const MapWrapper = styled.div`
   height: 300px;
@@ -34,6 +35,7 @@ const MapPicker = ({ onAddressSelect }) => {
   const [position, setPosition] = useState(null);
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const fetchAddress = async (lat, lon) => {
     const cacheKey = `${lat},${lon}`;
@@ -59,7 +61,7 @@ const MapPicker = ({ onAddressSelect }) => {
       setAddress(shortAddress);
       onAddressSelect(shortAddress);
     } catch (error) {
-      console.error('Ошибка при получении адреса:', error);
+      console.error(t('fetch_address_error'), error);
     } finally {
       setLoading(false);
     }
@@ -89,8 +91,8 @@ const MapPicker = ({ onAddressSelect }) => {
         />
         <LocationMarker />
       </MapContainer>
-      {loading && <LoadingIndicator>Загрузка...</LoadingIndicator>}
-      {address && <p>Выбранный адрес: {address}</p>}
+      {loading && <LoadingIndicator>{t('loading')}</LoadingIndicator>}
+      {address && <p>{t('selected_address')}: {address}</p>}
     </MapWrapper>
   );
 };

@@ -50,5 +50,8 @@
   "show_details": "Show Details",
   "cancel_order": "Cancel Order",
   "cancel_warning": "The free cancellation period has expired. Only 95% of the total order amount will be refunded upon cancellation.",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "fetch_address_error": "Error fetching address",
+  "loading": "Loading...",
+  "selected_address": "Selected address"
 }
