@@ -1,7 +1,7 @@
-// src/components/CancelModal.tsx
 import React from 'react';
 import { motion, useAnimation, PanInfo } from 'framer-motion';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 
 interface CancelModalProps {
   handleConfirmCancel: () => void;
@@ -10,6 +10,7 @@ interface CancelModalProps {
 
 const CancelModal: React.FC<CancelModalProps> = ({ handleConfirmCancel, handleClose }) => {
   const controls = useAnimation();
+  const { t } = useTranslation();
 
   const handleDragEnd = (event: Event, info: PanInfo) => {
     if (info.offset.y > 100 || info.offset.y < -100) {
@@ -31,9 +32,9 @@ const CancelModal: React.FC<CancelModalProps> = ({ handleConfirmCancel, handleCl
         dragElastic={0.2}
         onDragEnd={handleDragEnd}
       >
-        <p>Время бесплатной отмены прошло. При отмене будет возвращено только 95% от общей суммы заказа.</p>
-        <ModalButton onClick={handleConfirmCancel}>Подтвердить</ModalButton>
-        <ModalButton onClick={handleClose}>Отмена</ModalButton>
+        <p>{t('cancel_warning')}</p>
+        <ModalButton onClick={handleConfirmCancel}>{t('confirm')}</ModalButton>
+        <ModalButton onClick={handleClose}>{t('cancel')}</ModalButton>
       </ModalContent>
     </Overlay>
   );

@@ -1,8 +1,8 @@
-// src/components/OrderHeader.tsx
 import React from 'react';
 import styled from 'styled-components';
 import { Order } from '../../orderList/OrderList';
 import { Header, DetailsButton } from '../styledauth/OrderCardStyles';
+import { useTranslation } from 'react-i18next';
 
 interface OrderHeaderProps {
   order: Order;
@@ -11,20 +11,24 @@ interface OrderHeaderProps {
   isOpen: boolean;
 }
 
-const OrderHeader: React.FC<OrderHeaderProps> = ({ order, toggleAccordion, handleCancelClick, isOpen }) => (
-  <Header>
-    <p>Заказ #{order.id}</p>
-    <p>Статус: {order.status}</p>
-    <p>Общая сумма: ${order.total}</p>
-    <p>Время доставки: {order.delivery_time ? order.delivery_time : 'в ближайшее время'}</p>
-    <DetailsButton onClick={toggleAccordion}>
-      {isOpen ? 'Скрыть список' : 'Подробный список'}
-    </DetailsButton>
-    <CancelButton onClick={handleCancelClick}>
-      Отменить заказ
-    </CancelButton>
-  </Header>
-);
+const OrderHeader: React.FC<OrderHeaderProps> = ({ order, toggleAccordion, handleCancelClick, isOpen }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Header>
+      <p>{t('order')} #{order.id}</p>
+      <p>{t('status')}: {order.status}</p>
+      <p>{t('total')}: ${order.total}</p>
+      <p>{t('delivery_time')}: {order.delivery_time ? order.delivery_time : t('as_soon_as_possible')}</p>
+      <DetailsButton onClick={toggleAccordion}>
+        {isOpen ? t('hide_details') : t('show_details')}
+      </DetailsButton>
+      <CancelButton onClick={handleCancelClick}>
+        {t('cancel_order')}
+      </CancelButton>
+    </Header>
+  );
+};
 
 const CancelButton = styled.button`
   padding: 10px;
