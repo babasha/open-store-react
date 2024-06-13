@@ -53,5 +53,9 @@
   "confirm": "დადასტურება",
   "fetch_address_error": "მისამართის მიღების შეცდომა",
   "loading": "იტვირთება...",
-  "selected_address": "არჩეული მისამართი"
+  "selected_address": "არჩეული მისამართი",
+  "delivery_time_selected": "მიტანის დრო არჩეულია",
+  "delivery_day": "მიტანის დღე",
+  "today": "დღეს",
+  "tomorrow": "ხვალ"
 }

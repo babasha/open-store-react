@@ -53,5 +53,9 @@
   "confirm": "Confirm",
   "fetch_address_error": "Error fetching address",
   "loading": "Loading...",
-  "selected_address": "Selected address"
+  "selected_address": "Selected address",
+  "delivery_time_selected": "Delivery time selected",
+  "delivery_day": "Delivery Day",
+  "today": "Today",
+  "tomorrow": "Tomorrow"
 }
