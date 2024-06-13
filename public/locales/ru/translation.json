@@ -53,5 +53,9 @@
   "confirm": "Подтвердить",
   "fetch_address_error": "Ошибка при получении адреса",
   "loading": "Загрузка...",
-  "selected_address": "Выбранный адрес"
+  "selected_address": "Выбранный адрес",
+  "delivery_time_selected": "Время доставки выбрано",
+  "delivery_day": "День доставки",
+  "today": "Сегодня",
+  "tomorrow": "Завтра"
 }

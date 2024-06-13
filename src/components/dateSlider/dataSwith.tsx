@@ -1,63 +1,10 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { theme } from '../../styles/Theme';
 import { FlexWrapper } from '../FlexWrapper';
-
-interface ModalProps {
-  onClose: () => void;
-  children: React.ReactNode;
-}
-
-const Modal: React.FC<ModalProps> = ({ onClose, children }) => {
-  return createPortal(
-    <Backdrop onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
-        <CloseButton onClick={onClose}>×</CloseButton>
-        {children}
-      </ModalContent>
-    </Backdrop>,
-    document.body
-  );
-};
-
-const Backdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const ModalContent = styled.div`
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  position: relative;
-  min-width: 300px;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-`;
-
-const ModalInnerContent = styled.div`
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
+import Modal from './modal';
+import StyledButton from './StyledButton';
+import { TextContainer, ActiveText, ClickableText } from './DataSwitchStyles';
+import { ModalInnerContent } from './ModalStyles';
 
 interface DataSwitchProps {
   buttonText1: string;
@@ -65,7 +12,7 @@ interface DataSwitchProps {
   isActive1: boolean;
   isActive2: boolean;
   onSelectedDelivery: (delivery: { day: string; time: string }) => void;
-}    
+}
 
 const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isActive1, isActive2, onSelectedDelivery }) => {
   const [active, setActive] = useState(1);
@@ -95,16 +42,10 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
   return (
     <FlexWrapper direction='column'>
       <FlexWrapper>
-        <StyledButton
-          isActive={active === 1}
-          onClick={() => handleChange(1)}
-        >
+        <StyledButton isActive={active === 1} onClick={() => handleChange(1)}>
           {buttonText1}
         </StyledButton>
-        <StyledButton
-          isActive={active === 2}
-          onClick={() => handleChange(2)}
-        >
+        <StyledButton isActive={active === 2} onClick={() => handleChange(2)}>
           {buttonText2}
         </StyledButton>
       </FlexWrapper>
@@ -125,14 +66,14 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
             <h2>{t('choose_delivery_time')}</h2>
             <form onSubmit={handleDeliverySelect}>
               <label>
-                {t('День доставки')}:
+                {t('delivery_day')}:
                 <select name="day">
-                  <option value="Сегодня">{t('today')}</option>
-                  <option value="Завтра">{t('tomorrow')}</option>
+                  <option value="today">{t('today')}</option>
+                  <option value="tomorrow">{t('tomorrow')}</option>
                 </select>
               </label>
               <label>
-                {t('Время доставки')}:
+                {t('delivery_time')}:
                 <select name="time">
                   {Array.from({ length: 48 }).map((_, index) => {
                     const hours = String(Math.floor(index / 2)).padStart(2, '0');
@@ -149,47 +90,5 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
     </FlexWrapper>
   );
 };
-
-const StyledButton = styled.button<{ isActive: boolean }>`
-  border-radius: 30px;
-  cursor: pointer;
-  background-color: ${props => (props.isActive ? theme.button.buttonActive : 'transparent')};
-  color: ${props => (props.isActive ? 'white' : theme.button.buttonActive)};
-  border: ${props => (props.isActive ? theme.button.buttonActive : '1px solid #0098EA')};
-  font-size: 16px;
-  position: relative;
-  overflow: hidden;
-  width: 120px;
-  height: 35px;
-  transition: 0.3s;
-  margin: 0 5px;
-  pointer-events: auto;
-
-  &:hover {
-    background-color: ${props => (props.isActive ? theme.button.buttonActive : 'lightblue')};
-  }
-
-  &:disabled {
-    background-color: gray;
-  }
-`;
-
-const TextContainer = styled.div`
-  margin-top: 15px;
-  display: flex;
-`;
-
-const ActiveText = styled.p`
-  color: ${theme.button.buttonDisabled};
-`;
-
-const ClickableText = styled.p`
-  color: ${theme.button.buttonActive};;
-  cursor: pointer;
-  transition: color 0.2s;
-  &:hover {
-    color:${theme.button.buttonHover}
-  }
-`;
 
 export default DataSwitch;
