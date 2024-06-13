@@ -36,5 +36,6 @@
   "pending": "Pending",
   "assembly": "Assembly",
   "completed": "Completed",
-  "canceled": "Canceled"
+  "canceled": "Canceled",
+  "load_more": "Load more"
 }
