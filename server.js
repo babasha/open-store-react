@@ -248,15 +248,15 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
 
 // Создание заказа
 app.post('/orders', async (req, res) => {
-  const { userId, items, total, deliveryTime } = req.body;
+  const { userId, items, total, deliveryTime, deliveryAddress } = req.body; // Добавлено: deliveryAddress
 
   try {
     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
     const orderResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total, delivery_time) VALUES ($1, $2, $3, $4) RETURNING *',
-      [userId, JSON.stringify(items), total, deliveryTime || null]
+      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *', // Добавлено: delivery_address
+      [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address] // Добавлено: deliveryAddress
     );
 
     const orderId = orderResult.rows[0].id;

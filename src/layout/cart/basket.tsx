@@ -66,7 +66,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
-      deliveryAddress: user.address,
+      deliveryAddress: user.address, // Добавлено: адрес доставки
     };
 
     try {
