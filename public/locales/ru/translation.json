@@ -36,5 +36,6 @@
   "pending": "В ожидании",
   "assembly": "Сборка",
   "completed": "Завершен",
-  "canceled": "Отменен"
+  "canceled": "Отменен",
+  "load_more": "Загрузить еще"
 }
