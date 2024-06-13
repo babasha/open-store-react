@@ -1,7 +1,7 @@
 import React from 'react';
-import { motion, useAnimation, PanInfo } from 'framer-motion';
-import styled from 'styled-components';
+import { useAnimation, PanInfo } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { Overlay, ModalContent, ModalButton } from '../../../styles/ModalBaseStyles';
 
 interface CancelModalProps {
   handleConfirmCancel: () => void;
@@ -39,36 +39,5 @@ const CancelModal: React.FC<CancelModalProps> = ({ handleConfirmCancel, handleCl
     </Overlay>
   );
 };
-
-const Overlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-`;
-
-const ModalContent = styled(motion.div)`
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-`;
-
-const ModalButton = styled.button`
-  margin: 10px;
-  padding: 10px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
 
 export default CancelModal;
