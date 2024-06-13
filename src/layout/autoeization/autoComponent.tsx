@@ -1,5 +1,3 @@
-// src/components/AuthorizationComponent.tsx
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { Container } from '../../components/Container';
@@ -12,6 +10,7 @@ import MapPicker from '../../components/MapPicker';
 import Accordion from './Accordion';
 import OrderCard from './OrderCart/OrderCard';
 import { UserDetails, CardInner, OrderList } from './styledauth/AuthorizationStyles';
+import { useTranslation } from 'react-i18next';
 
 interface DisplayedCount {
   canceled: number;
@@ -31,6 +30,7 @@ const AuthorizationComponent: React.FC = () => {
   const [newAddress, setNewAddress] = useState('');
   const [displayedCount, setDisplayedCount] = useState<DisplayedCount>({ canceled: 3, completed: 3 });
   const [isOpen, setIsOpen] = useState<IsOpen>({ canceled: false, completed: false });
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) {
@@ -138,37 +138,37 @@ const AuthorizationComponent: React.FC = () => {
   const getStatusText = useCallback((status: string) => {
     switch (status) {
       case 'ready_for_delivery':
-        return 'готов к доставке';
+        return t('ready_for_delivery');
       default:
-        return status;
+        return t(status);
     }
-  }, []);
+  }, [t]);
 
   return (
     <Container width={'100%'}>
       <CardInner>
         {user ? (
           <UserDetails>
-            <h2>Добро пожаловать, {user.first_name} {user.last_name}</h2>
-            <p>Адрес: {user.address}</p>
-            <p>Телефон: {user.phone}</p>
-            <button onClick={logout}>Выйти</button>
-            <button onClick={() => setIsEditingAddress(true)}>Редактировать адрес</button>
+            <h2>{t('welcome')}, {user.first_name} {user.last_name}</h2>
+            <p>{t('address')}: {user.address}</p>
+            <p>{t('phone')}: {user.phone}</p>
+            <button onClick={logout}>{t('logout')}</button>
+            <button onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</button>
             {isEditingAddress && (
               <div>
                 <MapPicker onAddressSelect={(address: string) => setNewAddress(address)} />
-                <button onClick={handleAddressSave}>Сохранить адрес</button>
-                <button onClick={() => setIsEditingAddress(false)}>Отмена</button>
+                <button onClick={handleAddressSave}>{t('save_address')}</button>
+                <button onClick={() => setIsEditingAddress(false)}>{t('cancel')}</button>
               </div>
             )}
-            <h3>Ваши активные заказы</h3>
+            <h3>{t('active_orders')}</h3>
             <OrderList>
               {currentOrders.map(order => (
                 <OrderCard key={order.id} order={{ ...order, status: getStatusText(order.status) }} />
               ))}
             </OrderList>
             <Accordion
-              title="Отмененные заказы"
+              title={t('canceled_orders')}
               isOpen={isOpen.canceled}
               onClick={() => toggleAccordion('canceled')}
               orders={canceledOrders.map(order => ({ ...order, status: getStatusText(order.status) }))}
@@ -176,7 +176,7 @@ const AuthorizationComponent: React.FC = () => {
               allOrdersCount={orders.filter(order => order.status === 'canceled').length}
             />
             <Accordion
-              title="Завершенные заказы"
+              title={t('completed_orders')}
               isOpen={isOpen.completed}
               onClick={() => toggleAccordion('completed')}
               orders={completedOrders.map(order => ({ ...order, status: getStatusText(order.status) }))}
@@ -188,19 +188,19 @@ const AuthorizationComponent: React.FC = () => {
           <div>
             {authMode === '' && (
               <div>
-                <button onClick={() => handleSetAuthMode('login')}>Войти</button>
-                <button onClick={() => handleSetAuthMode('register')}>Зарегистрироваться</button>
+                <button onClick={() => handleSetAuthMode('login')}>{t('login')}</button>
+                <button onClick={() => handleSetAuthMode('register')}>{t('register')}</button>
               </div>
             )}
             {authMode === 'login' && (
               <div>
-                <button onClick={() => handleSetAuthMode('')}>Назад</button>
+                <button onClick={() => handleSetAuthMode('')}>{t('back')}</button>
                 <LoginComponent />
               </div>
             )}
             {authMode === 'register' && (
               <div>
-                <button onClick={() => handleSetAuthMode('')}>Назад</button>
+                <button onClick={() => handleSetAuthMode('')}>{t('back')}</button>
                 <RegisterComponent onAuthModeChange={handleSetAuthMode} />
               </div>
             )}
