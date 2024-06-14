@@ -1,7 +1,7 @@
 // src/styles/btns/ButtonStyles.ts
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { theme } from '../../styles/Theme';
+import { theme } from '../Theme';
 
 interface ButtonProps {
   isActive: boolean;
@@ -27,7 +27,7 @@ export const Button = styled(motion.button)<ButtonProps>`
   }
 
   &:disabled {
-    background-color: #808080;
+    background-color: ${theme.button.buttonActive};
   }
 `;
 
