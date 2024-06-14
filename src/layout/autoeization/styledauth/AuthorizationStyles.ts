@@ -1,4 +1,4 @@
-// src/components/AuthorizationStyles.ts
+// src/components/styledauth/AuthorizationStyles.ts
 import styled from 'styled-components';
 import { theme } from '../../../styles/Theme';
 
