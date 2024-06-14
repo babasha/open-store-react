@@ -9,6 +9,8 @@ import OrderCard from './OrderCart/OrderCard';
 import { UserDetails as UserDetailsContainer, CardInner, OrderList } from './styledauth/AuthorizationStyles'; // Изменено имя импорта
 import { useAuth, AuthContextType, User } from '../autoeization/AuthContext';
 import { Order } from '../orderList/OrderList';
+import { EditButton } from '../../styles/btns/secondBtns';
+import { FlexWrapper } from '../../components/FlexWrapper';
 
 interface UserDetailsProps {
   user: User;
@@ -74,11 +76,14 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders, 
 
   return (
     <UserDetailsContainer>
-      <h2>{t('welcome')}, {user.first_name} {user.last_name}</h2>
+      
+             
+      <h2>{t('welcome')}</h2>
+      <h6> {user.first_name} {user.last_name}</h6>
       <p>{t('address')}: {user.address}</p>
+      <EditButton onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</EditButton>
+
       <p>{t('phone')}: {user.phone}</p>
-      <button onClick={logout}>{t('logout')}</button>
-      <button onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</button>
       {isEditingAddress && (
         <div>
           <MapPicker onAddressSelect={(address: string) => setNewAddress(address)} />
@@ -108,8 +113,12 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders, 
         loadMore={() => loadMoreOrders('completed')}
         allOrdersCount={orders.filter(order => order.status === 'completed').length}
       />
+        <FlexWrapper justify='flex-end'>
+           <EditButton onClick={logout}>{t('logout')}</EditButton>
+        </FlexWrapper>
     </UserDetailsContainer>
   );
 };
 
 export default UserDetails;
+
