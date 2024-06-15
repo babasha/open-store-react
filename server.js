@@ -190,6 +190,24 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
+// Обновление информации о доставке
+app.put('/orders/:id/delivery-option', isAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { delivery_option } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET delivery_option = $1 WHERE id = $2 RETURNING *',
+      [delivery_option, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка обновления информации о доставке:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
 
 // Обновление роли пользователя
 app.put('/users/:id/role', isAdmin, async (req, res) => {
