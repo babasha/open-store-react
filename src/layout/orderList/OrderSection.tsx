@@ -1,9 +1,8 @@
-// src/layout/orderList/OrderSection.tsx
-
 import React from 'react';
 import { Order } from './OrderList'; // Убедитесь, что импортируется правильный тип
 import OrderItem from './OrderItem';
 import { StyledOrderList, CanceledOrderList, SectionTitle, ToggleButton } from '../../styles/OrderListStyles';
+import { useAuth } from '../autoeization/AuthContext'; // Убедитесь, что путь к AuthContext правильный
 
 interface OrderSectionProps {
   title: string;
@@ -22,32 +21,47 @@ const OrderSection: React.FC<OrderSectionProps> = ({
   setShowCanceledOrders,
   disableTimers
 }) => {
+  const { user } = useAuth();
+
   return (
     <div>
       <SectionTitle>{title}</SectionTitle>
-      {showCanceledOrders !== undefined && setShowCanceledOrders !== undefined ? (
+      {user?.role === 'admin' ? (
         <>
-          <ToggleButton onClick={() => setShowCanceledOrders(!showCanceledOrders)}>
-            {showCanceledOrders ? 'Скрыть отмененные заказы' : 'Показать отмененные заказы'}
-          </ToggleButton>
+          {showCanceledOrders !== undefined && setShowCanceledOrders !== undefined && (
+            <ToggleButton onClick={() => setShowCanceledOrders(!showCanceledOrders)}>
+              {showCanceledOrders ? 'Скрыть отмененные заказы' : 'Показать отмененные заказы'}
+            </ToggleButton>
+          )}
           {showCanceledOrders && (
             <CanceledOrderList>
-              {orders.map((order) => (
-                <OrderItem
-                  key={order.id}
-                  order={order}
-                  setOrders={setOrders}
-                  disableTimers={disableTimers}
-                />
-              ))}
+              {orders
+                .filter(order => order.status === 'canceled')
+                .map((order) => (
+                  <OrderItem
+                    key={order.id}
+                    order={order}
+                    setOrders={setOrders}
+                    disableTimers={disableTimers}
+                  />
+                ))}
             </CanceledOrderList>
           )}
+          <StyledOrderList>
+            {orders
+              .filter(order => order.status !== 'canceled')
+              .map((order) => (
+                <OrderItem key={order.id} order={order} setOrders={setOrders} />
+              ))}
+          </StyledOrderList>
         </>
       ) : (
         <StyledOrderList>
-          {orders.map((order) => (
-            <OrderItem key={order.id} order={order} setOrders={setOrders} />
-          ))}
+          {orders
+            .filter(order => order.status !== 'canceled')
+            .map((order) => (
+              <OrderItem key={order.id} order={order} setOrders={setOrders} />
+            ))}
         </StyledOrderList>
       )}
     </div>
