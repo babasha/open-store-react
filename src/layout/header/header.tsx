@@ -10,9 +10,10 @@ import { theme } from '../../styles/Theme';
 interface HeaderProps {
   activeTab?: 'products' | 'users' | 'orders';
   setActiveTab?: (tab: 'products' | 'users' | 'orders') => void;
+  userRole?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRole }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -42,24 +43,26 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
       <FlexWrapper>
         <h1>Open market</h1>
       </FlexWrapper>
-      {/* <DateSlider/> */}
 
-      {/* <TextInput  label="First Name"/> */}
       <FlexWrapper justify='center'>
         {setActiveTab && (
           <Nav>
-            <NavButton
-              onClick={() => setActiveTab('products')}
-              active={activeTab === 'products'}
-            >
-              Список товаров
-            </NavButton>
-            <NavButton
-              onClick={() => setActiveTab('users')}
-              active={activeTab === 'users'}
-            >
-              Список клиентов
-            </NavButton>
+            {userRole !== 'courier' && (
+              <>
+                <NavButton
+                  onClick={() => setActiveTab('products')}
+                  active={activeTab === 'products'}
+                >
+                  Список товаров
+                </NavButton>
+                <NavButton
+                  onClick={() => setActiveTab('users')}
+                  active={activeTab === 'users'}
+                >
+                  Список клиентов
+                </NavButton>
+              </>
+            )}
             <NavButton
               onClick={() => setActiveTab('orders')}
               active={activeTab === 'orders'}

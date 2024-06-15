@@ -1,5 +1,7 @@
+// src/components/StatisticsSection.tsx
 import React from 'react';
 import Statistics from './Statistics';
+import { useAuth } from '../autoeization/AuthContext';
 
 interface StatisticsSectionProps {
   avgPendingTime: string;
@@ -8,6 +10,12 @@ interface StatisticsSectionProps {
 }
 
 const StatisticsSection: React.FC<StatisticsSectionProps> = ({ avgPendingTime, hourChartData, dayChartData }) => {
+  const { user } = useAuth();
+
+  if (user?.role === 'courier') {
+    return null; // Не отображаем статистику для курьеров
+  }
+
   return (
     <Statistics
       avgPendingTime={avgPendingTime}

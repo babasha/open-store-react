@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         socket.emit('login', parsedUser.id); // Подключение к сокету при восстановлении
       } catch (error) {
-        console.error('Error parsing stored user data:', error);
+        console.error('Ошибка при парсинге данных пользователя из localStorage:', error);
       }
     }
   }, []);
@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth должен использоваться внутри AuthProvider');
   }
   return context;
 };
