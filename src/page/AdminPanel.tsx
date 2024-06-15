@@ -5,19 +5,20 @@ import ProductList from '../layout/productList/ProductList';
 import UserList from '../layout/userList/UserList';
 import { AdminPanelContainer, Section } from '../styles/AdminPanelStyles';
 import OrderList from '../layout/orderList/OrderList';
+import CourierList from '../layout/couriers/CourierMain'; // Импортируем CourierList
 import { useAuth } from '../layout/autoeization/AuthContext';
 
 interface AdminPanelProps {
-  initialTab?: 'products' | 'users' | 'orders';
+  initialTab?: 'products' | 'users' | 'orders' | 'couriers';
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ initialTab = 'products' }) => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'products' | 'users' | 'orders'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'products' | 'users' | 'orders' | 'couriers'>(initialTab);
 
   useEffect(() => {
     if (user?.role === 'courier') {
-      setActiveTab('orders'); // Если роль курьер, устанавливаем начальную вкладку на "orders"
+      setActiveTab('couriers'); // Если роль курьер, устанавливаем начальную вкладку на "couriers"
     } else {
       setActiveTab(initialTab);
     }
@@ -29,6 +30,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ initialTab = 'products' }) => {
       {activeTab === 'products' && user?.role !== 'courier' && <ProductList />}
       {activeTab === 'users' && user?.role !== 'courier' && <UserList />}
       {activeTab === 'orders' && <OrderList />}
+      {activeTab === 'couriers' && user?.role === 'courier' && <CourierList />}
     </AdminPanelContainer>
   );
 };
