@@ -1,6 +1,5 @@
-// src/layout/orderList/OrderProductList.tsx
-
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../autoeization/AuthContext'; // Ensure the correct path to AuthContext
 
 interface Item {
   productId: number;
@@ -18,6 +17,7 @@ interface Props {
 }
 
 const OrderProductList: React.FC<Props> = ({ items, handleQuantityChange, handleConfirmChange, handleReadyChange, showCheckboxes }) => {
+  const { user } = useAuth();
   const [localItems, setLocalItems] = useState(items);
   const [changedItems, setChangedItems] = useState<number[]>([]);
 
@@ -50,20 +50,24 @@ const OrderProductList: React.FC<Props> = ({ items, handleQuantityChange, handle
         {localItems.map((item) => (
           <li key={item.productId}>
             Продукт: {item.productName} (ID: {item.productId}) - Количество: {item.quantity}
-            <button onClick={() => handleLocalQuantityChange(item.productId, 1)}>+</button>
-            <button onClick={() => handleLocalQuantityChange(item.productId, -1)} disabled={item.quantity <= 0}>-</button>
-            {changedItems.includes(item.productId) && (
-              <button onClick={() => handleConfirmClick(item.productId, item.quantity)}>Подтвердить</button>
-            )}
-            {showCheckboxes && (
-              <label>
-                <input 
-                  type="checkbox" 
-                  checked={item.ready} 
-                  onChange={(e) => handleReadyChange(item.productId, e.target.checked)} 
-                />
-                Готово
-              </label>
+            {user?.role === 'admin' && (
+              <>
+                <button onClick={() => handleLocalQuantityChange(item.productId, 1)}>+</button>
+                <button onClick={() => handleLocalQuantityChange(item.productId, -1)} disabled={item.quantity <= 0}>-</button>
+                {changedItems.includes(item.productId) && (
+                  <button onClick={() => handleConfirmClick(item.productId, item.quantity)}>Подтвердить</button>
+                )}
+                {showCheckboxes && (
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      checked={item.ready} 
+                      onChange={(e) => handleReadyChange(item.productId, e.target.checked)} 
+                    />
+                    Готово
+                  </label>
+                )}
+              </>
             )}
           </li>
         ))}

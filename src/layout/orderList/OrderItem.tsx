@@ -1,10 +1,9 @@
-// src/layout/orderList/OrderItem.tsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton, OrderDetailsContainer } from '../../styles/OrderListStyles';
 import OrderDetails from './OrderDetails';
-import { Order } from './OrderList'; // Убедитесь, что импортируется правильный тип
+import { Order } from './OrderList'; // Ensure the correct type is imported
+import { useAuth } from '../autoeization/AuthContext'; // Ensure the correct path to AuthContext
 
 interface Props {
   order: Order;
@@ -13,11 +12,12 @@ interface Props {
 }
 
 const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
+  const { user } = useAuth();
   const [localOrder, setLocalOrder] = useState<Order>({
     ...order,
     items: order.items.map(item => ({
       ...item,
-      ready: item.ready ?? false // Установка значения по умолчанию
+      ready: item.ready ?? false // Set default value
     }))
   });
 
@@ -26,7 +26,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
       ...order,
       items: order.items.map(item => ({
         ...item,
-        ready: item.ready ?? false // Установка значения по умолчанию
+        ready: item.ready ?? false // Set default value
       }))
     });
   }, [order]);
@@ -44,14 +44,14 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
   }, []);
 
   useEffect(() => {
-    if (disableTimers) return;
+    if (disableTimers || user?.role === 'courier') return;
 
     const createdAt = new Date(order.created_at);
     const statusChangedAt = new Date(order.status_changed_at || order.created_at);
-    
+
     const calculateTimes = () => {
       const now = new Date();
-      
+
       let deliveryTime = new Date();
       if (order.delivery_time) {
         const [day, time] = order.delivery_time.split(', ');
@@ -60,7 +60,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
         if (day === 'Завтра') {
           deliveryTime.setDate(deliveryTime.getDate() + 1);
         }
-        
+
         deliveryTime.setHours(hours);
         deliveryTime.setMinutes(minutes);
         deliveryTime.setSeconds(0);
@@ -79,7 +79,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
     const intervalId = setInterval(calculateTimes, 1000);
 
     return () => clearInterval(intervalId);
-  }, [order, disableTimers, formatDuration]);
+  }, [order, disableTimers, formatDuration, user]);
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
@@ -91,7 +91,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
         )
       );
     } catch (error: any) {
-      console.error('Ошибка при обновлении статуса заказа:', error.message);
+      console.error('Error updating order status:', error.message);
     }
   };
 
@@ -105,7 +105,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
         )
       );
     } catch (error: any) {
-      console.error('Ошибка при отмене заказа:', error.message);
+      console.error('Error canceling order:', error.message);
     }
   };
 
@@ -123,7 +123,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
       );
       const updatedOrder = { ...localOrder, items: updatedItems };
 
-      // Убедитесь, что данные о пользователе не пропадают
+      // Ensure user data is not lost
       const orderWithUserData = {
         ...updatedOrder,
         first_name: order.first_name,
@@ -141,7 +141,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
         )
       );
     } catch (error: any) {
-      console.error('Ошибка при изменении количества продукта:', error.message);
+      console.error('Error updating product quantity:', error.message);
     }
   };
 
@@ -159,7 +159,9 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
       <OrderDetailsContainer>
         <div className="order-header">
           <p>Идентификатор заказа: <strong>{order.id}</strong></p>
-          <p>Идентификатор пользователя: <strong>{order.user_id}</strong></p>
+          {user?.role === 'admin' && (
+            <p>Идентификатор пользователя: <strong>{order.user_id}</strong></p>
+          )}
         </div>
         <div className="order-user-info">
           <p>Пользователь: <strong>{order.first_name} {order.last_name}</strong></p>
@@ -171,7 +173,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
           <p>Статус: <strong>{order.status}</strong></p>
           <p>Время доставки: <strong>{order.delivery_time}</strong></p>
         </div>
-        {!disableTimers && (
+        {!disableTimers && user?.role === 'admin' && (
           <div className="order-timers">
             <p>Время с момента создания: <strong>{timeSinceCreation}</strong></p>
             <p>Время до доставки: <strong>{timeUntilDelivery}</strong></p>
