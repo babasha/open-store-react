@@ -11,11 +11,13 @@ interface User {
   phone: string;
   telegram_username: string;
   role: string;
+  status: string;
 }
 
 const UserList = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [roleChanges, setRoleChanges] = useState<{ [key: number]: string }>({}); 
 
   useEffect(() => {
     fetch('/users')
@@ -42,10 +44,20 @@ const UserList = () => {
   };
 
   const handleRoleChange = (userId: number, newRole: string) => {
+    setRoleChanges((prev) => ({ ...prev, [userId]: newRole }));
+  };
+
+  const updateRole = (userId: number) => {
+    const newRole = roleChanges[userId];
+    console.log(`Updating role for user ${userId} to ${newRole}`);
+
+    const token = localStorage.getItem('token');
+
     fetch(`/users/${userId}/role`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ role: newRole }),
     })
@@ -84,13 +96,15 @@ const UserList = () => {
               <p>Phone: {user.phone}</p>
               <p>Telegram: {user.telegram_username}</p>
               <p>Role: {user.role}</p>
+              <p>Status: {user.status}</p>
               <RoleSelect
-                value={user.role}
+                value={roleChanges[user.id] || user.role}
                 onChange={(e) => handleRoleChange(user.id, e.target.value)}
               >
                 <option value="courier">Courier</option>
                 <option value="user">User</option>
               </RoleSelect>
+              <Button onClick={() => updateRole(user.id)}>Обновить роль</Button>
             </UserDetails>
           </ListItem>
         ))}

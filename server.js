@@ -136,6 +136,24 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
   }
 });
 
+// Обновление статуса пользователя
+app.put('/users/:id/role', isAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  console.log(`Updating role for user ${id} to ${role}`); // Логирование значения роли
+
+  try {
+    const result = await pool.query(
+      'UPDATE users SET role = $1 WHERE id = $2 RETURNING *',
+      [role, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка обновления роли пользователя:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
 // Обновление продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
@@ -447,7 +465,7 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
 // Получение всех пользователей
 app.get('/users', async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, first_name, last_name, email, address, phone FROM users');
+    const result = await pool.query('SELECT id, first_name, last_name, email, address, phone, role FROM users');
     res.json(result.rows);
   } catch (err) {
     console.error('Ошибка получения пользователей:', err.message);
