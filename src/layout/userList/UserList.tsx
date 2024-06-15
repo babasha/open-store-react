@@ -17,7 +17,7 @@ interface User {
 const UserList = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [roleChanges, setRoleChanges] = useState<{ [key: number]: string }>({}); 
+  const [roleChanges, setRoleChanges] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
     fetch('/users')

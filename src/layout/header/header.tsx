@@ -1,5 +1,6 @@
+// src/layout/header/header.tsx
 import React, { useRef, useState } from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import LanguageSwitcher from '../../components/LanguageSwitcher/LanguageSwitcher';
 import { motion } from 'framer-motion';
@@ -8,8 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
 
 interface HeaderProps {
-  activeTab?: 'products' | 'users' | 'orders';
-  setActiveTab?: (tab: 'products' | 'users' | 'orders') => void;
+  activeTab?: 'products' | 'users' | 'orders' | 'couriers';
+  setActiveTab?: (tab: 'products' | 'users' | 'orders' | 'couriers') => void;
   userRole?: string;
 }
 
@@ -69,6 +70,14 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRol
             >
               Список заказов
             </NavButton>
+            {userRole === 'courier' && (
+              <NavButton
+                onClick={() => setActiveTab('couriers')}
+                active={activeTab === 'couriers'}
+              >
+                Мои данные
+              </NavButton>
+            )}
           </Nav>
         )}
         <Button

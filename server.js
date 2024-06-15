@@ -98,7 +98,62 @@ app.get('/products', async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
+// Получение всех курьеров
+app.get('/couriers', isAuthenticated, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM couriers');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Ошибка получения курьеров:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+// Получение данных об конкретном курьере
+app.get('/couriers/me', isAuthenticated, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM couriers WHERE user_id = $1', [req.user.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Курьер не найден' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка получения курьера:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+// Обновление статуса курьера
+app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
+  const { status } = req.body;
+  const userId = req.user.id;
 
+  try {
+    const result = await pool.query(
+      'UPDATE couriers SET status = $1 WHERE user_id = $2 RETURNING *',
+      [status, userId]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка обновления статуса курьера:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+
+// Обновление данных курьера
+app.get('/couriers/me', isAuthenticated, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM couriers WHERE user_id = $1',
+      [userId]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка получения данных курьера:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
 // Добавление нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price } = req.body;
@@ -136,24 +191,43 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
   }
 });
 
-// Обновление статуса пользователя
+// Обновление роли пользователя
 app.put('/users/:id/role', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
 
   console.log(`Updating role for user ${id} to ${role}`); // Логирование значения роли
 
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
+    await client.query('BEGIN');
+
+    // Обновление роли пользователя
+    const userUpdateResult = await client.query(
       'UPDATE users SET role = $1 WHERE id = $2 RETURNING *',
       [role, id]
     );
-    res.json(result.rows[0]);
+
+    const updatedUser = userUpdateResult.rows[0];
+    // Если роль обновляется на "courier", добавляем данные в таблицу couriers
+    if (role === 'courier') {
+      await client.query(
+        'INSERT INTO couriers (user_id, first_name, last_name, email, address, phone, telegram_username) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [updatedUser.id, updatedUser.first_name, updatedUser.last_name, updatedUser.email, updatedUser.address, updatedUser.phone, updatedUser.telegram_username]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.json(updatedUser);
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Ошибка обновления роли пользователя:', err.message);
     res.status(500).send('Ошибка сервера');
+  } finally {
+    client.release();
   }
 });
+
 // Обновление продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
@@ -465,7 +539,7 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
 // Получение всех пользователей
 app.get('/users', async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, first_name, last_name, email, address, phone, role FROM users');
+    const result = await pool.query('SELECT id, first_name, last_name, email, address, phone, telegram_username, role FROM users');
     res.json(result.rows);
   } catch (err) {
     console.error('Ошибка получения пользователей:', err.message);
