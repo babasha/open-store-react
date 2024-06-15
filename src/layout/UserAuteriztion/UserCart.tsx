@@ -23,17 +23,21 @@ const LoginComponent: React.FC = () => {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+        throw new Error(data.error || 'Что-то пошло не так');
       }
       login(data.user, data.token); // Передаем данные пользователя и токен
-      if (data.user.role === 'admin') {
-        navigate('/admin'); // Перенаправляем админа в админ панель
+
+      // Логирование данных пользователя для отладки
+      console.log('Данные пользователя после входа:', data.user);
+
+      if (data.user.role === 'admin' || data.user.role === 'courier') {
+        navigate('/admin'); // Перенаправляем админа и курьера в админ панель
       } else {
-        navigate('/'); // Перенаправляем пользователя на главную страницу
+        navigate('/'); // Перенаправляем других пользователей на главную страницу
       }
     } catch (error) {
       const errorMessage = (error as Error).message;
-      console.error('Login error:', errorMessage);
+      console.error('Ошибка входа:', errorMessage);
       alert(errorMessage); // Отобразите сообщение об ошибке пользователю
     }
   };

@@ -17,6 +17,11 @@ export const Form = styled.div`
   flex-direction: column;
   gap: 10px;
 `;
+export const RoleSelect = styled.select`
+  margin-top: 10px;
+  padding: 5px;
+  font-size: 16px;
+`;
 
 export const Input = styled.input`
   padding: 10px;
