@@ -20,32 +20,31 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ onLanguageChange })
       <LanguageSwitcherBtn onClick={() => changeLanguage('en')}>English</LanguageSwitcherBtn>
       <LanguageSwitcherBtn onClick={() => changeLanguage('ru')}>Русский</LanguageSwitcherBtn>
       <LanguageSwitcherBtn onClick={() => changeLanguage('geo')}>Georgian</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('it')}>Italian</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('pl')}>Poland</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('es')}>Español</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('de')}>Deutsch</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('tr')}>Türkçe</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('he')}>עברית</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('zh')}>中文</LanguageSwitcherBtn>
+      <LanguageSwitcherBtn onClick={() => changeLanguage('hi')}>हिंदी</LanguageSwitcherBtn>
     </LanguageSwitcherInner>
   );
 };
 
-
-
-
-
 const LanguageSwitcherBtn = styled.button`
-/* margin: 20px; */
-/* height: 20px; */
-transition: 0.2s;
-margin: 10px;
-&:hover {
+  transition: 0.2s;
+  margin: 10px;
+  &:hover {
     background-color: ${theme.colors.primaryBg};
     width: 100%;
   }
-`
-const LanguageSwitcherInner = styled.button`
-display:flex;
-/* align-items: center; */
-/* flex-wrap: nowrap; */
-flex-direction: column;
-justify-content: center;
-/* width: 50px; */
+`;
 
+const LanguageSwitcherInner = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
 
-`
 export default LanguageSwitcher;
