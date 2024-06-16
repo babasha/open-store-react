@@ -295,6 +295,42 @@ app.post('/auth/register', async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера', message: err.message });
   }
 });
+// Обновление режима доставки для всех активных заказов
+app.put('/orders/delivery-mode', isAdmin, async (req, res) => {
+  const { delivery_option } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE orders 
+       SET delivery_option = $1 
+       WHERE status != 'canceled' RETURNING *`,
+      [delivery_option]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Ошибка обновления режима доставки для всех заказов:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+// Обновление режима доставки для конкретного заказа
+app.put('/orders/:id/delivery-option', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  const { delivery_option } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET delivery_option = $1 WHERE id = $2 RETURNING *',
+      [delivery_option, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка обновления режима доставки для заказа:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
 
 // Вход пользователя
 app.post('/auth/login', async (req, res) => {

@@ -244,3 +244,25 @@ export const DisabledCancelButton = styled(CancelButton)`
 //     opacity: 0.6;
 //   }
 // `;
+// src/styles/OrderListStyles.ts
+
+
+
+export const SwitcherContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+`;
+
+export const SwitcherButton = styled.button<{ active: boolean }>`
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  background-color: ${({ active }) => (active ? '#4CAF50' : '#f1f1f1')};
+  color: ${({ active }) => (active ? '#fff' : '#000')};
+  font-size: 16px;
+
+  &:hover {
+    background-color: #ddd;
+  }
+`;

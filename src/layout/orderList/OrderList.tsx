@@ -1,4 +1,5 @@
 // src/layout/orderList/OrderList.tsx
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
@@ -7,13 +8,14 @@ import socket from '../../socket';
 import FilterSection from './FilterSection';
 import OrderSection from './OrderSection';
 import StatisticsSection from './StatisticsSection';
+import DeliveryModeSwitcher from './DeliveryModeSwitcher';
 import { Container, Title } from '../../styles/OrderListStyles';
 
 export interface Item {
   productId: number;
   productName: string;
   quantity: number;
-  ready: boolean; // Поле ready теперь обязательно
+  ready: boolean;
 }
 
 export interface Order {
@@ -28,6 +30,7 @@ export interface Order {
   created_at: string;
   delivery_time: string;
   status_changed_at?: string;
+  delivery_option: string;
   items: Item[];
 }
 
@@ -41,6 +44,7 @@ const OrderList: React.FC = () => {
   const [avgPendingTime, setAvgPendingTime] = useState<string>('');
   const [orderStatistics, setOrderStatistics] = useState<{ hours: number[], days: number[] }>({ hours: [], days: [] });
   const [showCanceledOrders, setShowCanceledOrders] = useState<boolean>(false);
+  const [deliveryMode, setDeliveryMode] = useState<'courier' | 'manual' | 'self'>('courier');
 
   useEffect(() => {
     fetchOrders();
@@ -216,12 +220,32 @@ const OrderList: React.FC = () => {
     setEndDate(new Date(today.setHours(23, 59, 59, 999)));
   }, []);
 
+  const updateAllOrdersDeliveryMode = async (mode: 'courier' | 'manual' | 'self') => {
+    try {
+      const response = await axios.put('http://localhost:3000/orders/delivery-mode', { delivery_option: mode }, { withCredentials: true });
+      const updatedOrders = response.data;
+      setOrders(prevOrders =>
+        prevOrders.map(order => {
+          const updatedOrder = updatedOrders.find((upd: Order) => upd.id === order.id);
+          return updatedOrder ? { ...order, delivery_option: updatedOrder.delivery_option } : order;
+        })
+      );
+    } catch (error) {
+      console.error('Ошибка обновления режима доставки для всех заказов:', error);
+    }
+  };
+
   const activeOrders = useMemo(() => filterOrders.filter(order => order.status !== 'canceled'), [filterOrders]);
   const canceledOrders = useMemo(() => filterOrders.filter(order => order.status === 'canceled'), [filterOrders]);
 
   return (
     <Container>
       <Title>Список заказов</Title>
+      <DeliveryModeSwitcher 
+        deliveryMode={deliveryMode} 
+        setDeliveryMode={setDeliveryMode} 
+        updateAllOrdersDeliveryMode={updateAllOrdersDeliveryMode}
+      />
       <FilterSection
         searchTerm={searchTerm}
         setSearchTerm={handleSearch}
