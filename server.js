@@ -295,35 +295,7 @@ app.post('/auth/register', async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера', message: err.message });
   }
 });
-// Обновление режима доставки для всех активных заказов
-// app.put('/orders/delivery-mode', isAdmin, async (req, res) => {
-//   const { delivery_option } = req.body;
 
-//   try {
-//     const result = await pool.query(
-//       `UPDATE orders 
-//        SET delivery_option = $1 
-//        WHERE status != 'canceled' RETURNING *`,
-//       [delivery_option]
-//     );
-
-//     res.json(result.rows);
-//   } catch (err) {
-//     console.error('Ошибка обновления режима доставки для всех заказов:', err.message);
-//     res.status(500).send('Ошибка сервера');
-//   }
-// });
-app.put('/orders/delivery-mode', async (req, res) => {
-  const { deliveryMode } = req.body;
-
-  try {
-    await pool.query('UPDATE orders SET delivery_option = $1 WHERE status != $2', [deliveryMode, 'canceled']);
-    res.status(200).json({ message: 'Delivery mode updated for all active orders.' });
-  } catch (error) {
-    console.error('Ошибка при обновлении режима доставки:', error.message);
-    res.status(500).json({ error: 'Ошибка сервера' });
-  }
-});
 
 // Обновление режима доставки для конкретного заказа
 app.put('/orders/:id/delivery-option', isAuthenticated, async (req, res) => {
