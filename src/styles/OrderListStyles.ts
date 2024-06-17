@@ -283,3 +283,10 @@ export const SelectDropdown = styled.select`
     border-color: #4CAF50;
   }
 `;
+
+
+
+export const DeliveryOption = styled.p`
+  font-weight: bold;
+  color: #333;
+`;

@@ -8,14 +8,14 @@ import socket from '../../socket';
 import FilterSection from './FilterSection';
 import OrderSection from './OrderSection';
 import StatisticsSection from './StatisticsSection';
-import DeliveryModeSwitcher from './DeliveryModeSwitcher';
+import DeliveryModeSwitcher from './DeliveryModeSwitcher'; // Добавляем импорт
 import { Container, Title } from '../../styles/OrderListStyles';
 
 export interface Item {
   productId: number;
   productName: string;
   quantity: number;
-  ready: boolean;
+  ready: boolean; // Поле ready теперь обязательно
 }
 
 export interface Order {
@@ -44,7 +44,7 @@ const OrderList: React.FC = () => {
   const [avgPendingTime, setAvgPendingTime] = useState<string>('');
   const [orderStatistics, setOrderStatistics] = useState<{ hours: number[], days: number[] }>({ hours: [], days: [] });
   const [showCanceledOrders, setShowCanceledOrders] = useState<boolean>(false);
-  const [deliveryMode, setDeliveryMode] = useState<'courier' | 'manual' | 'self'>('courier');
+  const [deliveryMode, setDeliveryMode] = useState<'courier' | 'manual' | 'self'>('courier'); // Добавлено
 
   useEffect(() => {
     fetchOrders();
@@ -66,14 +66,19 @@ const OrderList: React.FC = () => {
       setOrders(fetchedOrders);
       calculateAvgPendingTime(fetchedOrders);
       calculateOrderStatistics(fetchedOrders);
-    } catch (error: any) {
-      console.error('Ошибка при получении заказов:', error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Ошибка при получении заказов:', error.message);
+      } else {
+        console.error('Ошибка при получении заказов:', error);
+      }
     }
   }, []);
 
   const handleNewOrder = useCallback((newOrder: Order) => {
+    newOrder.delivery_option = deliveryMode; // Устанавливаем текущий режим доставки новому заказу
     setOrders((prevOrders) => [...prevOrders, newOrder]);
-  }, []);
+  }, [deliveryMode]);
 
   const handleOrderUpdated = useCallback((updatedOrder: Order) => {
     setOrders((prevOrders) =>
@@ -82,6 +87,21 @@ const OrderList: React.FC = () => {
       )
     );
   }, []);
+
+  const updateDeliveryMode = async (mode: 'courier' | 'manual' | 'self') => {
+    try {
+      await axios.put('http://localhost:3000/orders/delivery-mode', { deliveryMode: mode }, { withCredentials: true });
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => ({ ...order, delivery_option: mode }))
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Ошибка при обновлении режима доставки:', error.message);
+      } else {
+        console.error('Ошибка при обновлении режима доставки:', error);
+      }
+    }
+  };
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
@@ -220,21 +240,6 @@ const OrderList: React.FC = () => {
     setEndDate(new Date(today.setHours(23, 59, 59, 999)));
   }, []);
 
-  const updateAllOrdersDeliveryMode = async (mode: 'courier' | 'manual' | 'self') => {
-    try {
-      const response = await axios.put('http://localhost:3000/orders/delivery-mode', { delivery_option: mode }, { withCredentials: true });
-      const updatedOrders = response.data;
-      setOrders(prevOrders =>
-        prevOrders.map(order => {
-          const updatedOrder = updatedOrders.find((upd: Order) => upd.id === order.id);
-          return updatedOrder ? { ...order, delivery_option: updatedOrder.delivery_option } : order;
-        })
-      );
-    } catch (error) {
-      console.error('Ошибка обновления режима доставки для всех заказов:', error);
-    }
-  };
-
   const activeOrders = useMemo(() => filterOrders.filter(order => order.status !== 'canceled'), [filterOrders]);
   const canceledOrders = useMemo(() => filterOrders.filter(order => order.status === 'canceled'), [filterOrders]);
 
@@ -242,9 +247,9 @@ const OrderList: React.FC = () => {
     <Container>
       <Title>Список заказов</Title>
       <DeliveryModeSwitcher 
-        deliveryMode={deliveryMode} 
-        setDeliveryMode={setDeliveryMode} 
-        updateAllOrdersDeliveryMode={updateAllOrdersDeliveryMode}
+        deliveryMode={deliveryMode}
+        setDeliveryMode={setDeliveryMode as (mode: string) => void}
+        updateDeliveryMode={updateDeliveryMode as unknown as (mode: string) => void} // Приведение типов
       />
       <FilterSection
         searchTerm={searchTerm}

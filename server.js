@@ -296,21 +296,32 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 // Обновление режима доставки для всех активных заказов
-app.put('/orders/delivery-mode', isAdmin, async (req, res) => {
-  const { delivery_option } = req.body;
+// app.put('/orders/delivery-mode', isAdmin, async (req, res) => {
+//   const { delivery_option } = req.body;
+
+//   try {
+//     const result = await pool.query(
+//       `UPDATE orders 
+//        SET delivery_option = $1 
+//        WHERE status != 'canceled' RETURNING *`,
+//       [delivery_option]
+//     );
+
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error('Ошибка обновления режима доставки для всех заказов:', err.message);
+//     res.status(500).send('Ошибка сервера');
+//   }
+// });
+app.put('/orders/delivery-mode', async (req, res) => {
+  const { deliveryMode } = req.body;
 
   try {
-    const result = await pool.query(
-      `UPDATE orders 
-       SET delivery_option = $1 
-       WHERE status != 'canceled' RETURNING *`,
-      [delivery_option]
-    );
-
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Ошибка обновления режима доставки для всех заказов:', err.message);
-    res.status(500).send('Ошибка сервера');
+    await pool.query('UPDATE orders SET delivery_option = $1 WHERE status != $2', [deliveryMode, 'canceled']);
+    res.status(200).json({ message: 'Delivery mode updated for all active orders.' });
+  } catch (error) {
+    console.error('Ошибка при обновлении режима доставки:', error.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 
@@ -394,15 +405,15 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
 
 // Создание заказа
 app.post('/orders', async (req, res) => {
-  const { userId, items, total, deliveryTime, deliveryAddress } = req.body; // Добавлено: deliveryAddress
+  const { userId, items, total, deliveryTime, deliveryAddress, deliveryOption } = req.body; // Добавлено: deliveryOption
 
   try {
     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
     const orderResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *', // Добавлено: delivery_address
-      [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address] // Добавлено: deliveryAddress
+      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, delivery_option) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', // Добавлено: delivery_option
+      [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address, deliveryOption || 'courier'] // Добавлено: deliveryOption
     );
 
     const orderId = orderResult.rows[0].id;
@@ -426,7 +437,7 @@ app.post('/orders', async (req, res) => {
       }))
     };
 
-    io.emit('newOrder', newOrder);
+      io.emit('newOrder', newOrder);
     res.status(201).json(newOrder);
   } catch (error) {
     console.error('Ошибка при оформлении заказа:', error.message);

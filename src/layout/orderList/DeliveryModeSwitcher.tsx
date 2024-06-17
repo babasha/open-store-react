@@ -1,33 +1,26 @@
 // src/layout/orderList/DeliveryModeSwitcher.tsx
 
 import React from 'react';
-import { SelectContainer, SelectDropdown } from '../../styles/OrderListStyles'; 
 
 interface DeliveryModeSwitcherProps {
   deliveryMode: 'courier' | 'manual' | 'self';
   setDeliveryMode: (mode: 'courier' | 'manual' | 'self') => void;
-  updateAllOrdersDeliveryMode: (mode: 'courier' | 'manual' | 'self') => void;
+  updateDeliveryMode: (mode: 'courier' | 'manual' | 'self') => void; // Обновлен тип
 }
 
-const DeliveryModeSwitcher: React.FC<DeliveryModeSwitcherProps> = ({
-  deliveryMode,
-  setDeliveryMode,
-  updateAllOrdersDeliveryMode
-}) => {
-  const handleModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const mode = event.target.value as 'courier' | 'manual' | 'self';
-    setDeliveryMode(mode);
-    updateAllOrdersDeliveryMode(mode);
+const DeliveryModeSwitcher: React.FC<DeliveryModeSwitcherProps> = ({ deliveryMode, setDeliveryMode, updateDeliveryMode }) => {
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMode = event.target.value as 'courier' | 'manual' | 'self'; // Приведение типа
+    setDeliveryMode(newMode);
+    updateDeliveryMode(newMode); // Вызов функции при изменении режима
   };
 
   return (
-    <SelectContainer>
-      <SelectDropdown value={deliveryMode} onChange={handleModeChange}>
-        <option value="courier">Курьеры забирают сами</option>
-        <option value="manual">Ручной выбор курьеров</option>
-        <option value="self">Доставлю самостоятельно</option>
-      </SelectDropdown>
-    </SelectContainer>
+    <select value={deliveryMode} onChange={handleChange}>
+      <option value="courier">Курьер</option>
+      <option value="manual">Ручной</option>
+      <option value="self">Самовывоз</option>
+    </select>
   );
 };
 

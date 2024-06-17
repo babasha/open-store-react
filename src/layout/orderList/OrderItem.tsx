@@ -1,3 +1,5 @@
+// src/layout/orderList/OrderItem.tsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton, OrderDetailsContainer } from '../../styles/OrderListStyles';
@@ -172,6 +174,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
           <p>Итог: <strong>${order.total}</strong></p>
           <p>Статус: <strong>{order.status}</strong></p>
           <p>Время доставки: <strong>{order.delivery_time}</strong></p>
+          <p>Способ доставки: <strong>{order.delivery_option}</strong></p>
         </div>
         {!disableTimers && user?.role === 'admin' && (
           <div className="order-timers">
