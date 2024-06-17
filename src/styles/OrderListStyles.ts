@@ -248,21 +248,38 @@ export const DisabledCancelButton = styled(CancelButton)`
 
 
 
-export const SwitcherContainer = styled.div`
-  display: flex;
-  justify-content: space-around;
+// export const SwitcherContainer = styled.div`
+//   display: flex;
+//   justify-content: space-around;
+//   margin-bottom: 20px;
+// `;
+
+// export const SwitcherButton = styled.button<{ active: boolean }>`
+//   padding: 10px 20px;
+//   border: none;
+//   cursor: pointer;
+//   background-color: ${({ active }) => (active ? '#4CAF50' : '#f1f1f1')};
+//   color: ${({ active }) => (active ? '#fff' : '#000')};
+//   font-size: 16px;
+
+//   &:hover {
+//     background-color: #ddd;
+//   }
+// `;
+export const SelectContainer = styled.div`
   margin-bottom: 20px;
 `;
 
-export const SwitcherButton = styled.button<{ active: boolean }>`
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-  background-color: ${({ active }) => (active ? '#4CAF50' : '#f1f1f1')};
-  color: ${({ active }) => (active ? '#fff' : '#000')};
+export const SelectDropdown = styled.select`
+  padding: 10px;
   font-size: 16px;
-
-  &:hover {
-    background-color: #ddd;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #fff;
+  color: #333;
+  &:focus {
+    outline: none;
+    border-color: #4CAF50;
   }
 `;
