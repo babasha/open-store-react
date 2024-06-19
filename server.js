@@ -474,6 +474,7 @@ app.put('/orders/:id/status', async (req, res) => {
         o.total, 
         o.status, 
         o.created_at,
+        o.delivery_time,
         p.id AS product_id,
         p.name_en AS product_name
       FROM orders o
@@ -543,12 +544,13 @@ app.get('/orders', async (req, res) => {
         u.first_name, 
         u.last_name, 
         u.address, 
-        u.phone,  -- Добавляем поле phone
+        u.phone,
         o.items, 
         o.total, 
         o.status, 
         o.created_at,
         o.delivery_time,
+        o.delivery_option,
         p.id AS product_id,
         p.name_en AS product_name
       FROM orders o
@@ -572,11 +574,12 @@ app.get('/orders', async (req, res) => {
           first_name: row.first_name,
           last_name: row.last_name,
           address: row.address,
-          phone: row.phone,  // Добавляем поле phone
+          phone: row.phone,
           total: row.total,
           status: row.status,
           created_at: row.created_at,
           delivery_time: row.delivery_time,
+          delivery_option: row.delivery_option,
           items: [{
             productId: row.product_id,
             productName: row.product_name,

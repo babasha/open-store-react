@@ -153,13 +153,16 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
     setLocalOrder({ ...localOrder, items: updatedItems });
   };
 
-  const handleDeliveryOptionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newDeliveryOption = event.target.value as 'courier' | 'manual' | 'self';
+  const handleDeliveryModeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDeliveryOption = e.target.value as 'courier' | 'manual' | 'self';
     try {
       await axios.put(`http://localhost:3000/orders/${order.id}/delivery-option`, { deliveryOption: newDeliveryOption }, { withCredentials: true });
-      setLocalOrder({ ...localOrder, delivery_option: newDeliveryOption });
-    } catch (error) {
-      console.error('Error updating delivery option:', error);
+      setLocalOrder(prevOrder => ({
+        ...prevOrder,
+        delivery_option: newDeliveryOption
+      }));
+    } catch (error: any) {
+      console.error('Ошибка обновления режима доставки:', error.message);
     }
   };
 
@@ -183,11 +186,14 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
           <p>Итог: <strong>${order.total}</strong></p>
           <p>Статус: <strong>{order.status}</strong></p>
           <p>Время доставки: <strong>{order.delivery_time}</strong></p>
-          <select value={localOrder.delivery_option} onChange={handleDeliveryOptionChange}>
-            <option value="courier">Курьер</option>
-            <option value="manual">Ручной</option>
-            <option value="self">Самовывоз</option>
-          </select>
+          <p>
+            Режим доставки: 
+            <select value={localOrder.delivery_option} onChange={handleDeliveryModeChange}>
+              <option value="courier">Курьер</option>
+              <option value="manual">Ручной</option>
+              <option value="self">Самовывоз</option>
+            </select>
+          </p>
         </div>
         {!disableTimers && user?.role === 'admin' && (
           <div className="order-timers">
