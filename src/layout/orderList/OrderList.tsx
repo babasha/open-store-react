@@ -7,13 +7,14 @@ import socket from '../../socket';
 import FilterSection from './FilterSection';
 import OrderSection from './OrderSection';
 import StatisticsSection from './StatisticsSection';
+import DeliveryModeSwitcher from './DeliveryModeSwitcher';
 import { Container, Title } from '../../styles/OrderListStyles';
 
 export interface Item {
   productId: number;
   productName: string;
   quantity: number;
-  ready: boolean; // Поле ready теперь обязательно
+  ready: boolean;
 }
 
 export interface Order {
@@ -41,9 +42,12 @@ const OrderList: React.FC = () => {
   const [avgPendingTime, setAvgPendingTime] = useState<string>('');
   const [orderStatistics, setOrderStatistics] = useState<{ hours: number[], days: number[] }>({ hours: [], days: [] });
   const [showCanceledOrders, setShowCanceledOrders] = useState<boolean>(false);
+  const [deliveryMode, setDeliveryMode] = useState<'courier' | 'manual' | 'self'>('courier');
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchOrders();
+    fetchUserId();
     socket.on('newOrder', handleNewOrder);
     socket.on('orderUpdated', handleOrderUpdated);
     return () => {
@@ -51,6 +55,15 @@ const OrderList: React.FC = () => {
       socket.off('orderUpdated', handleOrderUpdated);
     };
   }, []);
+
+  const fetchUserId = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/auth/me', { withCredentials: true });
+      setUserId(response.data.user.id);
+    } catch (error) {
+      console.error('Ошибка при получении данных пользователя:', error);
+    }
+  };
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -219,9 +232,21 @@ const OrderList: React.FC = () => {
   const activeOrders = useMemo(() => filterOrders.filter(order => order.status !== 'canceled'), [filterOrders]);
   const canceledOrders = useMemo(() => filterOrders.filter(order => order.status === 'canceled'), [filterOrders]);
 
+  const updateDeliveryMode = useCallback((mode: 'courier' | 'manual' | 'self') => {
+    console.log('Delivery mode updated:', mode);
+  }, []);
+
   return (
     <Container>
       <Title>Список заказов</Title>
+      {userId && (
+        <DeliveryModeSwitcher
+          userId={userId}
+          deliveryMode={deliveryMode}
+          setDeliveryMode={setDeliveryMode}
+          updateDeliveryMode={updateDeliveryMode}
+        />
+      )}
       <FilterSection
         searchTerm={searchTerm}
         setSearchTerm={handleSearch}

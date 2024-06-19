@@ -190,26 +190,43 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
+
 // Обновление информации о доставке
-app.put('/orders/:id/delivery-option', isAdmin, async (req, res) => {
-  const { id } = req.params;
-  const { delivery_option } = req.body;
+app.put('/user/me/delivery-option', isAuthenticated, async (req, res) => {
+  const { deliveryOption } = req.body;
+  const userId = req.user.id;
 
   try {
     const result = await pool.query(
-      'UPDATE orders SET delivery_option = $1 WHERE id = $2 RETURNING *',
-      [delivery_option, id]
+      'UPDATE users SET delivery_option = $1 WHERE id = $2 RETURNING *',
+      [deliveryOption, userId]
     );
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('Ошибка обновления информации о доставке:', err.message);
+    console.error('Ошибка обновления опции доставки:', err.message);
     res.status(500).send('Ошибка сервера');
   }
 });
 
-
 // Обновление роли пользователя
+
+// Получение текущего режима доставки пользователя
+app.get('/user/me/delivery-option', isAuthenticated, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const result = await pool.query('SELECT delivery_option FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Пользователь не найден' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка получения опции доставки:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
 app.put('/users/:id/role', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
