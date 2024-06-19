@@ -8,11 +8,12 @@ interface Courier {
 }
 
 interface CourierSwitcherProps {
+  orderId: number; // Добавлено: идентификатор заказа
   selectedCourierId: number | null;
   setSelectedCourierId: (id: number) => void;
 }
 
-const CourierSwitcher: React.FC<CourierSwitcherProps> = ({ selectedCourierId, setSelectedCourierId }) => {
+const CourierSwitcher: React.FC<CourierSwitcherProps> = ({ orderId, selectedCourierId, setSelectedCourierId }) => {
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +42,21 @@ const CourierSwitcher: React.FC<CourierSwitcherProps> = ({ selectedCourierId, se
 
     loadCouriers();
   }, []);
+
+  useEffect(() => {
+    const assignCourier = async () => {
+      if (selectedCourierId) {
+        try {
+          await axios.put(`http://localhost:3000/orders/${orderId}/assign-courier`, { courierId: selectedCourierId }, { withCredentials: true });
+          console.log('Курьер назначен');
+        } catch (error) {
+          console.error('Ошибка при назначении курьера:', error);
+        }
+      }
+    };
+
+    assignCourier();
+  }, [selectedCourierId, orderId]);
 
   if (loading) {
     return <p>Загрузка курьеров...</p>;

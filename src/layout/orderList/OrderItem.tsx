@@ -4,7 +4,7 @@ import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton, OrderD
 import OrderDetails from './OrderDetails';
 import { Order } from './OrderList';
 import { useAuth } from '../autoeization/AuthContext';
-import CourierSwitcher from './CourierSwitcher';
+import CourierSwitcher from './CourierSwitcher'; 
 
 interface Props {
   order: Order;
@@ -204,7 +204,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
           </div>
         )}
         {localOrder.delivery_option === 'manual' && (
-          <CourierSwitcher selectedCourierId={selectedCourierId} setSelectedCourierId={setSelectedCourierId} />
+          <CourierSwitcher orderId={order.id} selectedCourierId={selectedCourierId} setSelectedCourierId={setSelectedCourierId} />
         )}
         <div className="order-actions">
           <StatusButton onClick={() => handleStatusChange(order.id, allItemsReady ? 'ready_for_delivery' : order.status === 'pending' ? 'assembly' : 'pending')}>
