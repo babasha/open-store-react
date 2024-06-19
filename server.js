@@ -299,6 +299,17 @@ app.put('/users/:id/role', isAdmin, async (req, res) => {
     client.release();
   }
 });
+// Получение всех курьеров со статусом "working"
+
+app.get('/couriers/working', isAuthenticated, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM couriers WHERE status = $1', ['working']);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Ошибка получения курьеров со статусом working:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
 
 // Обновление продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
