@@ -1,0 +1,71 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+interface Courier {
+  id: number;
+  first_name: string;
+  last_name: string;
+}
+
+interface CourierSwitcherProps {
+  selectedCourierId: number | null;
+  setSelectedCourierId: (id: number) => void;
+}
+
+const CourierSwitcher: React.FC<CourierSwitcherProps> = ({ selectedCourierId, setSelectedCourierId }) => {
+  const [couriers, setCouriers] = useState<Courier[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWorkingCouriers = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/couriers/working', { withCredentials: true });
+      return response.data;
+    } catch (error) {
+      console.error('Ошибка при получении списка курьеров:', error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    const loadCouriers = async () => {
+      try {
+        const couriers = await fetchWorkingCouriers();
+        setCouriers(couriers);
+      } catch (error) {
+        setError('Ошибка при загрузке списка курьеров');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCouriers();
+  }, []);
+
+  if (loading) {
+    return <p>Загрузка курьеров...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+  return (
+    <div>
+      <label>Выберите курьера:</label>
+      <select
+        value={selectedCourierId ?? ''}
+        onChange={(e) => setSelectedCourierId(Number(e.target.value))}
+      >
+        <option value="" disabled>Выберите курьера</option>
+        {couriers.map((courier) => (
+          <option key={courier.id} value={courier.id}>
+            {courier.first_name} {courier.last_name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+export default CourierSwitcher;

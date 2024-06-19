@@ -1,10 +1,10 @@
-// src/layout/orderList/OrderItem.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton, OrderDetailsContainer } from '../../styles/OrderListStyles';
 import OrderDetails from './OrderDetails';
-import { Order } from './OrderList'; // Ensure the correct type is imported
-import { useAuth } from '../autoeization/AuthContext'; // Ensure the correct path to AuthContext
+import { Order } from './OrderList';
+import { useAuth } from '../autoeization/AuthContext';
+import CourierSwitcher from './CourierSwitcher';
 
 interface Props {
   order: Order;
@@ -18,16 +18,18 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
     ...order,
     items: order.items.map(item => ({
       ...item,
-      ready: item.ready ?? false // Set default value
+      ready: item.ready ?? false
     }))
   });
+
+  const [selectedCourierId, setSelectedCourierId] = useState<number | null>(null);
 
   useEffect(() => {
     setLocalOrder({
       ...order,
       items: order.items.map(item => ({
         ...item,
-        ready: item.ready ?? false // Set default value
+        ready: item.ready ?? false
       }))
     });
   }, [order]);
@@ -124,7 +126,6 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
       );
       const updatedOrder = { ...localOrder, items: updatedItems };
 
-      // Ensure user data is not lost
       const orderWithUserData = {
         ...updatedOrder,
         first_name: order.first_name,
@@ -201,6 +202,9 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
             <p>Время до доставки: <strong>{timeUntilDelivery}</strong></p>
             <p>Время в текущем статусе: <strong>{timeInCurrentStatus}</strong></p>
           </div>
+        )}
+        {localOrder.delivery_option === 'manual' && (
+          <CourierSwitcher selectedCourierId={selectedCourierId} setSelectedCourierId={setSelectedCourierId} />
         )}
         <div className="order-actions">
           <StatusButton onClick={() => handleStatusChange(order.id, allItemsReady ? 'ready_for_delivery' : order.status === 'pending' ? 'assembly' : 'pending')}>
