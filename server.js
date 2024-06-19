@@ -311,6 +311,24 @@ app.get('/couriers/working', isAuthenticated, async (req, res) => {
   }
 });
 
+// Обновление статуса заказа и назначение курьера
+app.put('/orders/:id/assign-courier', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  const { courierId } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET courier_id = $1, status = $2 WHERE id = $3 RETURNING *',
+      [courierId, 'courier_assigned', id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка при назначении курьера и обновлении статуса заказа:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
 // Обновление продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
