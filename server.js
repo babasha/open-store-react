@@ -227,6 +227,43 @@ app.get('/user/me/delivery-option', isAuthenticated, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
+
+//delivery active all status 
+
+app.put('/orders/update-delivery-mode', isAuthenticated, async (req, res) => {
+  const { deliveryOption } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET delivery_option = $1 WHERE status = $2 RETURNING *',
+      [deliveryOption, 'pending']
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Ошибка обновления опции доставки для активных заказов:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+//Обновление режима доставки для конкретного заказа
+app.put('/orders/:id/delivery-option', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  const { deliveryOption } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE orders SET delivery_option = $1 WHERE id = $2 RETURNING *',
+      [deliveryOption, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Ошибка обновления опции доставки:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
 app.put('/users/:id/role', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
