@@ -1,3 +1,4 @@
+// src/layout/orderList/OrderItem.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { OrderListItem, StatusButton, CancelButton, DisabledCancelButton, OrderDetailsContainer } from '../../styles/OrderListStyles';
@@ -152,6 +153,16 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
     setLocalOrder({ ...localOrder, items: updatedItems });
   };
 
+  const handleDeliveryOptionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDeliveryOption = event.target.value as 'courier' | 'manual' | 'self';
+    try {
+      await axios.put(`http://localhost:3000/orders/${order.id}/delivery-option`, { deliveryOption: newDeliveryOption }, { withCredentials: true });
+      setLocalOrder({ ...localOrder, delivery_option: newDeliveryOption });
+    } catch (error) {
+      console.error('Error updating delivery option:', error);
+    }
+  };
+
   const allItemsReady = localOrder.items.every(item => item.ready);
 
   return (
@@ -172,6 +183,11 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
           <p>Итог: <strong>${order.total}</strong></p>
           <p>Статус: <strong>{order.status}</strong></p>
           <p>Время доставки: <strong>{order.delivery_time}</strong></p>
+          <select value={localOrder.delivery_option} onChange={handleDeliveryOptionChange}>
+            <option value="courier">Курьер</option>
+            <option value="manual">Ручной</option>
+            <option value="self">Самовывоз</option>
+          </select>
         </div>
         {!disableTimers && user?.role === 'admin' && (
           <div className="order-timers">

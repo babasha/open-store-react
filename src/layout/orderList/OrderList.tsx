@@ -28,6 +28,7 @@ export interface Order {
   status: string;
   created_at: string;
   delivery_time: string;
+  delivery_option: 'courier' | 'manual' | 'self';
   status_changed_at?: string;
   items: Item[];
 }
@@ -232,9 +233,16 @@ const OrderList: React.FC = () => {
   const activeOrders = useMemo(() => filterOrders.filter(order => order.status !== 'canceled'), [filterOrders]);
   const canceledOrders = useMemo(() => filterOrders.filter(order => order.status === 'canceled'), [filterOrders]);
 
-  const updateDeliveryMode = useCallback((mode: 'courier' | 'manual' | 'self') => {
-    console.log('Delivery mode updated:', mode);
-  }, []);
+  const updateDeliveryMode = useCallback(async (mode: 'courier' | 'manual' | 'self') => {
+    console.log('Updating delivery mode for all active orders to:', mode);
+    try {
+      await axios.put('http://localhost:3000/orders/update-delivery-mode', { deliveryOption: mode }, { withCredentials: true });
+      setDeliveryMode(mode);
+      fetchOrders();
+    } catch (error) {
+      console.error('Error updating delivery mode for active orders:', error);
+    }
+  }, [fetchOrders]);
 
   return (
     <Container>
