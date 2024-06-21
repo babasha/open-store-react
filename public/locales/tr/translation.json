@@ -13,7 +13,7 @@
       "notAuthorized": "Yetkili değilsiniz",
       "orderError": "Sipariş verme hatası",
       "orderSuccess": "Sipariş başarıyla verildi",
-      "delivery_address": "Teslimat adresi"
+      "delivery_address": "Teslimat adresi: "
     },
     "as_soon_as_possible": "En kısa sürede",
     "schedule_delivery": "Teslimatı planla",
