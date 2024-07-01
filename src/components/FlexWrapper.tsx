@@ -9,7 +9,8 @@ type  FlexWrapperPropsType = {
     width?: string
     top?: string
     bg?: string
-    radius?: any  
+    radius?: any 
+    bottom?: string  
 }
 
 export  const FlexWrapper = styled.div<FlexWrapperPropsType>`
@@ -22,6 +23,7 @@ export  const FlexWrapper = styled.div<FlexWrapperPropsType>`
   width: ${props => props.width || "auto" };
   haight: 100%;
   margin-top: ${props => props.top || "auto" };
+  margin-bottom: ${props => props.bottom || "auto" };
   background-color: ${props => props.bg || "auto" };
   border-radius: ${props => props.radius || "auto"};
 

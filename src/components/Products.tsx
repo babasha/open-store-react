@@ -105,8 +105,9 @@ export default Products;
 const Showcase = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
   width: 100%;
-  border-radius: 10px;
   display: flex;
+  border-radius: 10px;
+
 `;
 
 const ShopInner = styled.div`
@@ -114,6 +115,7 @@ const ShopInner = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
   width: 1100px;
   flex-wrap: wrap;
+  
 `;
 
 const MenuWrapper = styled.div`

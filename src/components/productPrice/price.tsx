@@ -25,9 +25,10 @@ const Text = styled.span`
 `;
 
 const Amount = styled.span`
-  font-size: 24px;
+  font-size: 19px;
   font-weight: bold;
   color: black;
+  margin-left: 10px;
 `;
 
 export default Price;

@@ -6,6 +6,7 @@ import Price from '../../components/productPrice/price';
 import { useCart } from '../cart/CartContext';
 import { useTranslation } from 'react-i18next';
 import ToggleButton from '../../components/button/button';
+import { FlexWrapper } from '../../components/FlexWrapper';
 
 type CartPropsType = {
   id: number;
@@ -61,11 +62,13 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUr
 
   return (
     <Cart>
-      {imageUrl && <img src={imageUrl} alt={title} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />}
-      <p>{titles[i18n.language as 'en' | 'ru' | 'geo']}</p>
+      {imageUrl && <ProductImage src={imageUrl} alt={title} />}
+      <Title>{titles[i18n.language as 'en' | 'ru' | 'geo']}</Title>
       <QuantityControl pricePerUnit={price} quantity={quantity} onQuantityChange={handleQuantityChange} />
-      <Price amount={totalPrice} />
-      <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
+      <FlexWrapper justify='space-around'>
+        <Price amount={totalPrice} />
+        <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
+      </FlexWrapper>
     </Cart>
   );
 };
@@ -77,4 +80,21 @@ export const Cart = styled.div`
   margin: 10px;
   border-radius: 30px;
   padding: 10px;
+  transition: width 0.3s ease-in-out;
+
+  @media (max-width: 375px) {
+    width: 175px;
+  }
+`;
+
+export const ProductImage = styled.img`
+  width: 100%;
+  height: 65%;
+  object-fit: cover;
+  border-radius: 30px;
+  margin-bottom: 10px;
+`;
+
+export const Title = styled.p`
+  text-align: center;
 `;

@@ -29,7 +29,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({ pricePerUnit, quantit
   };
 
   return (
-    <FlexWrapper radius="10px" justify="space-between" align="center" bg="#F0F4F8">
+    <FlexWrapper radius="10px" bottom="10px" justify="space-between" top="10px" align="center" bg="#F0F4F8">
       <Button onClick={decrease}>
         <span>-</span>
       </Button>
