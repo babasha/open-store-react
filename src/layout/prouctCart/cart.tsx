@@ -73,7 +73,7 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUr
   );
 };
 
-export const Cart = styled.div`
+const Cart = styled.div`
   background-color: ${theme.colors.mainBg};
   width: 250px;
   height: 380px;
@@ -87,7 +87,7 @@ export const Cart = styled.div`
   }
 `;
 
-export const ProductImage = styled.img`
+const ProductImage = styled.img`
   width: 100%;
   height: 65%;
   object-fit: cover;
@@ -95,6 +95,8 @@ export const ProductImage = styled.img`
   margin-bottom: 10px;
 `;
 
-export const Title = styled.p`
+const Title = styled.p`
   text-align: center;
 `;
+
+export default ProductCart;
