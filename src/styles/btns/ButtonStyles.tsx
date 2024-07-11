@@ -17,8 +17,7 @@ export const Button = styled(motion.button)<ButtonProps>`
   font-size: 16px;
   position: relative;
   overflow: hidden;
-  width: 120px;
-  height: 35px;
+  padding:5px 15px;
   transition: 0.2s;
   pointer-events: ${({ isDisabled }) => (isDisabled ? 'none' : 'auto')};
 
@@ -28,6 +27,17 @@ export const Button = styled(motion.button)<ButtonProps>`
 
   &:disabled {
     background-color: ${theme.button.buttonActive};
+  }
+  @media (max-width: 1024px), 
+         (max-width: 820px), 
+         (max-width: 540px), 
+         (max-width: 430px), 
+         (max-width: 390px), 
+         (max-width: 375px), 
+         (max-width: 360px), 
+         (max-width: 344px) {
+    font-size: 14px;
+    padding:3px 10px;
   }
 `;
 
