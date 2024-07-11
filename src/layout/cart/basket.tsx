@@ -18,6 +18,7 @@ import {
   ItemContextTitle,
   ErrorText
 } from './BasketStyles';
+import { HiddenScreensContainer } from '../../components/HiddenContainer';
 
 interface BasketProps {
   currentLanguage: string;
@@ -30,11 +31,11 @@ interface CartItem {
   price: number;
 }
 
-const HiddenOnSmallScreensContainer = styled.div`
-  @media (max-width: 400px) {
-    display: none;
-  }
-`;
+// const HiddenOnSmallScreensContainer = styled.div`
+//   @media (max-width: 400px) {
+//     display: none;
+//   }
+// `;
 
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const { t } = useTranslation();
@@ -115,7 +116,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   );
 
   return (
-    <HiddenOnSmallScreensContainer>
+    // <HiddenScreensContainer>
       <Container width={'100%'}>
         <CartdiInner>
           <FlexWrapper align='center' justify='space-between'>
@@ -132,15 +133,15 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
               {cartItems.map(renderCartItem)}
               <CartItemWrapper>
                 <ItemDetails>
-                  <span>{t('cart.delivery')}</span>
-                  <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
+                  <span><strong>{t('cart.delivery')}</strong> </span>
+                  <span >{deliveryCost === 0 ? t('cart.free') : ` ${deliveryCost} GEL`}</span>
                 </ItemDetails>
               </CartItemWrapper>
               {user && (
                 <CartItemWrapper>
                   <ItemDetails>
-                    <span>{t('cart.delivery_address')}</span>
-                    <span>{user.address || t('cart.no_address')}</span>
+                    <span>{t('cart.delivery_address' )}</span>
+                    <span> : {user.address || t('cart.no_address')}</span>
                   </ItemDetails>
                 </CartItemWrapper>
               )}
@@ -161,7 +162,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
           )}
         </CartdiInner>
       </Container>
-    </HiddenOnSmallScreensContainer>
+    // </HiddenScreensContainer>
   );
 };
 

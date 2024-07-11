@@ -10,6 +10,7 @@ import { CardInner } from './styledauth/AuthorizationStyles';
 import { useTranslation } from 'react-i18next';
 import UserDetails from './UserDetails';
 import { Order } from '../orderList/OrderList';
+import { HiddenScreensContainer } from '../../components/HiddenContainer';
 
 const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
@@ -83,6 +84,7 @@ const AuthorizationComponent: React.FC = () => {
   };
 
   return (
+    // <HiddenScreensContainer>
     <Container width={'100%'}>
       <CardInner>
         {user ? (
@@ -111,6 +113,7 @@ const AuthorizationComponent: React.FC = () => {
         )}
       </CardInner>
     </Container>
+    // {/* </HiddenScreensContainer> */}
   );
 };
 
