@@ -30,16 +30,20 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUr
 
   useEffect(() => {
     setTotalPrice(price * quantity);
+  }, [quantity, price]);
+
+  useEffect(() => {
     if (cartItem) {
       setIsActive(true);
     } else {
+      setQuantity(1);
+      setTotalPrice(price);
       setIsActive(false);
     }
-  }, [quantity, price, cartItem]);
+  }, [cartItem, price]);
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
-    setTotalPrice(newQuantity * price);
     if (cartItem) {
       updateItemInCart({ ...cartItem, quantity: newQuantity, price: price });
     }
@@ -51,14 +55,6 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUr
       setIsActive(true);
     }
   };
-
-  useEffect(() => {
-    if (!cartItem) {
-      setQuantity(1);
-      setTotalPrice(price);
-      setIsActive(false);
-    }
-  }, [cartItem, price]);
 
   return (
     <Cart>
@@ -85,9 +81,6 @@ const Cart = styled.div`
   @media (max-width: 1024px) {
     width: 175px;
   }
-  @media (max-width: 912px) {
-    width: 150px;
-  }
   @media (max-width: 820px) {
     width: 185px;
   }
@@ -96,9 +89,6 @@ const Cart = styled.div`
   }
   @media (max-width: 430px) {
     width: 175px;
-  }
-  @media (max-width: 414px) {
-    width: 170px;
   }
   @media (max-width: 390px) {
     width: 160px;
@@ -114,45 +104,25 @@ const Cart = styled.div`
   }
 `;
 
-
-
 const ProductImage = styled.img`
   width: 100%;
   height: 65%;
   object-fit: cover;
   border-radius: 30px;
   margin-bottom: 10px;
-  @media (max-height: 1024px) {
-    height: 175px;
-  }
-  @media (max-height: 912px) {
-    height: 150px;
-  }
-  @media (max-height: 820px) {
-    height: 185px;
-  }
-  @media (max-height: 540px) {
-    height: 148px;
-  }
-  @media (max-height: 430px) {
-    height: 175px;
-  }
-  @media (max-height: 414px) {
-    height: 170px;
-  }
-  @media (max-height: 390px) {
-    height: 160px;
-  }
-  @media (max-height: 375px) {
-    height: 130px;
-  }
-  @media (max-height: 360px) {
-    height: 145px;
-  }
-  @media (max-height: 344px) {
-    height: 135px;
+
+  @media (max-width: 1024px), 
+         (max-width: 820px), 
+         (max-width: 540px), 
+         (max-width: 430px), 
+         (max-width: 390px), 
+         (max-width: 375px), 
+         (max-width: 360px), 
+         (max-width: 344px) {
+    height: 40%;
   }
 `;
+
 
 const Title = styled.p`
   text-align: center;
