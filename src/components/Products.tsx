@@ -122,4 +122,7 @@ const MenuWrapper = styled.div`
   display: flex;
   width: 300px;
   flex-direction: column;
+  @media (max-width: 430px) {
+    display: none;
+  }
 `;

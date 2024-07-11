@@ -52,6 +52,9 @@ export const GlobalStyled = createGlobalStyle`
     font-weight: 900;
     font-size: 24px;
     text-transform: uppercase;
+    @media (max-width: 375px) {
+    font-size: 16px;
+  }
   }
   h2 {
     //font-family: Josefin Sans;
@@ -60,6 +63,9 @@ export const GlobalStyled = createGlobalStyle`
     font-weight: 700;
     line-height: normal;
     letter-spacing: 1px;
+    @media (max-width: 375px) {
+    font-size: 18px;
+  }
   }
   h3 {
     //font-family: Josefin Sans;
@@ -68,11 +74,17 @@ export const GlobalStyled = createGlobalStyle`
     font-weight: 700;
     line-height: normal;
     letter-spacing: 1px;
+    @media (max-width: 375px) {
+    font-size: 14px;
+  }
   }
 
  p{
    font-size: 14px;
    font-weight: 400;
+   @media (max-width: 375px) {
+    font-size: 14px;
+  }
  }
 `
 
