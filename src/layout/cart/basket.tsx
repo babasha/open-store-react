@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import styled from 'styled-components';
+// import styled from 'styled-components';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
 import { useAuth } from '../autoeization/AuthContext';
@@ -18,7 +18,7 @@ import {
   ItemContextTitle,
   ErrorText
 } from './BasketStyles';
-import { HiddenScreensContainer } from '../../components/HiddenContainer';
+// import { HiddenScreensContainer } from '../../components/HiddenContainer';
 
 interface BasketProps {
   currentLanguage: string;

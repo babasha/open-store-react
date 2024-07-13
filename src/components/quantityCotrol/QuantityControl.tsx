@@ -45,8 +45,9 @@ const Button = styled(motion.button)`
   background-color: white;
   border: 1px solid #d9e2ec;
   border-radius: 8px;
-  width: 67px;
-  height: 26px;
+  /* width: 67px; */
+  padding: 3px 23px ;
+  /* height: 26px; */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,11 +64,31 @@ const Button = styled(motion.button)`
   &:active {
     background-color: #cbd5e0;
   }
+  @media (max-width: 1024px) {
+    padding: 3px 16px ;
+  }
+  @media (max-width: 540px) {
+    padding: 5px 14px ; 
+   }
+   @media (max-width: 430px) {
+    padding: 2px 14px ; 
+   }
+
+  /* @media (max-width: 375px) {
+    padding: 5px 10px ;
+  } */
 `;
 
 const Quantity = styled.div`
-  margin: 0 20px;
+  /* margin: 0 20px; */
   font-size: 18px;
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+  @media (max-width: 375px) {
+    /* margin: 0 10px; */
+    font-size: 12px;
+  }
 `;
 
 export default QuantityControl;

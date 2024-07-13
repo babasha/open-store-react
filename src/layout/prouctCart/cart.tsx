@@ -72,29 +72,40 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUr
 const Cart = styled.div`
   background-color: ${theme.colors.mainBg};
   width: 250px;
-  height: 380px;
+  min-height: 300px;
+  height: max-content;
   margin: 10px;
   border-radius: 30px;
   padding: 10px;
   transition: width 0.3s ease-in-out;
 
   @media (max-width: 1024px) {
-    width: 175px;
+    width: 210px;
   }
   @media (max-width: 820px) {
-    width: 185px;
+    width: 190px;
+  }
+  @media (max-width: 768px) {
+    width: 168px;
   }
   @media (max-width: 540px) {
     width: 148px;
   }
+
   @media (max-width: 430px) {
     width: 175px;
+  }
+  @media (max-width: 414px) {
+    width: 170px;
+    min-height: 200px;
+
   }
   @media (max-width: 390px) {
     width: 160px;
   }
   @media (max-width: 375px) {
-    width: 130px;
+    width: 150px;
+
   }
   @media (max-width: 360px) {
     width: 145px;
@@ -111,7 +122,7 @@ const ProductImage = styled.img`
   border-radius: 30px;
   margin-bottom: 10px;
 
-  @media (max-width: 1024px), 
+  /* @media (max-width: 1024px), 
          (max-width: 820px), 
          (max-width: 540px), 
          (max-width: 430px), 
@@ -120,6 +131,30 @@ const ProductImage = styled.img`
          (max-width: 360px), 
          (max-width: 344px) {
     height: 40%;
+  } */
+    @media (max-width: 1024px) {
+      height: 40%;
+  }
+  @media (max-width: 820px) {
+    height: 50%;
+  }
+  @media (max-width: 540px) {
+    height: 50%;
+  }
+  @media (max-width: 430px) {
+    height: 50%;
+  }
+  @media (max-width: 390px) {
+    height: 50%;
+  }
+  @media (max-width: 375px) {
+    height: 50%;
+  }
+  @media (max-width: 360px) {
+    height: 50%;
+  }
+  @media (max-width: 344px) {
+    height: 50%;
   }
 `;
 
