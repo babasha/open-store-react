@@ -78,6 +78,8 @@ const Cart = styled.div`
   border-radius: 30px;
   padding: 10px;
   transition: width 0.3s ease-in-out;
+  /* z-index: -1; */
+
 
   @media (max-width: 1024px) {
     width: 210px;

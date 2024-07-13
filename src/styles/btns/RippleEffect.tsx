@@ -58,6 +58,7 @@ const RippleContainer = styled(motion.button)<{ disabled?: boolean }>`
   overflow: hidden;
   border-radius: inherit;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  z-index: 1; /* Ensure it has a lower z-index than modal */
 `;
 
 const Ripple = styled(motion.span)`
