@@ -28,17 +28,49 @@ export const Button = styled(motion.button)<ButtonProps>`
   &:disabled {
     background-color: ${theme.button.buttonActive};
   }
-  @media (max-width: 1024px), 
-         (max-width: 820px), 
-         (max-width: 540px), 
-         (max-width: 430px), 
-         (max-width: 390px), 
-         (max-width: 375px), 
-         (max-width: 360px), 
-         (max-width: 344px) {
+
+  @media (max-width: 1024px) {
     font-size: 14px;
     padding:3px 10px;
   }
+  @media (max-width: 820px) {
+    font-size: 14px;
+    padding:3px 10px;
+  }
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding:3px 10px;
+  }
+  @media (max-width: 540px) {
+    font-size: 14px;
+    padding:3px 10px;
+  }
+
+  @media (max-width: 430px) {
+    font-size: 14px;
+    padding:3px 10px;
+    }
+  @media (max-width: 414px) {
+    font-size: 14px;
+    padding:3px 10px;  
+  }
+  @media (max-width: 390px) {
+    font-size: 14px; 
+    padding:3px 10px;
+   }
+  @media (max-width: 375px) {
+    font-size: 12px;
+    padding:3px 10px;
+  }
+  @media (max-width: 360px) {
+    font-size: 12px;
+    padding:3px 10px;
+  }
+  @media (max-width: 344px) {
+    font-size: 12px;
+    padding:3px 10px;
+  }
+
 `;
 
 export const Ripple = styled(motion.span)`

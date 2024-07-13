@@ -8,7 +8,7 @@ interface PriceProps {
 const Price: React.FC<PriceProps> = ({ amount }) => {
   return (
     <Container>
-      <Amount>{amount} GEL</Amount>
+      <Amount>{amount} ₾</Amount>
     </Container>
   );
 };

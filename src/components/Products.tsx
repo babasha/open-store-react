@@ -115,7 +115,9 @@ const ShopInner = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
   width: 1100px;
   flex-wrap: wrap;
-  
+  justify-content: center;
+  border-radius: 10px;
+
 `;
 
 const MenuWrapper = styled.div`
