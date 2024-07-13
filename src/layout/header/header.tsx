@@ -107,6 +107,15 @@ const StyledHeader = styled.header`
   padding: 20px 20px;
   border-radius: 30px;
   margin: 15px 0px;
+  @media (max-width: 1024px) {
+    padding: 18px 18px;
+  }
+  @media (max-width: 768px) {
+    padding: 15px 15px;
+  }
+  @media (max-width: 430px) {
+    padding: 12px 12px;
+  }
 `;
 
 const Button = styled(motion.button)`

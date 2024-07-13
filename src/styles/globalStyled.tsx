@@ -63,6 +63,12 @@ export const GlobalStyled = createGlobalStyle`
     @media (max-width: 1024px) {
     font-size: 22px;
   }
+  @media (max-width: 430px) {
+    font-size: 18px;
+  }
+  @media (max-width: 430px) {
+    font-size: 16px;
+  }
   }
 
   h2, h3 {
@@ -83,10 +89,16 @@ export const GlobalStyled = createGlobalStyle`
   }
 
   p {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
 
-    @media (max-width: 1024px) {
+    /* @media (max-width: 1024px) {
+    font-size: 14px;
+  } */
+  @media (max-width: 430px) {
+    font-size: 14px;
+  }
+  @media (max-width: 430px) {
     font-size: 12px;
   }
   }

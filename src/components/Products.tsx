@@ -107,7 +107,8 @@ const Showcase = styled.div`
   width: 100%;
   display: flex;
   border-radius: 10px;
-
+  /* z-index: -4; */
+  opacity: 100%;
 `;
 
 const ShopInner = styled.div`
@@ -117,6 +118,8 @@ const ShopInner = styled.div`
   flex-wrap: wrap;
   justify-content: center;
   border-radius: 10px;
+  /* z-index:-1; */
+
 
 `;
 
@@ -124,6 +127,8 @@ const MenuWrapper = styled.div`
   display: flex;
   width: 300px;
   flex-direction: column;
+  /* z-index: ; */
+
   @media (max-width: 430px) {
     display: none;
   }
