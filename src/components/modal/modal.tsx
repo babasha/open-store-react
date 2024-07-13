@@ -9,29 +9,23 @@ interface ModalProps {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
 }
+
 const modalVariants = {
   hidden: { opacity: 0, scale: 0 },
   visible: { opacity: 1, scale: 1 },
 };
 
-
 const Modal: React.FC<ModalProps> = ({ isOpen, children, onMouseEnter, onMouseLeave }) => {
   return (
     <Backdrop
-    initial="hidden"
-    animate={isOpen ? "visible" : "hidden"}
-    variants={modalVariants}
-    onMouseEnter={onMouseEnter}
-    onMouseLeave={onMouseLeave}
-    transition={{ duration: 0.3 }}
-
-    >
-      <ModalContent
       initial="hidden"
       animate={isOpen ? "visible" : "hidden"}
       variants={modalVariants}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       transition={{ duration: 0.3 }}
-      >
+    >
+      <ModalContent>
         {children}
       </ModalContent>
     </Backdrop>
@@ -40,18 +34,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, children, onMouseEnter, onMouseLe
 
 const Backdrop = styled(motion.div)`
   top: 80%;
-  z-index: 1000;
+  z-index: 999;
   position: absolute;
-
 `;
 
-const ModalContent = styled(motion.div)`
-  background:  ${theme.colors.mainBg};
+const ModalContent = styled.div`
+  background: ${theme.colors.mainBg};
   position: relative;
-  
-  /* padding: 20px; */
   border-radius: 10px;
-  /* max-width: 400px; */
   width: 80px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 199;

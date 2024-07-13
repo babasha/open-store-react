@@ -21,10 +21,10 @@ export  const FlexWrapper = styled.div<FlexWrapperPropsType>`
   justify-content: ${props => props.justify || 'flex-start'};
   flex-wrap: ${props => props.wrap || "nowrap"};
   width: ${props => props.width || "auto" };
-  haight: 100%;
+  height: 100%;
   margin-top: ${props => props.top || "auto" };
   margin-bottom: ${props => props.bottom || "auto" };
-  background-color: ${props => props.bg || "auto" };
-  border-radius: ${props => props.radius || "auto"};
+  background-color: ${props => props.bg || "none" };
+  border-radius: ${props => props.radius || "none"};
 
 `

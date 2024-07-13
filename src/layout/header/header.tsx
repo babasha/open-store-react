@@ -1,4 +1,3 @@
-// src/layout/header/header.tsx
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { FlexWrapper } from '../../components/FlexWrapper';
@@ -98,24 +97,21 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRol
   );
 };
 
+const responsivePadding = () => `
+  @media (max-width: 1024px) { padding: 18px 18px; }
+  @media (max-width: 768px) { padding: 15px 15px; }
+  @media (max-width: 430px) { padding: 12px 12px; }
+`;
+
 const StyledHeader = styled.header`
   display: flex;
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.7);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   padding: 20px 20px;
   border-radius: 30px;
-  margin: 15px 0px;
-  @media (max-width: 1024px) {
-    padding: 18px 18px;
-  }
-  @media (max-width: 768px) {
-    padding: 15px 15px;
-  }
-  @media (max-width: 430px) {
-    padding: 12px 12px;
-  }
+  margin: 15px 0;
+  position: relative;
+  ${responsivePadding()}
 `;
 
 const Button = styled(motion.button)`
@@ -143,7 +139,10 @@ const NavButton = styled.button<{ active: boolean }>`
   background-color: ${props => (props.active ? '#007bff' : '#ccc')};
   color: white;
   cursor: pointer;
+
   &:hover {
     background-color: ${props => (props.active ? '#0056b3' : '#aaa')};
   }
 `;
+
+export default Header;
