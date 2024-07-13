@@ -61,7 +61,7 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, title, price, imageUr
       {imageUrl && <ProductImage src={imageUrl} alt={title} />}
       <Title>{titles[i18n.language as 'en' | 'ru' | 'geo']}</Title>
       <QuantityControl pricePerUnit={price} quantity={quantity} onQuantityChange={handleQuantityChange} />
-      <FlexWrapper justify='space-around'>
+      <FlexWrapper justify='space-between'>
         <Price amount={totalPrice} />
         <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
       </FlexWrapper>
@@ -78,6 +78,8 @@ const Cart = styled.div`
   border-radius: 30px;
   padding: 10px;
   transition: width 0.3s ease-in-out;
+
+
   /* z-index: -1; */
 
 

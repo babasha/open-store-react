@@ -79,7 +79,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders, 
       
              
       <h2>{t('welcome')}</h2>
-      <h6> {user.first_name} {user.last_name}</h6>
+      <h5> {user.first_name} {user.last_name}</h5>
       <p>{t('address')}: {user.address}</p>
       <EditButton onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</EditButton>
 
