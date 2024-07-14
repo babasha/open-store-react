@@ -50,7 +50,9 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
         }}
       >
         {isExpanded && window.innerWidth <= 652 && <CloseButton onClick={handleToggle}>×</CloseButton>}
-        {children}
+        <ContentWrapper isExpanded={isExpanded}>
+          {children}
+        </ContentWrapper>
       </Wrapper>
     </>
   );
@@ -70,7 +72,9 @@ const Wrapper = styled(motion.div)<{ isExpanded: boolean }>`
   }
 
   @media (max-width: 652px) {
-    width: 100%;
+    width: 100vw; /* Ensure full viewport width */
+    left: 0; /* Position from the left edge */
+    right: 0; /* Position from the right edge */
     background-color: ${theme.colors.mainBg};
     position: fixed;
     bottom: 0;
@@ -81,10 +85,19 @@ const Wrapper = styled(motion.div)<{ isExpanded: boolean }>`
     ${({ isExpanded }) => isExpanded && `
       height: 90vh;
       border-radius: 20px;
+      overflow: hidden; /* Hide overflow when expanded */
     `}
     height: ${({ isExpanded }) => (isExpanded ? '90vh' : '50px')};
     transition: height 0.3s ease, border-radius 0.3s ease;
   }
+`;
+
+const ContentWrapper = styled.div<{ isExpanded: boolean }>`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: ${({ isExpanded }) => (isExpanded ? 'auto' : 'hidden')}; /* Enable scrolling when expanded */
 `;
 
 const Overlay = styled.div`
