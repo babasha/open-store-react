@@ -1,8 +1,11 @@
-import { createGlobalStyle, css } from "styled-components";
+import { createGlobalStyle } from "styled-components";
 import { theme } from "./Theme";
 
+interface GlobalStyledProps {
+  isOpen: boolean;
+}
 
-export const GlobalStyled = createGlobalStyle`
+export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
   *, *::before, *::after {
     margin: 0;
     padding: 0;
@@ -11,12 +14,13 @@ export const GlobalStyled = createGlobalStyle`
 
   body {
     margin: 0;
-    font-family: "Rubik", sans-serif;
+    font-family: "Noto Sans", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: ${theme.colors.font};
     line-height: 1.2;
     background-color: ${theme.colors.primaryBg};
+    overflow: ${(props) => (props.isOpen ? 'hidden' : 'auto')};
   }
 
   code {
@@ -47,13 +51,11 @@ export const GlobalStyled = createGlobalStyle`
     background-color: ${theme.colors.mainBg};
   }
 
- 
-
   span {
     font-size: 16px;
     @media (max-width: 1024px) {
-    font-size: 14px;
-  }
+      font-size: 14px;
+    }
   }
 
   h1 {
@@ -61,14 +63,11 @@ export const GlobalStyled = createGlobalStyle`
     font-size: 24px;
     text-transform: uppercase;
     @media (max-width: 1024px) {
-    font-size: 22px;
-  }
-  @media (max-width: 430px) {
-    font-size: 18px;
-  }
-  @media (max-width: 430px) {
-    font-size: 16px;
-  }
+      font-size: 22px;
+    }
+    @media (max-width: 430px) {
+      font-size: 18px;
+    }
   }
 
   h2, h3 {
@@ -77,29 +76,25 @@ export const GlobalStyled = createGlobalStyle`
     line-height: normal;
     letter-spacing: 1px;
     @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+      font-size: 16px;
+    }
   }
 
   h3 {
     font-size: 16px;
     @media (max-width: 1024px) {
-    font-size: 14px;
-  }
+      font-size: 14px;
+    }
   }
 
   p {
     font-size: 16px;
     font-weight: 400;
-
-    /* @media (max-width: 1024px) {
-    font-size: 14px;
-  } */
-  @media (max-width: 430px) {
-    font-size: 14px;
-  }
-  @media (max-width: 430px) {
-    font-size: 12px;
-  }
+    @media (max-width: 430px) {
+      font-size: 14px;
+    }
+    @media (max-width: 430px) {
+      font-size: 12px;
+    }
   }
 `;
