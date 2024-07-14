@@ -5,7 +5,7 @@ import { theme } from '../styles/Theme';
 import { ProductCart } from '../layout/prouctCart/cart';
 import Basket from '../layout/cart/basket';
 import AutorizationComponent from '../layout/autoeization/autoComponent';
-import { Mobilemenu } from './mobilemenu/mobilemenu';
+import StyledMenuWrapper from './Menu/MenuWrapper';
 
 type Product = {
   id: number;
@@ -27,6 +27,8 @@ const Products = () => {
   const [price, setPrice] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     fetch('/products')
@@ -89,15 +91,19 @@ const Products = () => {
             title={product.name[i18n.language as 'en' | 'ru' | 'geo'] || product.name.en}
             price={product.price}
             imageUrl={product.image_url}
-            titles={product.name} // Added titles property
+            titles={product.name}
           />
         ))}
-
       </ShopInner>
-      <MenuWrapper>
+      <StyledMenuWrapper
+        isExpanded={isExpanded}
+        setIsExpanded={setIsExpanded}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+      >
         <Basket currentLanguage={currentLanguage} />
         <AutorizationComponent />
-      </MenuWrapper>
+      </StyledMenuWrapper>
     </Showcase>
   );
 };
@@ -109,7 +115,6 @@ const Showcase = styled.div`
   width: 100%;
   display: flex;
   border-radius: 10px;
-  /* z-index: -4; */
   opacity: 100%;
 `;
 
@@ -121,26 +126,4 @@ const ShopInner = styled.div`
   justify-content: center;
   border-radius: 10px;
   align-content: flex-start;
-
-
-  /* z-index:-1; */
-
-
-`;
-
-export const MenuWrapper = styled.div`
-  display: flex;
-  width: 300px;
-  flex-direction: column;
-  @media (max-width: 1024px) {
-    width: 280px;
-  }
-  @media (max-width: 820px) {
-    width: 250px;
-  }
-  /* z-index: ; */
-
-  @media (max-width: 656px) {
-    display: none;
-  }
 `;

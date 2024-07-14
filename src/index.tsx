@@ -5,7 +5,6 @@ import { App } from './App';
 import { GlobalStyled } from './styles/globalStyled';
 import { CartProvider } from './layout/cart/CartContext';
 import './i18n';
-import { Mobilemenu } from './components/mobilemenu/mobilemenu'; // Ensure correct import path
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -22,7 +21,7 @@ const AppWrapper = () => {
           <App />
         </CartProvider>
       </Router>
-      <Mobilemenu isOpen={isOpen} setIsOpen={setIsOpen} />
+      {/* <Mobilemenu isOpen={isOpen} setIsOpen={setIsOpen} /> */}
     </>
   );
 };
