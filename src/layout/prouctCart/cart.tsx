@@ -84,38 +84,58 @@ const Cart = styled.div`
 
 
   @media (max-width: 1024px) {
-    width: 210px;
+    /* width: 210px; */
+    width: 45%;
+
   }
   @media (max-width: 820px) {
-    width: 190px;
+    width: 40%;
+    margin: 5px;
+    /* width: 190px; */
   }
   @media (max-width: 768px) {
-    width: 168px;
+    width: 46%;
+
+    /* width: 168px; */
   }
   @media (max-width: 540px) {
-    width: 148px;
+    /* width: 148px; */
+    width: 40%;
+
   }
 
   @media (max-width: 430px) {
-    width: 175px;
+    /* width: 175px; */
+    width: 47%;
+    margin: 6px;
   }
   @media (max-width: 414px) {
-    width: 170px;
-    min-height: 200px;
+    /* width: 170px; */
+    width: 46%;
+    margin: 7px;
+
+    /* min-height: 200px; */
 
   }
   @media (max-width: 390px) {
-    width: 160px;
+    width: 46%;
+    margin: 6px;
+    /* width: 160px; */
   }
   @media (max-width: 375px) {
-    width: 150px;
+    /* width: 150px; */
+    width: 43%;
 
   }
   @media (max-width: 360px) {
-    width: 145px;
+    /* width: 145px; */
+    width: 46%;
+    margin: 5px;
   }
   @media (max-width: 344px) {
-    width: 135px;
+    /* width: 135px; */
+      width: 45%;
+      margin: 5px;
   }
 `;
 

@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import { motion, PanInfo } from 'framer-motion';
 import { theme } from '../../styles/Theme';
 
 interface StyledMenuWrapperProps {
@@ -18,6 +18,8 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
   setIsOpen,
   children
 }) => {
+  const [isAnimating, setIsAnimating] = useState(false);
+
   const handleToggle = useCallback(() => {
     setIsExpanded(!isExpanded);
     setIsOpen(!isExpanded);
@@ -34,22 +36,39 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
   }, [isOpen]);
 
+  const handleDragStart = useCallback(() => {
+    setIsAnimating(true);
+  }, []);
+
+  const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    requestAnimationFrame(() => {
+      setIsAnimating(false);
+      if (info.offset.y > 100) {
+        setIsExpanded(false);
+        setIsOpen(false);
+      }
+    });
+  }, [setIsExpanded, setIsOpen]);
+
+  const dragConstraints = useMemo(() => ({ top: 0, bottom: 0 }), []);
+
   return (
     <>
       {isOpen && window.innerWidth <= 652 && <Overlay />}
       <Wrapper
+  
         isExpanded={isExpanded}
+        isAnimating={isAnimating}
         onClick={handleExpand}
         drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        onDragEnd={(event, info) => {
-          if (info.offset.y > 100) {
-            setIsExpanded(false);
-            setIsOpen(false);
-          }
-        }}
+        dragConstraints={dragConstraints}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
       >
-        {isExpanded && window.innerWidth <= 652 && <CloseButton onClick={handleToggle}>×</CloseButton>}
+        <WrapperMenu>
+          <DragHandle isAnimating={isAnimating} />
+          {isExpanded && window.innerWidth <= 652 && <CloseButton onClick={handleToggle}>×</CloseButton>}
+        </WrapperMenu>
         <ContentWrapper isExpanded={isExpanded}>
           {children}
         </ContentWrapper>
@@ -60,24 +79,27 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
 
 export default StyledMenuWrapper;
 
-const Wrapper = styled(motion.div)<{ isExpanded: boolean }>`
+const Wrapper = styled(motion.div)<{ isExpanded: boolean, isAnimating: boolean }>`
   display: flex;
   width: 300px;
   flex-direction: column;
+
   @media (max-width: 1024px) {
     width: 280px;
   }
+
   @media (max-width: 820px) {
     width: 250px;
   }
 
   @media (max-width: 652px) {
-    width: 100vw; /* Ensure full viewport width */
-    left: 0; /* Position from the left edge */
-    right: 0; /* Position from the right edge */
-    background-color: ${theme.colors.mainBg};
+    width: 100vw; 
+    left: 0; 
+    right: 0; 
+    background-color: ${theme.colors.primaryBg};
     position: fixed;
     bottom: 0;
+    padding-top: 40px;
     cursor: pointer;
     z-index: 1000;
     display: block;
@@ -85,11 +107,30 @@ const Wrapper = styled(motion.div)<{ isExpanded: boolean }>`
     ${({ isExpanded }) => isExpanded && `
       height: 90vh;
       border-radius: 20px;
-      overflow: hidden; /* Hide overflow when expanded */
+      overflow: hidden;
     `}
-    height: ${({ isExpanded }) => (isExpanded ? '90vh' : '50px')};
+    height: ${({ isExpanded }) => (isExpanded ? '90vh' : '70px')};
     transition: height 0.3s ease, border-radius 0.3s ease;
   }
+`;
+
+const WrapperMenu = styled.div`
+  width: 100%;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+  position: relative;
+`;
+
+const DragHandle = styled.div<{ isAnimating: boolean }>`
+  width: ${({ isAnimating }) => (isAnimating ? '70px' : '50px')};
+  height: 5px;
+  border-radius: 20px;
+  background-color: ${theme.colors.font};
+  cursor: grab;
+  transition: width 0.3s ease;
 `;
 
 const ContentWrapper = styled.div<{ isExpanded: boolean }>`
@@ -97,7 +138,7 @@ const ContentWrapper = styled.div<{ isExpanded: boolean }>`
   flex-direction: column;
   width: 100%;
   height: 100%;
-  overflow: ${({ isExpanded }) => (isExpanded ? 'auto' : 'hidden')}; /* Enable scrolling when expanded */
+  overflow: ${({ isExpanded }) => (isExpanded ? 'auto' : 'hidden')};
 `;
 
 const Overlay = styled.div`
@@ -112,15 +153,15 @@ const Overlay = styled.div`
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 10px;
-  right: 10px;
+  bottom: 20px;
+  right: 18px;
   background: transparent;
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: white;
+  color: black;
 
   &:hover {
-    color: lightgray;
+    color: #595959 ;
   }
 `;
