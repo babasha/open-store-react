@@ -10,6 +10,7 @@ export const Backdrop = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2000;
 `;
 
 export const ModalContent = styled.div`
@@ -18,6 +19,8 @@ export const ModalContent = styled.div`
   border-radius: 10px;
   position: relative;
   min-width: 300px;
+  z-index: 2000;
+
 `;
 
 export const CloseButton = styled.button`
@@ -28,6 +31,8 @@ export const CloseButton = styled.button`
   border: none;
   font-size: 20px;
   cursor: pointer;
+  z-index: 2000;
+
 `;
 
 export const ModalInnerContent = styled.div`
@@ -35,4 +40,6 @@ export const ModalInnerContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 2000;
+
 `;

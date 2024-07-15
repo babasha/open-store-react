@@ -16,7 +16,8 @@ import {
   TotalPrice,
   ItemContext,
   ItemContextTitle,
-  ErrorText
+  ErrorText,
+  BascketTitle
 } from './BasketStyles';
 // import { HiddenScreensContainer } from '../../components/HiddenContainer';
 
@@ -120,7 +121,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       <Container width={'100%'}>
         <CartdiInner>
           <FlexWrapper align='center' justify='space-between'>
-            <h2>{t('cart.title')}</h2>
+            <BascketTitle>{t('cart.title')}</BascketTitle>
             <EditButton onClick={handleEditClick}>
               {isEditing ? t('cart.finishEditing') : t('cart.edit')}
             </EditButton>

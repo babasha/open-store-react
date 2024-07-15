@@ -6,6 +6,7 @@ import StyledButton from './StyledButton';
 import { TextContainer, ActiveText, ClickableText } from './DataSwitchStyles';
 import { ModalInnerContent } from './ModalStyles';
 import { toZonedTime, format } from 'date-fns-tz';
+import styled from 'styled-components';
 
 interface DataSwitchProps {
   buttonText1: string;
@@ -124,3 +125,4 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
 };
 
 export default DataSwitch;
+

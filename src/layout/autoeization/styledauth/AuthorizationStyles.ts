@@ -25,6 +25,10 @@ export const CardInner = styled.div`
   padding: 20px;
   border-radius: 10px;
   width: 100%;
+  @media (max-width: 590px) {
+    /* height: 50%; */
+    background-color: red;
+  }
 `;
 
 export const OrderList = styled.ul`

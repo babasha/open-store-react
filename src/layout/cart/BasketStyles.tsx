@@ -7,22 +7,32 @@ export const CartdiInner = styled.div`
   padding: 20px;
   border-radius: 10px;
   width: 100%;
+  @media (max-width: 652px) {
+  margin-bottom: 10px;
+  padding-top: 20px;
+  }
 `;
 
 export const CartItemWrapper = styled.div`
   display: flex;
   position: relative;
   margin-top: 15px;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
+  @media (max-width: 652px) {
+    margin-bottom: 5px; 
+  /* margin-top: 25px; */
+  /* padding-top: 20px; */
+  }
 `;
 
 export const ItemDetails = styled.div`
-  flex-grow: 1;
+  /* flex-grow: 1; */
+  /* margin-bottom: 10px; */
 `;
 
 export const DeleteButton = styled.button<{ isEditing: boolean }>`
   position: absolute;
-  right: ${({ isEditing }) => (isEditing ? '0' : '-100px')};
+  right: ${({ isEditing }) => (isEditing ? '0' : '-5px')};
   opacity: ${({ isEditing }) => (isEditing ? 1 : 0)};
   transition: right 0.3s ease-in-out, opacity 0.3s ease-in-out;
   padding: 5px 10px;
@@ -70,4 +80,8 @@ export const ItemContextTitle = styled.span`
 export const ErrorText = styled.p`
   color: red;
   margin-top: 10px;
+`;
+export const BascketTitle = styled.h2`
+ font-size: 24px;
+ padding-top: -25px;
 `;

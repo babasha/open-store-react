@@ -14,10 +14,13 @@ const StyledButton = styled.button<StyledButtonProps>`
   font-size: 16px;
   position: relative;
   overflow: hidden;
-  width: 120px;
-  height: 35px;
+  /* width: 120px; */
+  /* height: 35px; */
+  margin-top: 15px;
   transition: 0.3s;
-  margin: 0 5px;
+  padding: 5px 0px 5px 0px;
+  /* margin: 0 5px; */
+  margin-right: 5px;
   pointer-events: auto;
 
   &:hover {
@@ -26,6 +29,12 @@ const StyledButton = styled.button<StyledButtonProps>`
 
   &:disabled {
     background-color: gray;
+  }
+
+  @media (max-width: 652px) {
+    padding: 10px 15px;
+    /* margin-top: 25px; */
+  /* padding-top: 20px; */
   }
 `;
 

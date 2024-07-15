@@ -36,19 +36,19 @@ export const StyledButton = styled(motion.button)<ButtonProps>`
 
   @media (max-width: 1024px) {
     font-size: 14px;
-    padding: 3px 10px;
+    padding: 8px 15px;
   }
   @media (max-width: 820px) {
     font-size: 14px;
-    padding: 3px 10px;
+    padding: 5px 12px;
   }
   @media (max-width: 768px) {
     font-size: 14px;
-    padding: 3px 10px;
+    padding: 5px 12px;
   }
   @media (max-width: 540px) {
     font-size: 14px;
-    padding: 3px 10px;
+    padding: 5px 12px;
   }
   @media (max-width: 430px) {
     font-size: 14px;
