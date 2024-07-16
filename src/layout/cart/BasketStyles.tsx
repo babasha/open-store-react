@@ -11,6 +11,7 @@ export const CartdiInner = styled.div`
   margin-bottom: 10px;
   padding-top: 20px;
   }
+
 `;
 
 export const CartItemWrapper = styled.div`
