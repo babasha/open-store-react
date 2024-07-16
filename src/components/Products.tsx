@@ -6,6 +6,7 @@ import { ProductCart } from '../layout/prouctCart/cart';
 import Basket from '../layout/cart/basket';
 import AutorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
+import { useCart } from '../layout/cart/CartContext';
 
 type Product = {
   id: number;
@@ -29,6 +30,7 @@ const Products = () => {
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const { cartItems } = useCart();
 
   useEffect(() => {
     fetch('/products')
@@ -100,6 +102,7 @@ const Products = () => {
         setIsExpanded={setIsExpanded}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
+        cartItemCount={cartItems.length} // передача количества товаров в корзине
       >
         <Basket currentLanguage={currentLanguage} />
         <AutorizationComponent />

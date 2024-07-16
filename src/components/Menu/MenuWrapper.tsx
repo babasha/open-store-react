@@ -9,6 +9,7 @@ interface StyledMenuWrapperProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   children: React.ReactNode;
+  cartItemCount: number;
 }
 
 const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
@@ -16,19 +17,23 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
   setIsExpanded,
   isOpen,
   setIsOpen,
-  children
+  children,
+  cartItemCount
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isPartiallyOpen, setIsPartiallyOpen] = useState(false);
 
   const handleToggle = useCallback(() => {
-    setIsExpanded(!isExpanded);
-    setIsOpen(!isExpanded);
+    const newState = !isExpanded;
+    setIsExpanded(newState);
+    setIsOpen(newState);
   }, [isExpanded, setIsOpen, setIsExpanded]);
 
   const handleExpand = useCallback(() => {
     if (!isExpanded) {
       setIsExpanded(true);
       setIsOpen(true);
+      setIsPartiallyOpen(false);
     }
   }, [isExpanded, setIsOpen, setIsExpanded]);
 
@@ -46,20 +51,33 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
       if (info.offset.y > 100) {
         setIsExpanded(false);
         setIsOpen(false);
+        setIsPartiallyOpen(false);
       }
     });
   }, [setIsExpanded, setIsOpen]);
 
   const dragConstraints = useMemo(() => ({ top: 0, bottom: 0 }), []);
 
+  useEffect(() => {
+    if (window.innerWidth <= 652 && cartItemCount > 0) {
+      setIsPartiallyOpen(true);
+      setTimeout(() => {
+        setIsPartiallyOpen(false);
+      }, 6000);
+    }
+  }, [cartItemCount]);
+
+  const shouldRenderOverlay = useMemo(() => isOpen && window.innerWidth <= 652, [isOpen]);
+
   return (
     <>
-      {isOpen && window.innerWidth <= 652 && <Overlay />}
+      {shouldRenderOverlay && <Overlay />}
       <Wrapper
         isExpanded={isExpanded}
+        isPartiallyOpen={isPartiallyOpen}
         isAnimating={isAnimating}
         onClick={handleExpand}
-        drag={window.innerWidth <= 652 ? "y" : false}
+        drag={isExpanded && window.innerWidth <= 652 ? "y" : false} // Разрешаем свайп только при открытой шторке
         dragConstraints={dragConstraints}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -78,7 +96,7 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
 
 export default StyledMenuWrapper;
 
-const Wrapper = styled(motion.div)<{ isExpanded: boolean, isAnimating: boolean }>`
+const Wrapper = styled(motion.div)<{ isExpanded: boolean, isPartiallyOpen: boolean, isAnimating: boolean }>`
   display: flex;
   width: 300px;
   flex-direction: column;
@@ -95,7 +113,7 @@ const Wrapper = styled(motion.div)<{ isExpanded: boolean, isAnimating: boolean }
     width: 100vw; 
     left: 0; 
     right: 0; 
-    background-color: ${theme.colors.primaryBg};
+    background-color: ${({ isExpanded }) => isExpanded ? theme.colors.primaryBg : 'transparent'};
     position: fixed;
     bottom: 0;
     padding-top: 40px;
@@ -108,8 +126,8 @@ const Wrapper = styled(motion.div)<{ isExpanded: boolean, isAnimating: boolean }
       border-radius: 20px;
       overflow: hidden;
     `}
-    height: ${({ isExpanded }) => (isExpanded ? '90vh' : '70px')};
-    transition: height 0.3s ease, border-radius 0.3s ease;
+    height: ${({ isExpanded, isPartiallyOpen }) => isExpanded ? '90vh' : isPartiallyOpen ? '120px' : '70px'};
+    transition: height 0.3s ease, border-radius 0.3s ease, background-color 0.3s ease;
   }
 `;
 
