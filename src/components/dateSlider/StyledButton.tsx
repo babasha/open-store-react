@@ -33,8 +33,19 @@ const StyledButton = styled.button<StyledButtonProps>`
 
   @media (max-width: 652px) {
     padding: 10px 15px;
-    /* margin-top: 25px; */
-  /* padding-top: 20px; */
+   
+  }
+  @media (max-width: 410px) {
+    padding: 7px 10px;
+   
+  }
+  @media (max-width: 390px) {
+    padding: 7px 5px;
+ 
+  }
+  @media (max-width: 360px) {
+    padding: 7px 2.3px;
+    
   }
 `;
 

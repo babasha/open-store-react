@@ -56,17 +56,16 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
     <>
       {isOpen && window.innerWidth <= 652 && <Overlay />}
       <Wrapper
-  
         isExpanded={isExpanded}
         isAnimating={isAnimating}
         onClick={handleExpand}
-        drag="y"
+        drag={window.innerWidth <= 652 ? "y" : false}
         dragConstraints={dragConstraints}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <WrapperMenu>
-          <DragHandle isAnimating={isAnimating} />
+          {window.innerWidth <= 652 && <DragHandle isAnimating={isAnimating} />}
           {isExpanded && window.innerWidth <= 652 && <CloseButton onClick={handleToggle}>×</CloseButton>}
         </WrapperMenu>
         <ContentWrapper isExpanded={isExpanded}>
@@ -131,6 +130,10 @@ const DragHandle = styled.div<{ isAnimating: boolean }>`
   background-color: ${theme.colors.font};
   cursor: grab;
   transition: width 0.3s ease;
+
+  @media (min-width: 653px) {
+    display: none;
+  }
 `;
 
 const ContentWrapper = styled.div<{ isExpanded: boolean }>`
