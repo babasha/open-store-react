@@ -138,7 +138,6 @@ app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
   }
 });
 
-
 // Обновление данных курьера
 app.get('/couriers/me', isAuthenticated, async (req, res) => {
   const userId = req.user.id;
@@ -209,8 +208,6 @@ app.put('/user/me/delivery-option', isAuthenticated, async (req, res) => {
   }
 });
 
-// Обновление роли пользователя
-
 // Получение текущего режима доставки пользователя
 app.get('/user/me/delivery-option', isAuthenticated, async (req, res) => {
   const userId = req.user.id;
@@ -228,8 +225,7 @@ app.get('/user/me/delivery-option', isAuthenticated, async (req, res) => {
   }
 });
 
-//delivery active all status 
-
+// Обновление опции доставки для активных заказов
 app.put('/orders/update-delivery-mode', isAuthenticated, async (req, res) => {
   const { deliveryOption } = req.body;
 
@@ -246,7 +242,7 @@ app.put('/orders/update-delivery-mode', isAuthenticated, async (req, res) => {
   }
 });
 
-//Обновление режима доставки для конкретного заказа
+// Обновление режима доставки для конкретного заказа
 app.put('/orders/:id/delivery-option', isAuthenticated, async (req, res) => {
   const { id } = req.params;
   const { deliveryOption } = req.body;
@@ -258,12 +254,13 @@ app.put('/orders/:id/delivery-option', isAuthenticated, async (req, res) => {
     );
 
     res.json(result.rows[0]);
-  } catch (err) {
+  } catch   (err) {
     console.error('Ошибка обновления опции доставки:', err.message);
     res.status(500).send('Ошибка сервера');
   }
 });
 
+// Обновление роли пользователя
 app.put('/users/:id/role', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
@@ -476,7 +473,7 @@ app.post('/orders', async (req, res) => {
     io.emit('newOrder', newOrder);
     res.status(201).json(newOrder);
   } catch (error) {
-    console.error('Ошибка при оформлении заказа:', error.message);
+    console    .error('Ошибка при оформлении заказа:', error.message);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
@@ -655,10 +652,10 @@ app.get('/users', async (req, res) => {
 app.use('/uploads', express.static('uploads'));
 
 // Маршрут для обслуживания фронтенда
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'build')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 // Запуск сервера
@@ -674,3 +671,5 @@ io.on('connection', (socket) => {
     console.log('Отключение');
   });
 });
+
+
