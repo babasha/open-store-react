@@ -1,10 +1,8 @@
 // Update with your config settings.
-
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
 module.exports = {
-
   development: {
     client: 'pg', // Используем PostgreSQL
     connection: {
@@ -20,7 +18,6 @@ module.exports = {
       directory: './seeds', // Путь к семенам (начальным данным)
     },
   },
-
   staging: {
     client: 'pg', // Используем PostgreSQL
     connection: {
@@ -41,7 +38,6 @@ module.exports = {
       directory: './seeds', // Путь к семенам (начальным данным)
     },
   },
-
   production: {
     client: 'pg', // Используем PostgreSQL
     connection: {
@@ -62,5 +58,4 @@ module.exports = {
       directory: './seeds', // Путь к семенам (начальным данным)
     },
   }
-
 };
