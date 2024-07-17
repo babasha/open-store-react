@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3001",
+    origin: "http://45.146.164.162:3000",
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -19,7 +19,7 @@ const io = new Server(server, {
 
 app.use(express.json());
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
+  res.header('Access-Control-Allow-Origin', 'http://45.146.164.162:3000');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -299,8 +299,8 @@ app.put('/users/:id/role', isAdmin, async (req, res) => {
     client.release();
   }
 });
-// Получение всех курьеров со статусом "working"
 
+// Получение всех курьеров со статусом "working"
 app.get('/couriers/working', isAuthenticated, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM couriers WHERE status = $1', ['working']);
@@ -653,6 +653,13 @@ app.get('/users', async (req, res) => {
 
 // Подключение статических файлов
 app.use('/uploads', express.static('uploads'));
+
+// Маршрут для обслуживания фронтенда
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Запуск сервера
 const PORT = 3000;
