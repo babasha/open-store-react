@@ -31,7 +31,7 @@ const DeliveryModeSwitcher: React.FC<DeliveryModeSwitcherProps> = ({ userId, del
     // Получаем текущий режим доставки при загрузке компонента
     const fetchDeliveryMode = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/user/me/delivery-option', { withCredentials: true });
+        const response = await axios.get('http://45.146.164.162:3000/user/me/delivery-option', { withCredentials: true });
         setDeliveryMode(response.data.delivery_option);
       } catch (error) {
         console.error('Ошибка при получении текущего режима доставки:', error);
@@ -47,7 +47,7 @@ const DeliveryModeSwitcher: React.FC<DeliveryModeSwitcherProps> = ({ userId, del
 
     try {
       await axios.put(
-        `http://localhost:3000/user/me/delivery-option`, 
+        `http://45.146.164.162:3000/user/me/delivery-option`, 
         { deliveryOption: newMode },
         {
           headers: {
