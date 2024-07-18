@@ -28,7 +28,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
     e.preventDefault();
     setError(null); // Сбрасываем ошибку перед новым запросом
     try {
-      const response = await fetch("http://45.146.164.162:3001/auth/register", {
+      const response = await fetch("http://45.146.164.162:3000/auth/register", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
