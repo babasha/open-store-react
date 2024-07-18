@@ -31,7 +31,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders, 
     if (user && newAddress) {
       try {
         const response = await axios.put(
-          `http://localhost:3000/api/users/${user.id}`,
+          `http://45.146.164.162:3000/api/users/${user.id}`,
           { address: newAddress },
           { withCredentials: true }
         );
