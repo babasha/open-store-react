@@ -1,11 +1,12 @@
 const express = require('express');
 const http = require('http');
-const pool = require('./db');
+const pool = require('./db'); // Подключение к базе данных
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const { Server } = require('socket.io');
+const cors = require('cors'); // Подключение модуля CORS
 
 const app = express();
 const server = http.createServer(app);
@@ -17,7 +18,16 @@ const io = new Server(server, {
   }
 });
 
+// Настройки CORS
+app.use(cors({
+  origin: 'http://45.146.164.162:3000',
+  credentials: true
+}));
+
+// Middleware для обработки JSON
 app.use(express.json());
+
+// Middleware для заголовков CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://45.146.164.162:3000');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -80,7 +90,7 @@ const isAuthenticated = (req, res, next) => {
   }
 };
 
-// Получение всех продуктов
+// Маршрут для получения всех продуктов
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
@@ -98,7 +108,8 @@ app.get('/products', async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
-// Получение всех курьеров
+
+// Маршрут для получения всех курьеров
 app.get('/couriers', isAuthenticated, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM couriers');
@@ -108,7 +119,8 @@ app.get('/couriers', isAuthenticated, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
-// Получение данных об конкретном курьере
+
+// Маршрут для получения данных о конкретном курьере
 app.get('/couriers/me', isAuthenticated, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM couriers WHERE user_id = $1', [req.user.id]);
@@ -121,7 +133,8 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
-// Обновление статуса курьера
+
+// Маршрут для обновления статуса курьера
 app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
   const { status } = req.body;
   const userId = req.user.id;
@@ -138,7 +151,7 @@ app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
   }
 });
 
-// Обновление данных курьера
+// Маршрут для обновления данных курьера
 app.get('/couriers/me', isAuthenticated, async (req, res) => {
   const userId = req.user.id;
 
@@ -153,7 +166,8 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
-// Добавление нового продукта
+
+// Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -178,7 +192,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
-// Удаление продукта
+// Маршрут для удаления продукта
 app.delete('/products/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   try {
@@ -190,7 +204,7 @@ app.delete('/products/:id', isAdmin, async (req, res) => {
   }
 });
 
-// Обновление информации о доставке
+// Маршрут для обновления информации о доставке
 app.put('/user/me/delivery-option', isAuthenticated, async (req, res) => {
   const { deliveryOption } = req.body;
   const userId = req.user.id;
@@ -208,7 +222,7 @@ app.put('/user/me/delivery-option', isAuthenticated, async (req, res) => {
   }
 });
 
-// Получение текущего режима доставки пользователя
+// Маршрут для получения текущего режима доставки пользователя
 app.get('/user/me/delivery-option', isAuthenticated, async (req, res) => {
   const userId = req.user.id;
 
@@ -225,7 +239,7 @@ app.get('/user/me/delivery-option', isAuthenticated, async (req, res) => {
   }
 });
 
-// Обновление опции доставки для активных заказов
+// Маршрут для обновления опции доставки для активных заказов
 app.put('/orders/update-delivery-mode', isAuthenticated, async (req, res) => {
   const { deliveryOption } = req.body;
 
@@ -242,7 +256,7 @@ app.put('/orders/update-delivery-mode', isAuthenticated, async (req, res) => {
   }
 });
 
-// Обновление режима доставки для конкретного заказа
+// Маршрут для обновления режима доставки для конкретного заказа
 app.put('/orders/:id/delivery-option', isAuthenticated, async (req, res) => {
   const { id } = req.params;
   const { deliveryOption } = req.body;
@@ -254,13 +268,13 @@ app.put('/orders/:id/delivery-option', isAuthenticated, async (req, res) => {
     );
 
     res.json(result.rows[0]);
-  } catch   (err) {
+  } catch (err) {
     console.error('Ошибка обновления опции доставки:', err.message);
     res.status(500).send('Ошибка сервера');
   }
 });
 
-// Обновление роли пользователя
+// Маршрут для обновления роли пользователя
 app.put('/users/:id/role', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
@@ -297,7 +311,7 @@ app.put('/users/:id/role', isAdmin, async (req, res) => {
   }
 });
 
-// Получение всех курьеров со статусом "working"
+// Маршрут для получения всех курьеров со статусом "working"
 app.get('/couriers/working', isAuthenticated, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM couriers WHERE status = $1', ['working']);
@@ -308,7 +322,7 @@ app.get('/couriers/working', isAuthenticated, async (req, res) => {
   }
 });
 
-// Обновление статуса заказа и назначение курьера
+// Маршрут для обновления статуса заказа и назначения курьера
 app.put('/orders/:id/assign-courier', isAuthenticated, async (req, res) => {
   const { id } = req.params;
   const { courierId } = req.body;
@@ -326,7 +340,7 @@ app.put('/orders/:id/assign-courier', isAuthenticated, async (req, res) => {
   }
 });
 
-// Обновление продукта
+// Маршрут для обновления продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
   const { nameEn, nameRu, nameGeo, price } = req.body;
@@ -352,7 +366,7 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
-// Регистрация пользователя
+// Маршрут для регистрации пользователя
 app.post('/auth/register', async (req, res) => {
   const { firstName, lastName, email, address, phone, password } = req.body;
   try {
@@ -376,7 +390,7 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-// Вход пользователя
+// Маршрут для входа пользователя
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -399,7 +413,7 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// Получение информации о текущем пользователе
+// Маршрут для получения информации о текущем пользователе
 app.get('/auth/me', isAuthenticated, (req, res) => {
   pool.query('SELECT id, first_name, last_name, email, address, phone, role FROM users WHERE id = $1', [req.user.id])
     .then(result => {
@@ -415,7 +429,7 @@ app.get('/auth/me', isAuthenticated, (req, res) => {
     });
 });
 
-// Обновление данных пользователя (например, адреса)
+// Маршрут для обновления данных пользователя (например, адреса)
 app.put('/api/users/:id', isAuthenticated, async (req, res) => {
   const { id } = req.params;
   const { address } = req.body;
@@ -436,17 +450,17 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-// Создание заказа
+// Маршрут для создания заказа
 app.post('/orders', async (req, res) => {
-  const { userId, items, total, deliveryTime, deliveryAddress } = req.body; // Добавлено: deliveryAddress
+  const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
 
   try {
     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
     const orderResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *', // Добавлено: delivery_address
-      [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address] // Добавлено: deliveryAddress
+      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address]
     );
 
     const orderId = orderResult.rows[0].id;
@@ -473,12 +487,12 @@ app.post('/orders', async (req, res) => {
     io.emit('newOrder', newOrder);
     res.status(201).json(newOrder);
   } catch (error) {
-    console    .error('Ошибка при оформлении заказа:', error.message);
+    console.error('Ошибка при оформлении заказа:', error.message);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 
-// Обновление статуса заказа
+// Маршрут для обновления статуса заказа
 app.put('/orders/:id/status', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -532,7 +546,7 @@ app.put('/orders/:id/status', async (req, res) => {
       return acc;
     }, null);
 
-    io.emit('orderUpdated', updatedOrder); // Emit event to clients
+    io.emit('orderUpdated', updatedOrder);
     res.status(200).json(updatedOrder);
   } catch (error) {
     console.error('Ошибка при обновлении статуса заказа:', error.message);
@@ -540,7 +554,7 @@ app.put('/orders/:id/status', async (req, res) => {
   }
 });
 
-// Обновление количества товаров в заказе
+// Маршрут для обновления количества товаров в заказе
 app.put('/orders/:id/items', isAuthenticated, async (req, res) => {
   const { id } = req.params;
   const { items } = req.body;
@@ -552,7 +566,7 @@ app.put('/orders/:id/items', isAuthenticated, async (req, res) => {
     );
 
     const updatedOrder = result.rows[0];
-    io.emit('orderUpdated', updatedOrder); // Emit event to clients
+    io.emit('orderUpdated', updatedOrder);
     res.status(200).json(updatedOrder);
   } catch (error) {
     console.error('Ошибка при обновлении количества товаров:', error.message);
@@ -560,7 +574,7 @@ app.put('/orders/:id/items', isAuthenticated, async (req, res) => {
   }
 });
 
-// Получение всех заказов
+// Маршрут для получения всех заказов
 app.get('/orders', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -623,7 +637,7 @@ app.get('/orders', async (req, res) => {
   }
 });
 
-// Получение заказов текущего пользователя
+// Маршрут для получения заказов текущего пользователя
 app.get('/api/orders/me', isAuthenticated, async (req, res) => {
   try {
     const result = await pool.query(
@@ -637,7 +651,7 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
   }
 });
 
-// Получение всех пользователей
+// Маршрут для получения всех пользователей
 app.get('/users', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, first_name, last_name, email, address, phone, telegram_username, role FROM users');
@@ -671,5 +685,3 @@ io.on('connection', (socket) => {
     console.log('Отключение');
   });
 });
-
-
