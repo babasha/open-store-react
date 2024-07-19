@@ -5,9 +5,7 @@ import { App } from './App';
 import { GlobalStyled } from './styles/globalStyled';
 import { CartProvider } from './layout/cart/CartContext';
 import './i18n';
-
-// Подключите скрипт Telegram Web Apps
-import './telegram-web-app';
+import './scripts/telegram-web-app.js'; // Обновленный путь
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -17,7 +15,7 @@ const AppWrapper = () => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   useEffect(() => {
-    if (window.Telegram.WebApp) {
+    if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
     }
   }, []);
@@ -30,7 +28,6 @@ const AppWrapper = () => {
           <App />
         </CartProvider>
       </Router>
-      {/* <Mobilemenu isOpen={isOpen} setIsOpen={setIsOpen} /> */}
     </>
   );
 };
