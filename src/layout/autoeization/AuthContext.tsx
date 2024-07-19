@@ -38,8 +38,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } catch (error) {
         console.error('Ошибка при парсинге данных пользователя из localStorage:', error);
       }
+    } else {
+      // Проверяем данные Telegram при загрузке
+      if (window.Telegram && window.Telegram.WebApp) {
+        const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+        if (initDataUnsafe && initDataUnsafe.user) {
+          axios.post(`${process.env.PUBLIC_URL}/auth/telegram`, { user: initDataUnsafe.user })
+            .then(response => {
+              const { user, token } = response.data;
+              setUser(user);
+              localStorage.setItem('user', JSON.stringify(user));
+              localStorage.setItem('token', token);
+              axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+              socket.emit('login', user.id);
+              navigate('/'); // Перенаправляем на главную страницу после успешной авторизации через Telegram
+            })
+            .catch(error => {
+              console.error('Ошибка при авторизации через Telegram:', error);
+            });
+        }
+      }
     }
-  }, []);
+  }, [navigate]);
 
   const login = (user: User, token: string) => {
     setUser(user);
