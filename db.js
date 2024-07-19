@@ -1,13 +1,14 @@
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'enddel.com', // Домен вашего сервера
-  database: 'openstore',
-  password: '953764',
+  user: process.env.POSTGRES_USER,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DATABASE,
+  password: process.env.POSTGRES_PASSWORD,
   port: 5432,
   ssl: {
-    rejectUnauthorized: false // В некоторых случаях может понадобиться, если используется самоподписанный сертификат
+    rejectUnauthorized: false
   }
 });
 

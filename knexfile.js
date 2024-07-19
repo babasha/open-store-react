@@ -1,35 +1,33 @@
-// Update with your config settings.
-/**
- * @type { Object.<string, import("knex").Knex.Config> }
- */
+require('dotenv').config();
+
 module.exports = {
   development: {
-    client: 'pg', // Используем PostgreSQL
+    client: 'pg',
     connection: {
-      host: 'enddel.com', // Домен вашего сервера
-      user: 'postgres', // Имя пользователя базы данных
-      password: '953764', // Пароль пользователя базы данных
-      database: 'openstore', // Имя базы данных
+      host: process.env.POSTGRES_HOST,
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DATABASE,
       ssl: {
-        rejectUnauthorized: false // В некоторых случаях может понадобиться, если используется самоподписанный сертификат
+        rejectUnauthorized: false
       }
     },
     migrations: {
-      directory: './migrations', // Путь к миграциям
+      directory: './migrations',
     },
     seeds: {
-      directory: './seeds', // Путь к семенам (начальным данным)
+      directory: './seeds',
     },
   },
   staging: {
-    client: 'pg', // Используем PostgreSQL
+    client: 'pg',
     connection: {
-      host: 'enddel.com', // Домен вашего сервера
-      user: 'postgres', // Имя пользователя базы данных
-      password: '953764', // Пароль пользователя базы данных
-      database: 'openstore', // Имя базы данных
+      host: process.env.POSTGRES_HOST,
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DATABASE,
       ssl: {
-        rejectUnauthorized: false // В некоторых случаях может понадобиться, если используется самоподписанный сертификат
+        rejectUnauthorized: false
       }
     },
     pool: {
@@ -38,21 +36,21 @@ module.exports = {
     },
     migrations: {
       tableName: 'knex_migrations',
-      directory: './migrations', // Путь к миграциям
+      directory: './migrations',
     },
     seeds: {
-      directory: './seeds', // Путь к семенам (начальным данным)
+      directory: './seeds',
     },
   },
   production: {
-    client: 'pg', // Используем PostgreSQL
+    client: 'pg',
     connection: {
-      host: 'enddel.com', // Домен вашего сервера
-      user: 'postgres', // Имя пользователя базы данных
-      password: '953764', // Пароль пользователя базы данных
-      database: 'openstore', // Имя базы данных
+      host: process.env.POSTGRES_HOST,
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DATABASE,
       ssl: {
-        rejectUnauthorized: false // В некоторых случаях может понадобиться, если используется самоподписанный сертификат
+        rejectUnauthorized: false
       }
     },
     pool: {
@@ -61,10 +59,10 @@ module.exports = {
     },
     migrations: {
       tableName: 'knex_migrations',
-      directory: './migrations', // Путь к миграциям
+      directory: './migrations',
     },
     seeds: {
-      directory: './seeds', // Путь к семенам (начальным данным)
+      directory: './seeds',
     },
   }
 };
