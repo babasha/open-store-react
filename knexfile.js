@@ -6,10 +6,13 @@ module.exports = {
   development: {
     client: 'pg', // Используем PostgreSQL
     connection: {
-      host: '45.146.164.162', // IP-адрес вашего удаленного сервера
+      host: 'enddel.com', // Домен вашего сервера
       user: 'postgres', // Имя пользователя базы данных
       password: '953764', // Пароль пользователя базы данных
       database: 'openstore', // Имя базы данных
+      ssl: {
+        rejectUnauthorized: false // В некоторых случаях может понадобиться, если используется самоподписанный сертификат
+      }
     },
     migrations: {
       directory: './migrations', // Путь к миграциям
@@ -21,10 +24,13 @@ module.exports = {
   staging: {
     client: 'pg', // Используем PostgreSQL
     connection: {
-      host: '45.146.164.162', // IP-адрес вашего удаленного сервера
+      host: 'enddel.com', // Домен вашего сервера
       user: 'postgres', // Имя пользователя базы данных
       password: '953764', // Пароль пользователя базы данных
       database: 'openstore', // Имя базы данных
+      ssl: {
+        rejectUnauthorized: false // В некоторых случаях может понадобиться, если используется самоподписанный сертификат
+      }
     },
     pool: {
       min: 2,
@@ -41,10 +47,13 @@ module.exports = {
   production: {
     client: 'pg', // Используем PostgreSQL
     connection: {
-      host: '45.146.164.162', // IP-адрес вашего удаленного сервера
+      host: 'enddel.com', // Домен вашего сервера
       user: 'postgres', // Имя пользователя базы данных
       password: '953764', // Пароль пользователя базы данных
       database: 'openstore', // Имя базы данных
+      ssl: {
+        rejectUnauthorized: false // В некоторых случаях может понадобиться, если используется самоподписанный сертификат
+      }
     },
     pool: {
       min: 2,
