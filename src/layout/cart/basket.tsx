@@ -79,7 +79,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     };
 
     try {
-      const response = await fetch('http://45.146.164.162:3000/orders', {
+      const response = await fetch('https://enddel.com/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
