@@ -202,7 +202,7 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
   }
 });
 
-// Маршрут для добавления нового продукта
+// Маршрут для добавления нового продуктаf
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
