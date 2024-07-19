@@ -20,7 +20,7 @@ const io = new Server(server, {
 
 // Настройки CORS
 app.use(cors({
-  origin: 'https://enddel.com',
+  origin: ['https://enddel.com', 'https://web.telegram.org'],
   credentials: true
 }));
 
@@ -29,12 +29,12 @@ app.use(express.json());
 
 // Middleware для заголовков CORS
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://enddel.com');
+  res.header('Access-Control-Allow-Origin', req.headers.origin); // Динамическое разрешение
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
-});
+}); 
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
