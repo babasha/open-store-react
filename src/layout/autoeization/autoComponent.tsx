@@ -1,4 +1,3 @@
-// src/components/AuthorizationComponent.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Container } from '../../components/Container';
@@ -83,8 +82,26 @@ const AuthorizationComponent: React.FC = () => {
     setAuthMode(mode);
   };
 
+  const handleTelegramAuth = async () => {
+    if (window.Telegram && window.Telegram.WebApp) {
+      const initData = window.Telegram.WebApp.initDataUnsafe;
+      if (initData && initData.user) {
+        try {
+          const response = await axios.post('https://enddel.com/auth/telegram', { user: initData.user });
+          if (response.data.token) {
+            login(response.data.user, response.data.token);
+          }
+        } catch (error) {
+          console.error('Ошибка при авторизации через Telegram:', error);
+        }
+      } else {
+        const telegramAuthUrl = `https://telegram.me/YOUR_BOT_USERNAME?start=auth`;
+        window.open(telegramAuthUrl, '_blank');
+      }
+    }
+  };
+
   return (
-    // <HiddenScreensContainer>
     <Container width={'100%'}>
       <CardInner>
         {user ? (
@@ -95,6 +112,7 @@ const AuthorizationComponent: React.FC = () => {
               <div>
                 <button onClick={() => handleSetAuthMode('login')}>{t('login')}</button>
                 <button onClick={() => handleSetAuthMode('register')}>{t('register')}</button>
+                <button onClick={handleTelegramAuth}>{t('login_with_telegram')}</button>
               </div>
             )}
             {authMode === 'login' && (
@@ -113,7 +131,6 @@ const AuthorizationComponent: React.FC = () => {
         )}
       </CardInner>
     </Container>
-    // {/* </HiddenScreensContainer> */}
   );
 };
 
