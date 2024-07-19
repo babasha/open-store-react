@@ -64,8 +64,7 @@ const Showcase = styled.div`
 `;
 
 const ShopInner = styled.div`
-  /* display: flex; */
+  
   /* background-color: ${theme.colors.ShopWindowBg};
-  width: 1100px;
   flex-wrap: wrap; */
 `;
