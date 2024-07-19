@@ -1,3 +1,4 @@
+require('dotenv').config(); // Загрузка переменных окружения из файла .env
 const express = require('express');
 const http = require('http');
 const pool = require('./db'); // Подключение к базе данных
@@ -12,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://enddel.com",
+    origin: process.env.PUBLIC_URL,
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -20,7 +21,7 @@ const io = new Server(server, {
 
 // Настройки CORS
 app.use(cors({
-  origin: ['https://enddel.com', 'https://web.telegram.org'],
+  origin: [process.env.PUBLIC_URL, 'https://web.telegram.org'],
   credentials: true
 }));
 
@@ -34,7 +35,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
-}); 
+});
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
