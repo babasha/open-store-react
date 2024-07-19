@@ -27,8 +27,8 @@ const AuthorizationComponent: React.FC = () => {
   const fetchUserOrders = useCallback(async () => {
     try {
       const [ordersResponse, productsResponse] = await Promise.all([
-        axios.get('http://45.146.164.162:3000/api/orders/me', { withCredentials: true }),
-        axios.get('http://45.146.164.162:3000/products', { withCredentials: true })
+        axios.get('https://enddel.com/api/orders/me', { withCredentials: true }),
+        axios.get('https://enddel.com/products', { withCredentials: true })
       ]);
 
       const ordersData: Order[] = ordersResponse.data;

@@ -59,7 +59,7 @@ const OrderList: React.FC = () => {
 
   const fetchUserId = async () => {
     try {
-      const response = await axios.get('http://45.146.164.162:3000/auth/me', { withCredentials: true });
+      const response = await axios.get('https://enddel.com/auth/me', { withCredentials: true });
       setUserId(response.data.user.id);
     } catch (error) {
       console.error('Ошибка при получении данных пользователя:', error);
@@ -68,7 +68,7 @@ const OrderList: React.FC = () => {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await axios.get('http://45.146.164.162:3000/orders', { withCredentials: true });
+      const response = await axios.get('https://enddel.com/orders', { withCredentials: true });
       const fetchedOrders = response.data.map((order: any) => ({
         ...order,
         delivery_time: order.delivery_time || '',
@@ -236,7 +236,7 @@ const OrderList: React.FC = () => {
   const updateDeliveryMode = useCallback(async (mode: 'courier' | 'manual' | 'self') => {
     console.log('Updating delivery mode for all active orders to:', mode);
     try {
-      await axios.put('http://45.146.164.162:3000/orders/update-delivery-mode', { deliveryOption: mode }, { withCredentials: true });
+      await axios.put('https://enddel.com/orders/update-delivery-mode', { deliveryOption: mode }, { withCredentials: true });
       setDeliveryMode(mode);
       fetchOrders();
     } catch (error) {

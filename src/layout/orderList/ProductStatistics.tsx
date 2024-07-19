@@ -13,7 +13,7 @@ const ProductStatistics: React.FC<ProductStatisticsProps> = ({ startDate, endDat
   useEffect(() => {
     const fetchProductStatistics = async () => {
       try {
-        const response = await axios.get('http://45.146.164.162:3000/orders', { withCredentials: true });
+        const response = await axios.get('https://enddel.com/orders', { withCredentials: true });
         const orders = response.data;
 
         // Filter orders based on the date range
