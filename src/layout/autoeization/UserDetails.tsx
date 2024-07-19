@@ -1,4 +1,3 @@
-// src/components/UserDetails.tsx
 import React, { useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -76,8 +75,6 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders, 
 
   return (
     <UserDetailsContainer>
-      
-             
       <h2>{t('welcome')}</h2>
       <h5> {user.first_name} {user.last_name}</h5>
       <p>{t('address')}: {user.address}</p>
@@ -113,12 +110,11 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders, 
         loadMore={() => loadMoreOrders('completed')}
         allOrdersCount={orders.filter(order => order.status === 'completed').length}
       />
-        <FlexWrapper justify='flex-end'>
-           <EditButton onClick={logout}>{t('logout')}</EditButton>
-        </FlexWrapper>
+      <FlexWrapper justify='flex-end'>
+        <EditButton onClick={logout}>{t('logout')}</EditButton>
+      </FlexWrapper>
     </UserDetailsContainer>
   );
 };
 
 export default UserDetails;
-
