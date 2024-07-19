@@ -1,3 +1,4 @@
+require('dotenv').config(); // Загрузка переменных окружения из файла .env
 const express = require('express');
 const http = require('http');
 const pool = require('./db'); // Подключение к базе данных
@@ -12,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://enddel.com",
+    origin: process.env.PUBLIC_URL,
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -20,7 +21,7 @@ const io = new Server(server, {
 
 // Настройки CORS
 app.use(cors({
-  origin: ['https://enddel.com', 'https://web.telegram.org'],
+  origin: [process.env.PUBLIC_URL, 'https://web.telegram.org'],
   credentials: true
 }));
 
@@ -34,7 +35,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
-}); 
+});
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -89,6 +90,40 @@ const isAuthenticated = (req, res, next) => {
     res.status(400).json({ message: 'Неверный токен' });
   }
 };
+
+// Маршрут для авторизации через Telegram
+app.post('/auth/telegram', async (req, res) => {
+  const telegramUser = req.body.user;
+
+  if (!telegramUser) {
+    return res.status(400).send('User data is missing');
+  }
+
+  try {
+    // Проверка существования пользователя по Telegram ID
+    let result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegramUser.id]);
+    let user = result.rows[0];
+
+    if (!user) {
+      // Если пользователь не найден, регистрируем нового пользователя
+      result = await pool.query(
+        'INSERT INTO users (first_name, last_name, email, telegram_id, telegram_username, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [telegramUser.first_name, telegramUser.last_name, telegramUser.email, telegramUser.id, telegramUser.username, 'user']
+      );
+      user = result.rows[0];
+    }
+
+    // Создание JWT токена
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Отправка токена и данных пользователя обратно клиенту
+    res.json({ token, user });
+  } catch (err) {
+    console.error('Ошибка авторизации через Telegram:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
 
 // Маршрут для получения всех продуктов
 app.get('/products', async (req, res) => {

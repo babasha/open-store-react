@@ -1,6 +1,31 @@
 const TelegramBot = require('node-telegram-bot-api');
-const token = '7246879435:AAEOX8oHojQQ5atQcD1rGIaPJEBr5hPifn4';
+const axios = require('axios');
+
+const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
+
+bot.onText(/\/start (.+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const startPayload = match[1]; // Получаем payload из команды /start
+
+  if (startPayload === 'auth') {
+    // Получаем информацию о пользователе
+    const user = msg.from;
+
+    // Отправляем данные пользователя на ваш сервер для авторизации
+    try {
+      const response = await axios.post(`${process.env.PUBLIC_URL}/auth/telegram`, { user });
+
+      if (response.data.token) {
+        // Отправляем сообщение пользователю с информацией о успешной авторизации
+        bot.sendMessage(chatId, 'Вы успешно авторизовались через Telegram!');
+      }
+    } catch (error) {
+      console.error('Ошибка при авторизации через Telegram:', error);
+      bot.sendMessage(chatId, 'Произошла ошибка при авторизации через Telegram.');
+    }
+  }
+});
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
