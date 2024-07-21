@@ -10,7 +10,10 @@ import { CardInner } from './styledauth/AuthorizationStyles';
 import { useTranslation } from 'react-i18next';
 import UserDetails from './UserDetails';
 import { Order } from '../orderList/OrderList';
-import { HiddenScreensContainer } from '../../components/HiddenContainer';
+import styled from 'styled-components';
+import ButtonWithRipple from '../../styles/btns/ButtonStyles';
+import { EditButton } from '../../styles/btns/secondBtns';
+import { FlexWrapper } from '../../components/FlexWrapper';
 
 const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
@@ -84,7 +87,6 @@ const AuthorizationComponent: React.FC = () => {
   };
 
   return (
-    // <HiddenScreensContainer>
     <Container width={'100%'}>
       <CardInner>
         {user ? (
@@ -92,29 +94,34 @@ const AuthorizationComponent: React.FC = () => {
         ) : (
           <div>
             {authMode === '' && (
-              <div>
-                <button onClick={() => handleSetAuthMode('login')}>{t('login')}</button>
-                <button onClick={() => handleSetAuthMode('register')}>{t('register')}</button>
-              </div>
+              <FlexWrapper justify='space-evenly' wrap='wrap'>
+                <ButtonAuteriztion onClick={() => handleSetAuthMode('login')} isActive={false} isDisabled={false}>{t('login')}</ButtonAuteriztion>
+                <ButtonAuteriztion onClick={() => handleSetAuthMode('register')} isActive={false} isDisabled={false}>{t('register')}</ButtonAuteriztion>
+              </FlexWrapper>
             )}
             {authMode === 'login' && (
               <div>
-                <button onClick={() => handleSetAuthMode('')}>{t('back')}</button>
+                <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>{t('back')}</ButtonAuteriztionExit>
                 <LoginComponent />
               </div>
             )}
             {authMode === 'register' && (
               <div>
-                <button onClick={() => handleSetAuthMode('')}>{t('back')}</button>
-                <RegisterComponent onAuthModeChange={handleSetAuthMode} />
+             <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>{t('back')}</ButtonAuteriztionExit>
+                  <RegisterComponent onAuthModeChange={handleSetAuthMode} />
               </div>
             )}
           </div>
         )}
       </CardInner>
     </Container>
-    // {/* </HiddenScreensContainer> */}
   );
 };
+
+const ButtonAuteriztion = styled(ButtonWithRipple)`
+margin: 5px 0px;
+`;
+const ButtonAuteriztionExit = styled(EditButton)`
+`;
 
 export default AuthorizationComponent;

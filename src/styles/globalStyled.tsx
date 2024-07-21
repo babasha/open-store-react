@@ -98,3 +98,4 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
     }
   }
 `;
+
