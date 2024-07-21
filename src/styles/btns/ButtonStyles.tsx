@@ -1,3 +1,4 @@
+// src/styles/btns/ButtonStyles.tsx
 import styled from 'styled-components';
 import { motion, MotionProps } from 'framer-motion';
 import { theme } from '../Theme';
@@ -13,7 +14,7 @@ interface Ripple {
   style: React.CSSProperties;
 }
 
-export const StyledButton = styled(motion.button)<ButtonProps>`
+const StyledButton = styled(motion.button)<ButtonProps>`
   border-radius: 30px;
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
   background-color: ${({ isActive }) => (isActive ? theme.button.buttonActive : 'transparent')};
@@ -122,4 +123,3 @@ export const ButtonWithRipple: React.FC<ButtonProps & React.ButtonHTMLAttributes
 };
 
 export default ButtonWithRipple;
-

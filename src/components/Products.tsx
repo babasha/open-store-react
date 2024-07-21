@@ -104,6 +104,7 @@ const Products = () => {
         setIsOpen={setIsOpen}
         cartItemCount={cartItems.length} // передача количества товаров в корзине
       >
+        
         <Basket currentLanguage={currentLanguage} />
         <AutorizationComponent />
       </StyledMenuWrapper>

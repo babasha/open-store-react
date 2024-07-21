@@ -1,6 +1,21 @@
+// src/components/LoginComponent.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../autoeization/AuthContext';
+import TextInput from '../../components/textinputs/TextInput';
+import styled from 'styled-components';
+import ButtonWithRipple from '../../styles/btns/ButtonStyles';
+
+const LoginForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+`;
+
+const LoginButton = styled(ButtonWithRipple)`
+ 
+`;
 
 const LoginComponent: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -44,26 +59,28 @@ const LoginComponent: React.FC = () => {
 
   return (
     <div>
-      <h1>Вход</h1>
-      <form onSubmit={handleLogin}>
-        <input
+      <LoginTitle>Вход</LoginTitle>
+      <LoginForm onSubmit={handleLogin}>
+        <TextInput
+          label="Логин"
           type="text"
-          placeholder="Имя пользователя, Email или Телефон"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          required
         />
-        <input
+        <TextInput
+          label="Пароль"
           type="password"
-          placeholder="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
-        <button type="submit">Войти</button>
-      </form>
+        <LoginButton type="submit" isActive={true} isDisabled={false}>Войти</LoginButton>
+      </LoginForm>
     </div>
   );
 };
+
+const LoginTitle = styled.h3`
+  margin: 10px 0px;
+`;
 
 export default LoginComponent;

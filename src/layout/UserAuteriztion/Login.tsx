@@ -1,6 +1,8 @@
+// src/components/Login.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../autoeization/AuthContext';
+import TextInput from '../../components/textinputs/TextInput';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -21,6 +23,7 @@ const Login: React.FC = () => {
       const data = await response.json();
       if (response.ok) {
         login(data.user, data.token); // Передаем данные пользователя и токен
+        navigate('/'); // Переход на главную страницу или другую нужную
       } else {
         alert(data.message || 'Ошибка входа');
       }
@@ -32,21 +35,18 @@ const Login: React.FC = () => {
 
   return (
     <div>
-      <h1>Login</h1>
+      <h1>Login beta</h1>
       <form onSubmit={handleLogin}>
-        <input
-          type="text"
+        <TextInput
+          label="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-          required
         />
-        <input
+        <TextInput
+          label="Password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
         />
         <button type="submit">Login</button>
       </form>
