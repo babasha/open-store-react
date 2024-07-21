@@ -117,7 +117,6 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   );
 
   return (
-    // <HiddenScreensContainer>
       <Container width={'100%'}>
         <CartdiInner>
           <FlexWrapper align='center' justify='space-between'>
@@ -163,7 +162,6 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
           )}
         </CartdiInner>
       </Container>
-    // </HiddenScreensContainer>
   );
 };
 
