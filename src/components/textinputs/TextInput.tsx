@@ -1,5 +1,5 @@
 // src/components/TextInput.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 
@@ -8,12 +8,12 @@ const InputContainer = styled.div`
 `;
 
 const Input = styled(motion.input)`
-  height: 5rem;
-  width: 40rem;
+  height: 30px;
+  width: 90%;
   border: 2px solid black;
-  border-radius: 1rem;
-  font-size: 1.4rem;
-  padding: 0 1.2rem;
+  border-radius: 10px;
+  font-size: 14px;
+  padding: 0 12px;
 
   &:focus {
     outline: none;
@@ -23,9 +23,9 @@ const Input = styled(motion.input)`
   &:focus + label .text,
   &:not([value='']) + label .text {
     background-color: white;
-    font-size: 1.1rem;
+    font-size: 12px;
     color: black;
-    transform: translate(0, -170%);
+    transform: translate(0, -100%);
   }
 
   &:focus + label .text {
@@ -52,22 +52,27 @@ const Label = styled.label`
 `;
 
 const Text = styled(motion.div)`
-  font-size: 1.4rem;
+  /* font-size: 1.4rem; */
   padding: 0 0.5rem;
   background-color: transparent;
   color: black;
   transition: transform 0.15s ease-out, font-size 0.15s ease-out, background-color 0.2s ease-out, color 0.15s ease-out;
 `;
 
-const TextInput: React.FC<{ label: string }> = ({ label }) => {
-  const [value, setValue] = useState('');
+interface TextInputProps {
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
+const TextInput: React.FC<TextInputProps> = ({ label, type = 'text', value, onChange }) => {
   return (
     <InputContainer>
       <Input
-        type="text"
+        type={type}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={onChange}
         autoComplete="off"
         aria-labelledby={`placeholder-${label}`}
         initial={{ borderColor: 'black' }}
