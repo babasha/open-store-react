@@ -1,4 +1,4 @@
-// src/components/TextInput.tsx
+// src/components/textinputs/TextInput.tsx
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
@@ -52,7 +52,6 @@ const Label = styled.label`
 `;
 
 const Text = styled(motion.div)`
-  /* font-size: 1.4rem; */
   padding: 0 0.5rem;
   background-color: transparent;
   color: black;
@@ -61,15 +60,17 @@ const Text = styled(motion.div)`
 
 interface TextInputProps {
   label: string;
+  name?: string;
   type?: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const TextInput: React.FC<TextInputProps> = ({ label, type = 'text', value, onChange }) => {
+const TextInput: React.FC<TextInputProps> = ({ label, name, type = 'text', value, onChange }) => {
   return (
     <InputContainer>
       <Input
+        name={name}
         type={type}
         value={value}
         onChange={onChange}
@@ -78,7 +79,7 @@ const TextInput: React.FC<TextInputProps> = ({ label, type = 'text', value, onCh
         initial={{ borderColor: 'black' }}
         whileFocus={{ borderColor: 'blueviolet' }}
       />
-      <Label htmlFor={label} id={`placeholder-${label}`}>
+      <Label htmlFor={name} id={`placeholder-${label}`}>
         <Text className="text">{label}</Text>
       </Label>
     </InputContainer>

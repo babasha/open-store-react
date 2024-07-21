@@ -1,9 +1,24 @@
+// src/components/RegisterComponent.tsx
 import React, { useState } from 'react';
 import { useAuth } from '../../layout/autoeization/AuthContext';
+import TextInput from '../../components/textinputs/TextInput';
+import styled from 'styled-components';
+import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 
 interface RegisterComponentProps {
   onAuthModeChange: (mode: 'login' | 'register' | '') => void;
 }
+
+const RegisterForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+`;
+
+const RegisterButton = styled(ButtonWithRipple)`
+
+`;
 
 const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange }) => {
   const [formData, setFormData] = useState({
@@ -53,56 +68,51 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
   return (
     <div>
       <h1>Регистрация</h1>
-      <form onSubmit={handleSubmit}>
-        <input
+      <RegisterForm onSubmit={handleSubmit}>
+        <TextInput
+          label="Имя"
           type="text"
           name="firstName"
-          placeholder="Имя"
           value={formData.firstName}
           onChange={handleChange}
-          required
         />
-        <input
+        <TextInput
+          label="Фамилия"
           type="text"
           name="lastName"
-          placeholder="Фамилия"
           value={formData.lastName}
           onChange={handleChange}
-          required
         />
-        <input
+        <TextInput
+          label="Email"
           type="email"
           name="email"
-          placeholder="Email"
           value={formData.email}
           onChange={handleChange}
-          required
         />
-        <input
+        <TextInput
+          label="Адрес"
           type="text"
           name="address"
-          placeholder="Адрес"
           value={formData.address}
           onChange={handleChange}
         />
-        <input
+        <TextInput
+          label="Телефон"
           type="text"
           name="phone"
-          placeholder="Телефон"
           value={formData.phone}
           onChange={handleChange}
-          required
         />
-        <input
+        <TextInput
+          label="Пароль"
           type="password"
           name="password"
-          placeholder="Пароль"
           value={formData.password}
           onChange={handleChange}
-          required
         />
-        <button type="submit">Зарегистрироваться</button>
-      </form>
+        <RegisterButton type="submit" isActive={true} isDisabled={false}>Зарегистрироваться</RegisterButton>
+      </RegisterForm>
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
