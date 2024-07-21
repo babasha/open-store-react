@@ -1,4 +1,3 @@
-// src/page/AdminPanel.tsx
 import React, { useState, useEffect } from 'react';
 import { Header } from '../layout/header/header';
 import ProductList from '../layout/productList/ProductList';
