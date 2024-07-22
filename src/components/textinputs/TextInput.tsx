@@ -2,6 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { theme } from '../../styles/Theme';
 
 const InputContainer = styled.div`
   position: relative;
@@ -9,15 +10,16 @@ const InputContainer = styled.div`
 
 const Input = styled(motion.input)`
   height: 30px;
-  width: 90%;
-  border: 2px solid black;
+  /* width: 90%; */
+  border: 1.5px solid black;
   border-radius: 10px;
   font-size: 14px;
   padding: 0 12px;
+/* margin-top: 5px; */
 
   &:focus {
     outline: none;
-    border-color: blueviolet;
+    border-color: ${theme.button.buttonActive}
   }
 
   &:focus + label .text,
@@ -29,8 +31,8 @@ const Input = styled(motion.input)`
   }
 
   &:focus + label .text {
-    border-color: blueviolet;
-    color: blueviolet;
+    border-color: ${theme.button.buttonActive};
+    color: ${theme.button.buttonActive};
   }
 
   @media (max-width: 40rem) {
@@ -44,7 +46,7 @@ const Label = styled.label`
   bottom: 0;
   left: 0;
   right: 0;
-  border: 3px solid transparent;
+  border: 2px solid transparent;
   background-color: transparent;
   pointer-events: none;
   display: flex;
@@ -77,7 +79,7 @@ const TextInput: React.FC<TextInputProps> = ({ label, name, type = 'text', value
         autoComplete="off"
         aria-labelledby={`placeholder-${label}`}
         initial={{ borderColor: 'black' }}
-        whileFocus={{ borderColor: 'blueviolet' }}
+        whileFocus={{ borderColor: `${theme.button.buttonActive}` }}
       />
       <Label htmlFor={name} id={`placeholder-${label}`}>
         <Text className="text">{label}</Text>

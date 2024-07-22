@@ -13,7 +13,7 @@
     "notAuthorized": "Вы не авторизованы",
     "orderError": "Ошибка при оформлении заказа",
     "orderSuccess": "Заказ успешно оформлен",
-    "delivery_address": "Адрес доставки" 
+    "delivery_address": "Адрес доставки"
   },
   "as_soon_as_possible": "Как можно скорее",
   "schedule_delivery": "Ко времени",
@@ -33,7 +33,7 @@
   "login": "Войти",
   "register": "Зарегистрироваться",
   "back": "Назад",
-  "ready_for_delivery": "готов к доставке",
+  "ready_for_delivery": "Готов к доставке",
   "pending": "В ожидании",
   "assembly": "Сборка",
   "completed": "Завершен",
@@ -58,5 +58,21 @@
   "delivery_time_selected": "Время доставки выбрано",
   "delivery_day": "День доставки",
   "today": "Сегодня",
-  "tomorrow": "Завтра"
+  "tomorrow": "Завтра",
+  "title": "Регистрация",
+  "first_name": "Имя",
+  "last_name": "Фамилия",
+  "email": "Email",
+  "password": "Пароль",
+  "all_fields_required": "Все поля должны быть заполнены",
+  "invalid_email": "Неверный формат email",
+  "something_went_wrong": "Что-то пошло не так",
+  "success": "Регистрация прошла успешно",
+  "error": "Ошибка регистрации:",
+    "titlelogin": "Вход",
+    "username": "Логин",
+    "login_button": "Войти",
+    "error_login": "Что-то пошло не так",
+    "user_data": "Данные пользователя после входа:"
+
 }

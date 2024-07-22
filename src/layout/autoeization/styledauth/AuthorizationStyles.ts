@@ -27,7 +27,7 @@ export const CardInner = styled.div`
   width: 100%;
   @media (max-width: 590px) {
     /* height: 50%; */
-    background-color: red;
+    /* background-color: red; */
   }
 `;
 
