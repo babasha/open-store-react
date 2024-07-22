@@ -1,7 +1,7 @@
 // routes/index.js
 const express = require('express');
-const controllers = require('../controllers');
-const { isAuthenticated, isAdmin, upload } = require('../middlewares');
+const controllers = require('../controllers/index');
+const { isAuthenticated, isAdmin, upload } = require('../middlewares/index');
 
 const router = express.Router();
 

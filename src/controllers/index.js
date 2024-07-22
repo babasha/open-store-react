@@ -1,5 +1,5 @@
 // controllers/index.js
-const pool = require('../db');
+const pool = require('../../db');
 
 // Получение всех продуктов
 const getProducts = async (req, res) => {
