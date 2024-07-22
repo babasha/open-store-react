@@ -63,7 +63,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
     setError(null); // Сбрасываем ошибку перед новым запросом
     setIsSubmitting(true);
     try {
-      const response = await fetch("https://enddel.com/auth/register", {
+      const response = await fetch("http://localhost:3000/auth/register", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -20,7 +20,7 @@ const CourierSwitcher: React.FC<CourierSwitcherProps> = ({ orderId, selectedCour
 
   const fetchWorkingCouriers = async () => {
     try {
-      const response = await axios.get('https://enddel.com/couriers/working', { withCredentials: true });
+      const response = await axios.get('http://localhost:3000/couriers/working', { withCredentials: true });
       return response.data;
     } catch (error) {
       console.error('Ошибка при получении списка курьеров:', error);
@@ -47,7 +47,7 @@ const CourierSwitcher: React.FC<CourierSwitcherProps> = ({ orderId, selectedCour
     const assignCourier = async () => {
       if (selectedCourierId) {
         try {
-          await axios.put(`https://enddel.com/orders/${orderId}/assign-courier`, { courierId: selectedCourierId }, { withCredentials: true });
+          await axios.put(`http://localhost:3000/orders/${orderId}/assign-courier`, { courierId: selectedCourierId }, { withCredentials: true });
           console.log('Курьер назначен');
         } catch (error) {
           console.error('Ошибка при назначении курьера:', error);

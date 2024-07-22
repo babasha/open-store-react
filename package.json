@@ -79,7 +79,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://enddel.com",
+  "proxy": "http://localhost:3000",
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/file-saver": "^2.0.7",

@@ -33,7 +33,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
 
   const cancelOrder = useCallback(async () => {
     try {
-      await axios.put(`https://enddel.com/orders/${order.id}/status`, { status: 'canceled' });
+      await axios.put(`http://localhost:3000/orders/${order.id}/status`, { status: 'canceled' });
       alert(t('order_canceled'));
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -54,7 +54,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
 
   const handleConfirmCancel = useCallback(async () => {
     try {
-      await axios.put(`https://enddel.com/orders/${order.id}/status`, { status: 'canceled' });
+      await axios.put(`http://localhost:3000/orders/${order.id}/status`, { status: 'canceled' });
       alert(t('order_canceled'));
       setShowModal(false);
     } catch (error) {

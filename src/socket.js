@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-const socket = io('https://enddel.com', {
+const socket = io('http://localhost:3000', {
   withCredentials: true
 });
 

@@ -87,7 +87,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
   const handleStatusChange = async (id: number, status: string) => {
     try {
       const updatedStatusChangedAt = new Date().toISOString();
-      await axios.put(`https://enddel.com/orders/${id}/status`, { status, status_changed_at: updatedStatusChangedAt }, { withCredentials: true });
+      await axios.put(`http://localhost:3000/orders/${id}/status`, { status, status_changed_at: updatedStatusChangedAt }, { withCredentials: true });
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === id ? { ...order, status, status_changed_at: updatedStatusChangedAt } : order
@@ -101,7 +101,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
   const handleCancelOrder = async (id: number) => {
     try {
       const updatedStatusChangedAt = new Date().toISOString();
-      await axios.put(`https://enddel.com/orders/${id}/status`, { status: 'canceled', status_changed_at: updatedStatusChangedAt }, { withCredentials: true });
+      await axios.put(`http://localhost:3000/orders/${id}/status`, { status: 'canceled', status_changed_at: updatedStatusChangedAt }, { withCredentials: true });
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === id ? { ...order, status: 'canceled', status_changed_at: updatedStatusChangedAt } : order
@@ -136,7 +136,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
 
       setLocalOrder(orderWithUserData);
 
-      await axios.put(`https://enddel.com/orders/${order.id}/items`, { items: updatedItems }, { withCredentials: true });
+      await axios.put(`http://localhost:3000/orders/${order.id}/items`, { items: updatedItems }, { withCredentials: true });
       setOrders((prevOrders) =>
         prevOrders.map((ord) =>
           ord.id === order.id ? orderWithUserData : ord
@@ -157,7 +157,7 @@ const OrderItem: React.FC<Props> = ({ order, setOrders, disableTimers }) => {
   const handleDeliveryModeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newDeliveryOption = e.target.value as 'courier' | 'manual' | 'self';
     try {
-      await axios.put(`https://enddel.com/orders/${order.id}/delivery-option`, { deliveryOption: newDeliveryOption }, { withCredentials: true });
+      await axios.put(`http://localhost:3000/orders/${order.id}/delivery-option`, { deliveryOption: newDeliveryOption }, { withCredentials: true });
       setLocalOrder(prevOrder => ({
         ...prevOrder,
         delivery_option: newDeliveryOption

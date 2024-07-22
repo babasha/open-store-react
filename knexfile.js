@@ -1,68 +1,56 @@
-require('dotenv').config();
+// Update with your config settings.
 
+/**
+ * @type { Object.<string, import("knex").Knex.Config> }
+ */
 module.exports = {
+
   development: {
-    client: 'pg',
+    client: 'pg', // Используем PostgreSQL
     connection: {
-      host: process.env.POSTGRES_HOST,
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DATABASE,
-      ssl: {
-        rejectUnauthorized: false
-      }
+      host: '127.0.0.1', // Локальный хост
+      user: 'postgres', // Имя пользователя базы данных
+      password: '953764', // Пароль пользователя базы данных
+      database: 'openstore', // Имя базы данных
     },
     migrations: {
-      directory: './migrations',
+      directory: './migrations', // Путь к миграциям
     },
     seeds: {
-      directory: './seeds',
+      directory: './seeds', // Путь к семенам (начальным данным)
     },
   },
+
   staging: {
-    client: 'pg',
+    client: 'postgresql',
     connection: {
-      host: process.env.POSTGRES_HOST,
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DATABASE,
-      ssl: {
-        rejectUnauthorized: false
-      }
+      database: 'my_db',
+      user:     'username',
+      password: 'password'
     },
     pool: {
       min: 2,
-      max: 10,
+      max: 10
     },
     migrations: {
-      tableName: 'knex_migrations',
-      directory: './migrations',
-    },
-    seeds: {
-      directory: './seeds',
-    },
+      tableName: 'knex_migrations'
+    }
   },
+
   production: {
-    client: 'pg',
+    client: 'postgresql',
     connection: {
-      host: process.env.POSTGRES_HOST,
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DATABASE,
-      ssl: {
-        rejectUnauthorized: false
-      }
+      database: 'my_db',
+      user:     'username',
+      password: 'password'
     },
     pool: {
       min: 2,
-      max: 10,
+      max: 10
     },
     migrations: {
-      tableName: 'knex_migrations',
-      directory: './migrations',
-    },
-    seeds: {
-      directory: './seeds',
-    },
+      tableName: 'knex_migrations'
+    }
   }
+
 };
