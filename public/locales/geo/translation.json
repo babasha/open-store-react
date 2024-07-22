@@ -58,5 +58,20 @@
   "delivery_time_selected": "მიტანის დრო არჩეულია",
   "delivery_day": "მიტანის დღე",
   "today": "დღეს",
-  "tomorrow": "ხვალ"
+  "tomorrow": "ხვალ",
+  "title": "რეგისტრაცია",
+  "first_name": "სახელი",
+  "last_name": "გვარი",
+  "email": "ელ.ფოსტა",
+  "password": "პაროლი",
+  "all_fields_required": "ყველა ველი სავალდებულოა",
+  "invalid_email": "ელ.ფოსტის ფორმატი არასწორია",
+  "something_went_wrong": "რაღაც შეცდომა მოხდა",
+  "success": "რეგისტრაცია წარმატებით დასრულდა",
+  "error": "რეგისტრაციის შეცდომა:",
+  "titlelogin": "შესვლა",
+  "username": "მომხმარებელი",
+  "login_button": "შესვლა",
+  "error_login": "რაღაც შეცდომა მოხდა",
+  "user_data": "მომხმარებლის მონაცემები შესვლის შემდეგ:"
 }

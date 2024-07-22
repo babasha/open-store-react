@@ -1,3 +1,4 @@
+
 // src/styles/Theme.tsx
 export const theme = {
     colors: {
@@ -5,7 +6,7 @@ export const theme = {
       mainBg: "#FFFFFF",
       ShopWindowBg: "#F0F4F8",
       
-      accent: "#7572D5",
+      accent: "#5450d8",
       font: "#181818",
     },
     media: {
@@ -14,7 +15,8 @@ export const theme = {
     button: {
       buttonActive: "#0098EA",
       buttonHover: "#0098eac4",
-      buttonDisabled: "#808080"
+      buttonDisabled: "#808080",
+      errorbtn:"#dd2c2c"
   },
 };
   
