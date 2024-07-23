@@ -243,7 +243,8 @@ const AuthorizationComponent: React.FC = () => {
       </CardInner>
     </Container>
   );
-};
+}; 
+ 
 
 const TelegramLoginWidget = () => {
   useEffect(() => {
@@ -256,6 +257,13 @@ const TelegramLoginWidget = () => {
     script.setAttribute('data-request-access', 'write');
     script.async = true;
     document.getElementById('telegram-login-widget')?.appendChild(script);
+
+    return () => {
+      const scriptElement = document.getElementById('telegram-login-widget')?.querySelector('script');
+      if (scriptElement) {
+        document.getElementById('telegram-login-widget')?.removeChild(scriptElement);
+      }
+    };
   }, []);
 
   return <div id="telegram-login-widget"></div>;
