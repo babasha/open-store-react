@@ -1,4 +1,3 @@
-// src/components/AuthorizationComponent.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Container } from '../../components/Container';
@@ -97,6 +96,7 @@ const AuthorizationComponent: React.FC = () => {
               <FlexWrapper justify='space-evenly' wrap='wrap'>
                 <ButtonAuteriztion onClick={() => handleSetAuthMode('login')} isActive={false} isDisabled={false}>{t('login')}</ButtonAuteriztion>
                 <ButtonAuteriztion onClick={() => handleSetAuthMode('register')} isActive={false} isDisabled={false}>{t('register')}</ButtonAuteriztion>
+                <TelegramLoginWidget />
               </FlexWrapper>
             )}
             {authMode === 'login' && (
@@ -107,8 +107,8 @@ const AuthorizationComponent: React.FC = () => {
             )}
             {authMode === 'register' && (
               <div>
-             <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>{t('back')}</ButtonAuteriztionExit>
-                  <RegisterComponent onAuthModeChange={handleSetAuthMode} />
+                <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>{t('back')}</ButtonAuteriztionExit>
+                <RegisterComponent onAuthModeChange={handleSetAuthMode} />
               </div>
             )}
           </div>
@@ -118,8 +118,24 @@ const AuthorizationComponent: React.FC = () => {
   );
 };
 
+const TelegramLoginWidget = () => {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://telegram.org/js/telegram-widget.js?19";
+    script.setAttribute('data-telegram-login', 'YOUR_TELEGRAM_BOT_USERNAME');
+    script.setAttribute('data-size', 'large');
+    script.setAttribute('data-radius', '10');
+    script.setAttribute('data-auth-url', 'https://enddel.com/auth/telegram');
+    script.setAttribute('data-request-access', 'write');
+    script.async = true;
+    document.getElementById('telegram-login-widget')?.appendChild(script);
+  }, []);
+
+  return <div id="telegram-login-widget"></div>;
+};
+
 const ButtonAuteriztion = styled(ButtonWithRipple)`
-margin: 5px 0px;
+  margin: 5px 0px;
 `;
 const ButtonAuteriztionExit = styled(EditButton)`
 `;
