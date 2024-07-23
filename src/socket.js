@@ -17,3 +17,4 @@ socket.on('orderUpdated', (updatedOrder) => {
 });
 
 export default socket;
+
