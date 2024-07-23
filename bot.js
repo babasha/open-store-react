@@ -1,22 +1,20 @@
-require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const token = process.env.TELEGRAM_BOT_TOKEN;
+const token = '7190161649:AAGFEHTtW2HaJoyXkj9d--KelDAz0R28vIk';
 const bot = new TelegramBot(token, { polling: true });
 
-bot.onText(/\/start/, (msg) => {
+bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
-  const url = process.env.PUBLIC_URL;
+  const text = msg.text;
 
-  bot.sendMessage(chatId, 'Открыть мини-приложение', {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: 'Открыть',
-            web_app: { url: url }
-          }
-        ]
-      ]
-    }
-  });
+  if (text === '/start') {
+    await bot.sendMessage(chatId, 'Ниже появится кнопка', {
+      reply_markup: {
+        keyboard: [
+          [{ text: 'Заполнить форму' }]
+        ],
+        resize_keyboard: true, // Добавляем опцию для автоматического изменения размера клавиатуры
+        one_time_keyboard: true // Добавляем опцию, чтобы клавиатура исчезала после нажатия кнопки
+      }
+    });
+  }
 });

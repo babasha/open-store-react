@@ -2,7 +2,7 @@
 // src/styles/Theme.tsx
 export const theme = {
     colors: {
-      primaryBg: "#E5E5E5",
+      primaryBg: "#E5E5E5" ,
       mainBg: "#FFFFFF",
       ShopWindowBg: "#F0F4F8",
       

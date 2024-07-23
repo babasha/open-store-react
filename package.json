@@ -56,7 +56,7 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env DANGEROUSLY_DISABLE_HOST_CHECK=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -85,6 +85,8 @@
     "@types/file-saver": "^2.0.7",
     "@types/lodash": "^4.17.4",
     "@types/react-datepicker": "^6.2.0",
-    "@types/react-leaflet": "^3.0.0"
+    "@types/react-leaflet": "^3.0.0",
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.1.4"
   }
 }

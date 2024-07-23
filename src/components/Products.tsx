@@ -8,6 +8,8 @@ import AutorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
 import { useCart } from '../layout/cart/CartContext';
 
+const tg = window.Telegram.WebApp;
+
 type Product = {
   id: number;
   name: {
@@ -18,6 +20,9 @@ type Product = {
   price: number;
   image_url: string | null;
 };
+
+
+
 
 const Products = () => {
   const { i18n } = useTranslation();
@@ -86,6 +91,9 @@ const Products = () => {
   return (
     <Showcase>
       <ShopInner>
+        <span>{tg.initDataUnsafe?.user.first_name}</span>
+        <span>{tg.initDataUnsafe?.user.last_name}</span>
+        <span>{tg.initDataUnsafe?.user.id}</span>
         {products.map((product) => (
           <ProductCart
             key={product.id}

@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRol
   return (
     <StyledHeader>
       <FlexWrapper>
-        <h1>enddel</h1><h5>beta</h5>
+        <h1>enddel</h1><h5>test</h5>
       </FlexWrapper>
 
       <FlexWrapper justify='center'>
