@@ -69,10 +69,10 @@
   "something_went_wrong": "Что-то пошло не так",
   "success": "Регистрация прошла успешно",
   "error": "Ошибка регистрации:",
-    "titlelogin": "Вход",
-    "username": "Логин",
-    "login_button": "Войти",
-    "error_login": "Что-то пошло не так",
-    "user_data": "Данные пользователя после входа:"
+  "titlelogin": "Вход",
+  "username": "email или номер",
+  "login_button": "Войти",
+  "error_login": "Что-то пошло не так",
+  "user_data": "Данные пользователя после входа:"
 
 }

@@ -70,7 +70,7 @@
   "success": "Kayıt başarılı",
   "error": "Kayıt hatası:",
   "titlelogin": "Giriş",
-  "username": "Kullanıcı adı",
+  "username": "e-posta veya numara",
   "login_button": "Giriş yap",
   "error_login": "Bir şeyler ters gitti",
   "user_data": "Giriş yaptıktan sonra kullanıcı verileri:"

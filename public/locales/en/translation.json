@@ -70,7 +70,7 @@
   "success": "Registration successful",
   "error": "Registration error:",
   "titlelogin": "Login",
-  "username": "Username",
+  "username": "email or number",
   "login_button": "Login",
   "error_login": "Something went wrong",
   "user_data": "User data after login:"

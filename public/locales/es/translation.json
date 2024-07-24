@@ -70,7 +70,7 @@
   "success": "Registro exitoso",
   "error": "Error de registro:",
   "titlelogin": "Iniciar sesión",
-  "username": "Nombre de usuario",
+  "username": "correo electrónico o número",
   "login_button": "Iniciar sesión",
   "error_login": "Algo salió mal",
   "user_data": "Datos del usuario después de iniciar sesión:"

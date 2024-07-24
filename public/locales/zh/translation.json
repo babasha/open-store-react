@@ -70,7 +70,7 @@
   "success": "注册成功",
   "error": "注册错误：",
   "titlelogin": "登录",
-  "username": "用户名",
+  "username": "邮箱或号码",
   "login_button": "登录",
   "error_login": "出错了",
   "user_data": "登录后的用户数据："
