@@ -73,6 +73,10 @@
     "username": "Логин",
     "login_button": "Войти",
     "error_login": "Что-то пошло не так",
-    "user_data": "Данные пользователя после входа:"
+    "user_data": "Данные пользователя после входа:",
+    "forgot_password": "Забыл пароль?",
+    "reset_password": "Сбросить пароль",
+    "error_reset_password": "Ошибка сброса пароля",
+    "reset_password_email_sent": "Письмо для сброса пароля отправлено"
 
 }
