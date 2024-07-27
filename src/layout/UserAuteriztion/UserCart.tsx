@@ -13,14 +13,15 @@ const LoginForm = styled.form`
   gap: 1.5rem;
 `;
 
-const LoginButton = styled(ButtonWithRipple)`
- 
-`;
+const LoginButton = styled(ButtonWithRipple)``;
+
+const ForgotPasswordButton = styled.button``;
 
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -58,6 +59,28 @@ const LoginComponent: React.FC = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    try {
+      const response = await fetch("https://enddel.comauth/request-reset-password", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: username }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || t('error_reset_password'));
+      }
+      alert(t('reset_password_email_sent'));
+      setIsForgotPassword(false); // Вернуть в режим логина после отправки запроса
+    } catch (error) {
+      const errorMessage = (error as Error).message;
+      console.error(t('error_reset_password'), errorMessage);
+      alert(errorMessage); // Отобразите сообщение об ошибке пользователю
+    }
+  };
+
   return (
     <div>
       <LoginTitle>{t('titlelogin')}</LoginTitle>
@@ -68,15 +91,30 @@ const LoginComponent: React.FC = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <TextInput
-          label={t('password')}
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <LoginButton type="submit" isActive={true} isDisabled={false}>
-          {t('login_button')}
-        </LoginButton>
+        {!isForgotPassword && (
+          <TextInput
+            label={t('password')}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        )}
+        {!isForgotPassword ? (
+          <>
+            <LoginButton type="submit" isActive={true} isDisabled={false}>
+              {t('login_button')}
+            </LoginButton>
+            <ForgotPasswordButton type="button" onClick={() => setIsForgotPassword(true)}>
+              {t('forgot_password')}
+            </ForgotPasswordButton>
+          </>
+        ) : (
+          <>
+            <ForgotPasswordButton type="button" onClick={handleForgotPassword}>
+              {t('reset_password')}
+            </ForgotPasswordButton>
+          </>
+        )}
       </LoginForm>
     </div>
   );
