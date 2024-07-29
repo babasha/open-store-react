@@ -1,13 +1,16 @@
-require('dotenv').config(); // Загрузка переменных окружения из файла .env
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const pool = require('./db'); // Подключение к базе данных
+const pool = require('./db');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const { Server } = require('socket.io');
-const cors = require('cors'); // Подключение модуля CORS
+const cors = require('cors');
+const crypto = require('crypto');
+const sendResetPasswordEmail = require('./mailer');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -36,6 +39,10 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
 });
+
+
+
+
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -90,6 +97,63 @@ const isAuthenticated = (req, res, next) => {
     res.status(400).json({ message: 'Неверный токен' });
   }
 };
+
+// Маршрут для запроса сброса пароля
+app.post('/auth/request-reset-password', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+    const token = crypto.randomBytes(20).toString('hex');
+    const expires = Date.now() + 3600000; // 1 hour
+
+    await pool.query(
+      'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3',
+      [token, expires, user.id]
+    );
+
+    sendResetPasswordEmail(user.email, token);
+    res.status(200).json({ message: 'Reset password email sent' });
+  } catch (err) {
+    console.error('Error requesting password reset:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Маршрут для сброса пароля
+app.post('/auth/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  try {
+    const userResult = await pool.query(
+      'SELECT * FROM users WHERE reset_password_token = $1 AND reset_password_expires > $2',
+      [token, Date.now()]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    const user = userResult.rows[0];
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    await pool.query(
+      'UPDATE users SET password_hash = $1, reset_password_token = $2, reset_password_expires = $3 WHERE id = $4',
+      [passwordHash, null, null, user.id]
+    );
+
+    res.status(200).json({ message: 'Password has been reset' });
+  } catch (err) {
+    console.error('Error resetting password:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 // Маршрут для получения всех продуктов
 app.get('/products', async (req, res) => {
