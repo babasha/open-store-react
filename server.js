@@ -22,10 +22,10 @@ const io = new Server(server, {
 });
 
 const corsOptions = {
-  origin: [process.env.PUBLIC_URL, 'https://web.telegram.org'],
-  credentials: true,
+  origin: process.env.PUBLIC_URL,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+  credentials: true
 };
 
 // Настройки CORS
@@ -36,13 +36,12 @@ app.use(express.json());
 
 // Middleware для заголовков CORS
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Origin', process.env.PUBLIC_URL);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
 });
-
 
 
 
