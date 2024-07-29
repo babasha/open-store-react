@@ -10,6 +10,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
+const passport = require('./passport-config'); // Импортируем модуль
 
 const app = express();
 const server = http.createServer(app);
@@ -43,6 +44,20 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(passport.initialize());
+
+// Маршруты для аутентификации через Google
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    const token = jwt.sign({ id: req.user.id, role: req.user.role }, 'secret_key', { expiresIn: '1h' });
+    res.redirect(`${process.env.PUBLIC_URL}/auth/success?token=${token}`);
+  }
+);
 
 
 // Конфигурация multer для загрузки файлов

@@ -13,6 +13,7 @@ import styled from 'styled-components';
 import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 import { EditButton } from '../../styles/btns/secondBtns';
 import { FlexWrapper } from '../../components/FlexWrapper';
+import GoogleLoginComponent from './google/GoogleLoginComponent';
 
 const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
@@ -87,6 +88,7 @@ const AuthorizationComponent: React.FC = () => {
 
   return (
     <Container width={'100%'}>
+      <GoogleLoginComponent />
       <CardInner>
         {user ? (
           <UserDetails user={user} logout={logout} login={login} orders={orders} setOrders={setOrders} />
