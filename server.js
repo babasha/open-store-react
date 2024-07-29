@@ -126,29 +126,33 @@ app.post('/auth/request-reset-password', async (req, res) => {
 });
 
 // Маршрут для сброса пароля
-// Маршрут для сброса пароля
 app.post('/auth/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
 
   try {
     // Найдите токен сброса пароля в базе данных
-    const user = await db.User.findOne({ where: { resetPasswordToken: token } });
+    const userResult = await pool.query(
+      'SELECT * FROM users WHERE reset_password_token = $1 AND reset_password_expires > $2',
+      [token, Date.now()]
+    );
 
-    if (!user) {
-      throw new Error('Invalid or expired password reset token');
+    if (userResult.rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
     }
 
-    // Сбросьте пароль пользователя
+    const user = userResult.rows[0];
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
-    await user.save();
+    const passwordHash = await bcrypt.hash(password, salt);
 
-    res.status(200).json({ message: 'Password successfully reset' });
-  } catch (error) {
-    console.error('Error resetting password:', error.message);
+    await pool.query(
+      'UPDATE users SET password_hash = $1, reset_password_token = $2, reset_password_expires = $3 WHERE id = $4',
+      [passwordHash, null, null, user.id]
+    );
+
+    res.status(200).json({ message: 'Password has been reset' });
+  } catch (err) {
+    console.error('Error resetting password:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
