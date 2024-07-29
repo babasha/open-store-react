@@ -87,28 +87,28 @@ const LoginComponent: React.FC = () => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`https://enddel.com/auth/reset-password/${token}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password: resetPassword }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Ошибка при сбросе пароля');
-      }
-      alert('Пароль успешно изменен');
-      navigate('/auth/login');
-    } catch (error) {
-      const errorMessage = (error instanceof Error) ? error.message : String(error);
-      console.error('Ошибка при сбросе пароля:', errorMessage);
-      alert(errorMessage);
+const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  try {
+    const response = await fetch(`https://enddel.com/auth/reset-password/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: resetPassword }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Ошибка при сбросе пароля');
     }
-  };
+    alert('Пароль успешно изменен');
+    navigate('/auth/login');
+  } catch (error) {
+    const errorMessage = (error instanceof Error) ? error.message : String(error);
+    console.error('Ошибка при сбросе пароля:', errorMessage);
+    alert(errorMessage);
+  }
+};
 
   return (
     <div>
