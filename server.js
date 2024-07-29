@@ -11,7 +11,6 @@ const cors = require('cors');
 const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
 
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -22,24 +21,27 @@ const io = new Server(server, {
   }
 });
 
-// Настройки CORS
-app.use(cors({
+const corsOptions = {
   origin: [process.env.PUBLIC_URL, 'https://web.telegram.org'],
-  credentials: true
-}));
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+};
+
+// Настройки CORS
+app.use(cors(corsOptions));
 
 // Middleware для обработки JSON
 app.use(express.json());
 
 // Middleware для заголовков CORS
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin); // Динамическое разрешение
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   next();
 });
-
 
 
 
@@ -109,7 +111,7 @@ app.post('/auth/request-reset-password', async (req, res) => {
 
     const user = userResult.rows[0];
     const token = crypto.randomBytes(20).toString('hex');
-    const expires = Date.now() + 360000; // 1 hour
+    const expires = Date.now() + 3600000; // 1 hour
 
     await pool.query(
       'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3',
