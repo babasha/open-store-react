@@ -131,10 +131,9 @@ app.post('/auth/reset-password/:token', async (req, res) => {
   const { password } = req.body;
 
   try {
-    // Найдите токен сброса пароля в базе данных
     const userResult = await pool.query(
       'SELECT * FROM users WHERE reset_password_token = $1 AND reset_password_expires > $2',
-      [token, Date.now()]
+      [token, new Date()]
     );
 
     if (userResult.rows.length === 0) {
