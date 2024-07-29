@@ -11,13 +11,13 @@ import RegisterComponent from './page/register/register';
 export function App() {
   return (
     <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Shop />} />
-          <Route path="/auth" element={<LoginComponent />} />
-          {/* <Route path="/register" element={<RegisterComponent />} /> */}
-          <Route path="/admin" element={<ProtectedRoute element={<AdminPanel />} allowedRoles={['admin', 'courier']} />} />
-        </Routes>
-    </AuthProvider>
+    <Routes>
+      <Route path="/" element={<Shop />} />
+      <Route path="/auth" element={<LoginComponent />} />
+      <Route path="/reset-password/:token" element={<LoginComponent />} />
+      <Route path="/admin" element={<ProtectedRoute element={<AdminPanel />} allowedRoles={['admin', 'courier']} />} />
+    </Routes>
+  </AuthProvider>
   );
 }
 

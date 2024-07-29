@@ -14,7 +14,6 @@ const LoginForm = styled.form`
 `;
 
 const LoginButton = styled(ButtonWithRipple)``;
-
 const ForgotPasswordButton = styled.button``;
 
 const LoginComponent: React.FC = () => {
@@ -26,7 +25,7 @@ const LoginComponent: React.FC = () => {
   const [resetPassword, setResetPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { token } = useParams();
+  const { token } = useParams<{ token: string }>();
 
   useEffect(() => {
     if (token) {
@@ -53,9 +52,6 @@ const LoginComponent: React.FC = () => {
         throw new Error(data.error || t('error_login'));
       }
       login(data.user, data.token); // Передаем данные пользователя и токен
-
-      // Логирование данных пользователя для отладки
-      console.log(t('user_data'), data.user);
 
       if (data.user.role === 'admin' || data.user.role === 'courier') {
         navigate('/admin'); // Перенаправляем админа и курьера в админ панель
