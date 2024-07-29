@@ -15,6 +15,10 @@ const LoginForm = styled.form`
 
 const LoginButton = styled(ButtonWithRipple)``;
 const ForgotPasswordButton = styled.button``;
+const ErrorMessage = styled.div`
+  color: red;
+  margin-top: 10px;
+`;
 
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
@@ -23,6 +27,7 @@ const LoginComponent: React.FC = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
   const [resetPassword, setResetPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
   const { token } = useParams<{ token: string }>();
@@ -61,11 +66,12 @@ const LoginComponent: React.FC = () => {
     } catch (error) {
       const errorMessage = (error instanceof Error) ? error.message : String(error);
       console.error(t('error_login'), errorMessage);
-      alert(errorMessage); // Отобразите сообщение об ошибке пользователю
+      setError(errorMessage); // Отобразите сообщение об ошибке пользователю
     }
   };
 
   const handleForgotPassword = async () => {
+    setError(null);
     try {
       const response = await fetch("https://enddel.com/auth/request-reset-password", {
         method: 'POST',
@@ -83,11 +89,12 @@ const LoginComponent: React.FC = () => {
     } catch (error) {
       const errorMessage = (error instanceof Error) ? error.message : String(error);
       console.error('Ошибка при сбросе пароля:', errorMessage);
-      alert(errorMessage);
+      setError(errorMessage);
     }
   };
 
 const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+  setError(null);
   e.preventDefault();
   try {
     const response = await fetch(`https://enddel.com/auth/reset-password/${token}`, {
@@ -102,11 +109,11 @@ const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
       throw new Error(data.message || 'Ошибка при сбросе пароля');
     }
     alert('Пароль успешно изменен');
-    navigate('/auth/login');
+    navigate('/');
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : String(error);
     console.error('Ошибка при сбросе пароля:', errorMessage);
-    alert(errorMessage);
+    setError(errorMessage);
   }
 };
 
@@ -161,6 +168,7 @@ const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
             </LoginButton>
           </>
         )}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </LoginForm>
     </div>
   );
