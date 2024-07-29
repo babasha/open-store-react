@@ -12,7 +12,6 @@ const LoginTitle = styled.h3`
 
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation();
-  const [username, setUsername] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
   const { token } = useParams<{ token: string }>();
@@ -31,7 +30,7 @@ const LoginComponent: React.FC = () => {
         !isForgotPassword ? (
           <LoginFormComponent setIsForgotPassword={setIsForgotPassword} />
         ) : (
-          <ForgotPasswordComponent username={username} setIsForgotPassword={setIsForgotPassword} />
+          <ForgotPasswordComponent setIsForgotPassword={setIsForgotPassword} />
         )
       ) : (
         <ResetPasswordComponent />

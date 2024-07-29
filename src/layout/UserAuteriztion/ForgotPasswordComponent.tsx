@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import TextInput from '../../components/textinputs/TextInput';
 import styled from 'styled-components';
 
 const ForgotPasswordButton = styled.button``;
@@ -9,12 +10,12 @@ const ErrorMessage = styled.div`
 `;
 
 interface ForgotPasswordComponentProps {
-  username: string;
   setIsForgotPassword: (value: boolean) => void;
 }
 
-const ForgotPasswordComponent: React.FC<ForgotPasswordComponentProps> = ({ username, setIsForgotPassword }) => {
+const ForgotPasswordComponent: React.FC<ForgotPasswordComponentProps> = ({ setIsForgotPassword }) => {
   const { t } = useTranslation();
+  const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleForgotPassword = async () => {
@@ -42,6 +43,12 @@ const ForgotPasswordComponent: React.FC<ForgotPasswordComponentProps> = ({ usern
 
   return (
     <>
+      <TextInput
+        label={t('username')}
+        type="text"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
       <ForgotPasswordButton type="button" onClick={handleForgotPassword}>
         {t('reset_password')}
       </ForgotPasswordButton>
