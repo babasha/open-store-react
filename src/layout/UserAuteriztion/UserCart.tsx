@@ -53,7 +53,7 @@ const LoginComponent: React.FC = () => {
         navigate('/'); // Перенаправляем других пользователей на главную страницу
       }
     } catch (error) {
-      const errorMessage = (error as Error).message;
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
       console.error(t('error_login'), errorMessage);
       alert(errorMessage); // Отобразите сообщение об ошибке пользователю
     }
@@ -61,7 +61,7 @@ const LoginComponent: React.FC = () => {
 
   const handleForgotPassword = async () => {
     try {
-      const response = await fetch("https://enddel.comauth/request-reset-password", {
+      const response = await fetch("https://enddel.com/auth/request-reset-password", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,14 +70,14 @@ const LoginComponent: React.FC = () => {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || t('error_reset_password'));
+        throw new Error(data.message || 'Ошибка при сбросе пароля');
       }
-      alert(t('reset_password_email_sent'));
-      setIsForgotPassword(false); // Вернуть в режим логина после отправки запроса 
+      alert('Письмо для сброса пароля отправлено');
+      setIsForgotPassword(false);
     } catch (error) {
-      const errorMessage = (error as Error).message;
-      console.error(t('error_reset_password'), errorMessage);
-      alert(errorMessage); // Отобразите сообщение об ошибке пользователю
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      console.error('Ошибка при сбросе пароля:', errorMessage);
+      alert(errorMessage);
     }
   };
 

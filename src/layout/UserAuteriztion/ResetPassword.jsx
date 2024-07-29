@@ -9,7 +9,7 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:3000/auth/reset-password/${token}`, {
+      const response = await fetch(`https://enddel.com/auth/reset-password/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
