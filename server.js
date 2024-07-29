@@ -110,7 +110,7 @@ app.post('/auth/request-reset-password', async (req, res) => {
 
     const user = userResult.rows[0];
     const token = crypto.randomBytes(20).toString('hex');
-    const expires = Date.now() + 3600000; // 1 hour
+    const expires = new Date(Date.now() + 3600000); // 1 hour from now
 
     await pool.query(
       'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3',
