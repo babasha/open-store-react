@@ -73,7 +73,7 @@ const LoginComponent: React.FC = () => {
         throw new Error(data.message || t('error_reset_password'));
       }
       alert(t('reset_password_email_sent'));
-      setIsForgotPassword(false); // Вернуть в режим логина после отправки запроса
+      setIsForgotPassword(false); // Вернуть в режим логина после отправки запроса 
     } catch (error) {
       const errorMessage = (error as Error).message;
       console.error(t('error_reset_password'), errorMessage);
