@@ -37,7 +37,7 @@ const ResetPassword = () => {
         placeholder="Введите новый пароль" 
         required 
       />
-      <button type="submit">Сбросить пароль</button>
+      <button type="submit">Сбросить пароль2</button>
     </form>
   );
 };
