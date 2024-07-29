@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../autoeization/AuthContext';
 import TextInput from '../../components/textinputs/TextInput';
 import styled from 'styled-components';
@@ -22,8 +22,18 @@ const LoginComponent: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(false);
+  const [resetPassword, setResetPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { token } = useParams();
+
+  useEffect(() => {
+    if (token) {
+      setIsForgotPassword(false);
+      setIsResetPassword(true);
+    }
+  }, [token]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,38 +91,78 @@ const LoginComponent: React.FC = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`https://enddel.com/auth/reset-password/${token}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: resetPassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Ошибка при сбросе пароля');
+      }
+      alert('Пароль успешно изменен');
+      navigate('/auth/login');
+    } catch (error) {
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      console.error('Ошибка при сбросе пароля:', errorMessage);
+      alert(errorMessage);
+    }
+  };
+
   return (
     <div>
       <LoginTitle>{t('titlelogin')}</LoginTitle>
-      <LoginForm onSubmit={handleLogin}>
-        <TextInput
-          label={t('username')}
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        {!isForgotPassword && (
-          <TextInput
-            label={t('password')}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        )}
-        {!isForgotPassword ? (
+      <LoginForm onSubmit={isResetPassword ? handleResetPassword : handleLogin}>
+        {!isResetPassword && (
           <>
-            <LoginButton type="submit" isActive={true} isDisabled={false}>
-              {t('login_button')}
-            </LoginButton>
-            <ForgotPasswordButton type="button" onClick={() => setIsForgotPassword(true)}>
-              {t('forgot_password')}
-            </ForgotPasswordButton>
+            <TextInput
+              label={t('username')}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            {!isForgotPassword && (
+              <TextInput
+                label={t('password')}
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            )}
+            {!isForgotPassword ? (
+              <>
+                <LoginButton type="submit" isActive={true} isDisabled={false}>
+                  {t('login_button')}
+                </LoginButton>
+                <ForgotPasswordButton type="button" onClick={() => setIsForgotPassword(true)}>
+                  {t('forgot_password')}
+                </ForgotPasswordButton>
+              </>
+            ) : (
+              <>
+                <ForgotPasswordButton type="button" onClick={handleForgotPassword}>
+                  {t('reset_password')}
+                </ForgotPasswordButton>
+              </>
+            )}
           </>
-        ) : (
+        )}
+        {isResetPassword && (
           <>
-            <ForgotPasswordButton type="button" onClick={handleForgotPassword}>
-              {t('reset_password')}
-            </ForgotPasswordButton>
+            <TextInput
+              label="Введите новый пароль"
+              type="password"
+              value={resetPassword}
+              onChange={(e) => setResetPassword(e.target.value)}
+            />
+            <LoginButton type="submit" isActive={true} isDisabled={false}>
+              Сбросить пароль
+            </LoginButton>
           </>
         )}
       </LoginForm>
