@@ -5,6 +5,7 @@ import TextInput from '../../components/textinputs/TextInput';
 import styled from 'styled-components';
 import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 import { useTranslation } from 'react-i18next';
+import { EditButton } from '../../styles/btns/secondBtns';
 
 const LoginForm = styled.form`
   display: flex;
@@ -14,7 +15,9 @@ const LoginForm = styled.form`
 `;
 
 const LoginButton = styled(ButtonWithRipple)``;
-const ForgotPasswordButton = styled.button``;
+
+
+const ForgotPasswordButton = styled(EditButton)``;
 const ErrorMessage = styled.div`
   color: red;
   margin-top: 10px;

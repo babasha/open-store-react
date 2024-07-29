@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import TextInput from '../../components/textinputs/TextInput';
 import styled from 'styled-components';
+import { EditButton } from '../../styles/btns/secondBtns';
 
-const ForgotPasswordButton = styled.button``;
+const ForgotPasswordButton = styled(EditButton)`
+ margin-top: 10px;
+`;
 const ErrorMessage = styled.div`
   color: red;
   margin-top: 10px;
@@ -44,7 +47,7 @@ const ForgotPasswordComponent: React.FC<ForgotPasswordComponentProps> = ({ setIs
   return (
     <>
       <TextInput
-        label={t('username')}
+        label={t('loginforget')}
         type="text"
         value={username}
         onChange={(e) => setUsername(e.target.value)}

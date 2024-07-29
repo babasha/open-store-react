@@ -71,7 +71,11 @@
   "error": "Registration error:",
   "titlelogin": "Login",
   "username": "email or number",
+  "loginforget": "email",
   "login_button": "Login",
   "error_login": "Something went wrong",
-  "user_data": "User data after login:"
+  "user_data": "User data after login:",
+  "reset_password": "reset the password",
+  "forgot_password": "forgot the password"
+  
 }
