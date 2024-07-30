@@ -1,5 +1,3 @@
-// src/layout/autoeization/google/GoogleLoginComponent.tsx
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google';
@@ -33,8 +31,15 @@ const GoogleLoginComponent: React.FC = () => {
     alert('Google login failed');
   };
 
+  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
+  if (!clientId) {
+    console.error('Google Client ID is not defined');
+    return <div>Google Client ID is not defined</div>; // или рендерить компонент с сообщением об ошибке
+  }
+
   return (
-    <GoogleOAuthProvider clientId="your_google_client_id">
+    <GoogleOAuthProvider clientId={clientId}>
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={handleFailure}
