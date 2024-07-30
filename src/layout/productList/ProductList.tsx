@@ -199,7 +199,8 @@ const ProductList = () => {
           </ListItem>
         ))}
       </List>
-    </Section>
+    </Section>  
+    
   );
 };
 
