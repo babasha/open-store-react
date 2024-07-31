@@ -31,11 +31,11 @@ const GoogleLoginComponent: React.FC = () => {
     alert('Google login failed');
   };
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
   if (!clientId) {
     console.error('Google Client ID is not defined');
-    return <div>Google Client ID is not defined</div>; // или рендерить компонент с сообщением об ошибке
+    return <div>Google Client ID is not defined</div>;
   }
 
   return (
