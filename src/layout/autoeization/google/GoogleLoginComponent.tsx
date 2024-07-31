@@ -43,6 +43,7 @@ const GoogleLoginComponent: React.FC = () => {
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={handleFailure}
+        useOneTap
       />
     </GoogleOAuthProvider>
   );
