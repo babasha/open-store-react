@@ -220,15 +220,18 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 // Маршрут для создания платежа
 app.post('/create-payment', isAuthenticated, async (req, res) => {
   const { total, items } = req.body;
-  
-  if (!total || !items || items.length === 0) {
+
+ if (!total || !items || items.length === 0) {
+    console.error('Некорректные данные для создания платежа:', req.body); // Логируем данные запроса
     return res.status(400).json({ error: 'Некорректные данные для создания платежа' });
   }
 
   try {
-    const paymentUrl = await createPayment(total, items); // Используем вынесенную функцию
+    const paymentUrl = await createPayment(total, items); // Логируем процесс создания платежа
+    console.log('Платеж успешно создан. URL для оплаты:', paymentUrl); // Логируем успешный URL для оплаты
     res.json({ payment_url: paymentUrl });
   } catch (error) {
+    console.error('Ошибка создания платежа:', error.message); // Логируем ошибку
     res.status(500).json({ error: 'Ошибка создания платежа' });
   }
 });
@@ -237,10 +240,14 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
 app.post('/payment/callback', async (req, res) => {
   const { event, body } = req.body;
 
+  console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
+
   try {
-    const result = await handlePaymentCallback(event, body); // Используем вынесенную функцию
+    const result = await handlePaymentCallback(event, body);
+    console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
     res.status(200).json(result);
   } catch (error) {
+    console.error('Ошибка обработки обратного вызова:', error.message); // Логируем ошибки
     res.status(500).json({ message: error.message });
   }
 });

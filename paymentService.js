@@ -2,9 +2,11 @@ require('dotenv').config();
 const axios = require('axios');
 const pool = require('./db'); // Подключаем пул для взаимодействия с базой данных
 
-// Функция для получения access_token
+// Функция для получения access_token с логированием
 async function getAccessToken() {
   const auth = Buffer.from(`${process.env.BOG_CLIENT_ID}:${process.env.BOG_CLIENT_SECRET}`).toString('base64');
+  
+  console.log('Получаем токен доступа...'); // Логируем начало процесса
 
   try {
     const response = await axios.post(process.env.BOG_TOKEN_URL, 'grant_type=client_credentials', {
@@ -33,10 +35,14 @@ async function getAccessToken() {
   }
 }
 
-// Функция для создания платежа
+// Функция для создания платежа с максимальным логированием
 async function createPayment(total, items) {
+  console.log('Начало создания платежа...'); // Логируем начало процесса
+
   try {
     const accessToken = await getAccessToken(); // Получаем токен доступа
+    console.log('Токен доступа для платежа:', accessToken); // Логируем токен доступа
+
     if (!accessToken) {
       throw new Error('Не удалось получить токен доступа');
     }
@@ -44,7 +50,7 @@ async function createPayment(total, items) {
     const paymentData = {
       callback_url: process.env.BOG_CALLBACK_URL,
       purchase_units: {
-        currency: 'GEL', // Здесь можно добавить динамическую передачу валюты, если нужно
+        currency: 'GEL', // Можно сделать динамическую передачу валюты
         total_amount: total,
         basket: items.map(item => ({
           product_id: item.productId,
@@ -58,6 +64,8 @@ async function createPayment(total, items) {
       }
     };
 
+    console.log('Данные для создания платежа:', paymentData); // Логируем данные платежа
+
     const response = await axios.post(process.env.BOG_PAYMENT_URL, paymentData, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -65,8 +73,8 @@ async function createPayment(total, items) {
       }
     });
 
-    console.log('Платеж успешно создан:', response.data); // Логируем успешное создание платежа
-    return response.data._links.redirect.href;
+    console.log('Ответ сервера Банка Грузии:', response.data); // Логируем успешный ответ от сервера
+    return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {
       // Сервер вернул ответ с ошибкой
@@ -84,22 +92,30 @@ async function createPayment(total, items) {
   }
 }
 
-// Функция для обработки обратного вызова
+// Функция для обработки обратного вызова с логированием
 async function handlePaymentCallback(event, body) {
+  console.log('Обработка обратного вызова платежа...'); // Логируем начало обработки
+  console.log('Тип события:', event); // Логируем тип события
+  console.log('Данные запроса:', body); // Логируем данные тела запроса
+
   if (event === 'order_payment') {
     const { order_id, order_status } = body;
 
+    // Логируем информацию о заказе
+    console.log('Платеж для заказа с ID:', order_id);
+    console.log('Новый статус заказа:', order_status);
+
     // Обновляем статус заказа в базе данных
     try {
-      console.log('Обрабатываем платеж для заказа:', order_id); // Логируем информацию о заказе
       await pool.query('UPDATE orders SET status = $1 WHERE id = $2', [order_status.key, order_id]);
-      console.log('Статус заказа обновлен успешно:', order_status.key); // Логируем успешное обновление статуса
+      console.log('Статус заказа успешно обновлен в базе данных'); // Логируем успешное обновление статуса
       return { message: 'Платеж успешно обработан' };
     } catch (error) {
       console.error('Ошибка обновления статуса заказа:', error.message);
       throw new Error('Ошибка обработки платежа');
     }
   } else {
+    console.error('Неверное событие для обработки платежа');
     throw new Error('Неверное событие для обратного вызова платежа');
   }
 }
