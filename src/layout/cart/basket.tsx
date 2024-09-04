@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-// import styled from 'styled-components';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
 import { useAuth } from '../autoeization/AuthContext';
@@ -19,7 +18,6 @@ import {
   ErrorText,
   BascketTitle
 } from './BasketStyles';
-// import { HiddenScreensContainer } from '../../components/HiddenContainer';
 
 interface BasketProps {
   currentLanguage: string;
@@ -31,12 +29,6 @@ interface CartItem {
   quantity: number;
   price: number;
 }
-
-// const HiddenOnSmallScreensContainer = styled.div`
-//   @media (max-width: 400px) {
-//     display: none;
-//   }
-// `;
 
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const { t } = useTranslation();
@@ -79,7 +71,8 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     };
 
     try {
-      const response = await fetch('https://enddel.com/orders', {
+      // Шаг 1: Создание заказа
+      const orderResponse = await fetch('https://enddel.com/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,8 +81,38 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         body: JSON.stringify(orderData),
       });
 
-      if (!response.ok) {
+      if (!orderResponse.ok) {
         throw new Error(t('cart.orderError'));
+      }
+
+      const order = await orderResponse.json(); // Получаем данные о созданном заказе
+
+      // Шаг 2: Процесс создания платежа
+      const paymentResponse = await fetch('https://enddel.com/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          total: totalWithDelivery,
+          items: cartItems.map(item => ({
+            productId: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          }))
+        }),
+      });
+
+      if (!paymentResponse.ok) {
+        throw new Error(t('cart.paymentError'));
+      }
+
+      const paymentData = await paymentResponse.json();
+
+      // Шаг 3: Перенаправляем пользователя на страницу оплаты
+      if (paymentData.payment_url) {
+        window.location.href = paymentData.payment_url; // Перенаправление на страницу оплаты
       }
 
       clearCart();
@@ -117,51 +140,51 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   );
 
   return (
-      <Container width={'100%'}>
-        <CartdiInner>
-          <FlexWrapper align='center' justify='space-between'>
-            <BascketTitle>{t('cart.title')}</BascketTitle>
-            <EditButton onClick={handleEditClick}>
-              {isEditing ? t('cart.finishEditing') : t('cart.edit')}
-            </EditButton>
-          </FlexWrapper>
+    <Container width={'100%'}>
+      <CartdiInner>
+        <FlexWrapper align='center' justify='space-between'>
+          <BascketTitle>{t('cart.title')}</BascketTitle>
+          <EditButton onClick={handleEditClick}>
+            {isEditing ? t('cart.finishEditing') : t('cart.edit')}
+          </EditButton>
+        </FlexWrapper>
 
-          {cartItems.length === 0 ? (
-            <p>{t('cart.empty')}</p>
-          ) : (
-            <>
-              {cartItems.map(renderCartItem)}
+        {cartItems.length === 0 ? (
+          <p>{t('cart.empty')}</p>
+        ) : (
+          <>
+            {cartItems.map(renderCartItem)}
+            <CartItemWrapper>
+              <ItemDetails>
+                <span><strong>{t('cart.delivery')}</strong></span>
+                <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
+              </ItemDetails>
+            </CartItemWrapper>
+            {user && (
               <CartItemWrapper>
                 <ItemDetails>
-                  <span><strong>{t('cart.delivery')}</strong> </span>
-                  <span >{deliveryCost === 0 ? t('cart.free') : ` ${deliveryCost} GEL`}</span>
+                  <span>{t('cart.delivery_address')}</span>
+                  <span>: {user.address || t('cart.no_address')}</span>
                 </ItemDetails>
               </CartItemWrapper>
-              {user && (
-                <CartItemWrapper>
-                  <ItemDetails>
-                    <span>{t('cart.delivery_address' )}</span>
-                    <span> : {user.address || t('cart.no_address')}</span>
-                  </ItemDetails>
-                </CartItemWrapper>
-              )}
-              <DataSwitch 
-                buttonText1={t('as_soon_as_possible')} 
-                buttonText2={t('schedule_delivery')} 
-                isActive1={false} 
-                isActive2={false} 
-                onSelectedDelivery={setSelectedDelivery} 
-              />
-              <TotalPrice>{t('cart.total')}: {totalWithDelivery} ₾</TotalPrice>
-              <FlexWrapper justify='space-between'>
-                <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
-                <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
-              </FlexWrapper>
-              {error && <ErrorText>{error}</ErrorText>}
-            </>
-          )}
-        </CartdiInner>
-      </Container>
+            )}
+            <DataSwitch
+              buttonText1={t('as_soon_as_possible')}
+              buttonText2={t('schedule_delivery')}
+              isActive1={false}
+              isActive2={false}
+              onSelectedDelivery={setSelectedDelivery}
+            />
+            <TotalPrice>{t('cart.total')}: {totalWithDelivery} ₾</TotalPrice>
+            <FlexWrapper justify='space-between'>
+              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
+              <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
+            </FlexWrapper>
+            {error && <ErrorText>{error}</ErrorText>}
+          </>
+        )}
+      </CartdiInner>
+    </Container>
   );
 };
 

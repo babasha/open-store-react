@@ -11,6 +11,8 @@ const cors = require('cors');
 const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
 const passport = require('./passport-config'); // Импортируем модуль
+const { createPayment, handlePaymentCallback } = require('./paymentService');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -212,6 +214,34 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
   } catch (err) {
     console.error('Ошибка получения курьера:', err.message);
     res.status(500).send('Ошибка сервера');
+  }
+});
+
+// Маршрут для создания платежа
+app.post('/create-payment', isAuthenticated, async (req, res) => {
+  const { total, items } = req.body;
+  
+  if (!total || !items || items.length === 0) {
+    return res.status(400).json({ error: 'Некорректные данные для создания платежа' });
+  }
+
+  try {
+    const paymentUrl = await createPayment(total, items); // Используем вынесенную функцию
+    res.json({ payment_url: paymentUrl });
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка создания платежа' });
+  }
+});
+
+// Маршрут для обработки обратного вызова
+app.post('/payment/callback', async (req, res) => {
+  const { event, body } = req.body;
+
+  try {
+    const result = await handlePaymentCallback(event, body); // Используем вынесенную функцию
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
