@@ -221,17 +221,18 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 app.post('/create-payment', isAuthenticated, async (req, res) => {
   const { total, items } = req.body;
 
- if (!total || !items || items.length === 0) {
-    console.error('Некорректные данные для создания платежа:', req.body); // Логируем данные запроса
+  if (!total || !items || items.length === 0) {
+    console.error('Некорректные данные для создания платежа:', req.body);
     return res.status(400).json({ error: 'Некорректные данные для создания платежа' });
   }
 
   try {
-    const paymentUrl = await createPayment(total, items); // Логируем процесс создания платежа
-    console.log('Платеж успешно создан. URL для оплаты:', paymentUrl); // Логируем успешный URL для оплаты
+    console.log('Попытка создать платеж с данными:', { total, items });
+    const paymentUrl = await createPayment(total, items); // Используем функцию из paymentService.js
+    console.log('Платеж успешно создан, URL:', paymentUrl);
     res.json({ payment_url: paymentUrl });
   } catch (error) {
-    console.error('Ошибка создания платежа:', error.message); // Логируем ошибку
+    console.error('Ошибка при создании платежа:', error.message);
     res.status(500).json({ error: 'Ошибка создания платежа' });
   }
 });

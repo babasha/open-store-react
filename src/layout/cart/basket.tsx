@@ -70,6 +70,8 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       deliveryAddress: user.address,
     };
 
+    console.log('Создание заказа с данными:', orderData); // Логирование данных перед созданием заказа
+
     try {
       // Шаг 1: Создание заказа
       const orderResponse = await fetch('https://enddel.com/orders', {
@@ -82,43 +84,58 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       });
 
       if (!orderResponse.ok) {
+        const errorText = await orderResponse.text();
+        console.error('Ошибка создания заказа:', errorText); // Логирование ошибки заказа
         throw new Error(t('cart.orderError'));
       }
 
-      const order = await orderResponse.json(); // Получаем данные о созданном заказе
+      const order = await orderResponse.json();
+      console.log('Заказ успешно создан:', order); // Логирование успешного создания заказа
 
       // Шаг 2: Процесс создания платежа
+      const paymentData = {
+        total: totalWithDelivery,
+        items: cartItems.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        }))
+      };
+
+      console.log('Данные для создания платежа:', paymentData); // Логирование данных платежа
+
       const paymentResponse = await fetch('https://enddel.com/create-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({
-          total: totalWithDelivery,
-          items: cartItems.map(item => ({
-            productId: item.id,
-            quantity: item.quantity,
-            price: item.price,
-          }))
-        }),
+        body: JSON.stringify(paymentData),
       });
 
       if (!paymentResponse.ok) {
+        const errorText = await paymentResponse.text();
+        console.error('Ошибка создания платежа:', errorText); // Логирование ошибки платежа
         throw new Error(t('cart.paymentError'));
       }
 
-      const paymentData = await paymentResponse.json();
+      const paymentResult = await paymentResponse.json();
+      console.log('Платеж успешно создан, ответ:', paymentResult); // Логирование успешного создания платежа
 
       // Шаг 3: Перенаправляем пользователя на страницу оплаты
-      if (paymentData.payment_url) {
-        window.location.href = paymentData.payment_url; // Перенаправление на страницу оплаты
+      if (paymentResult.payment_url) {
+        console.log('Перенаправление на URL оплаты:', paymentResult.payment_url); // Логирование URL оплаты
+        window.location.href = paymentResult.payment_url; // Перенаправление на страницу оплаты
+      } else {
+        console.error('Ошибка: URL оплаты не был получен'); // Логирование отсутствия URL оплаты
+        throw new Error(t('cart.paymentError'));
       }
 
       clearCart();
       setSelectedDelivery(null);
       alert(t('cart.orderSuccess'));
     } catch (error) {
+      console.error('Ошибка при обработке заказа или платежа:', error); // Логирование общей ошибки
       setError(t('cart.orderError'));
     }
   }, [user, cartItems, totalWithDelivery, selectedDelivery, t, clearCart]);
