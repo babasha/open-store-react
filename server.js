@@ -97,6 +97,9 @@ const isAdmin = (req, res, next) => {
     res.status(400).json({ error: 'Неверный токен.' });
   }
 };
+console.log('BOG_CLIENT_ID:', process.env.BOG_CLIENT_ID);
+console.log('BOG_CLIENT_SECRET:', process.env.BOG_CLIENT_SECRET);
+
 
 // Middleware для проверки авторизации пользователя
 const isAuthenticated = (req, res, next) => {
