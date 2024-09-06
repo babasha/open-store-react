@@ -773,6 +773,7 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
 
 console.log('BOG_CLIENT_ID:', process.env.BOG_CLIENT_ID);
 console.log('BOG_CLIENT_SECRET:', process.env.BOG_CLIENT_SECRET);
+console.log('hello:');
 
 
 // Маршрут для получения всех пользователей
