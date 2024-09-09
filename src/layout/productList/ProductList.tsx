@@ -21,6 +21,7 @@ const ProductList = () => {
   const [price, setPrice] = useState('');
   const [image, setImage] = useState<File | null>(null);
 
+  // Загружаем товары при загрузке компонента
   useEffect(() => {
     fetch('/products')
       .then((response) => response.json())
@@ -38,6 +39,7 @@ const ProductList = () => {
       .catch((error) => console.error('Error fetching products:', error));
   }, []);
 
+  // Функция для добавления нового товара
   const handleAddProduct = () => {
     const formData = new FormData();
     formData.append('nameEn', nameEn);
@@ -67,7 +69,7 @@ const ProductList = () => {
             geo: newProduct.name_geo
           }
         };
-        setProducts([...products, updatedProduct]);
+        setProducts([...products, updatedProduct]); // Добавляем новый товар в список
         setNameEn('');
         setNameRu('');
         setNameGeo('');
@@ -77,13 +79,14 @@ const ProductList = () => {
       .catch((error) => console.error('Error adding product:', error));
   };
 
+  // Функция для удаления товара
   const handleDeleteProduct = (id: number) => {
-    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+    const token = localStorage.getItem('token');
 
     fetch(`/products/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+        'Authorization': `Bearer ${token}`,
       },
     })
       .then(() => {
@@ -92,6 +95,7 @@ const ProductList = () => {
       .catch((error) => console.error('Error deleting product:', error));
   };
 
+  // Функция для редактирования товара
   const handleEditProduct = (id: number) => {
     const product = products.find(p => p.id === id);
     if (product) {
@@ -103,6 +107,7 @@ const ProductList = () => {
     }
   };
 
+  // Функция для сохранения изменений товара
   const handleSaveProduct = (id: number) => {
     const formData = new FormData();
     formData.append('nameEn', nameEn);
@@ -113,13 +118,13 @@ const ProductList = () => {
       formData.append('image', image);
     }
 
-    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+    const token = localStorage.getItem('token');
 
     fetch(`/products/${id}`, {
       method: 'PUT',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+        'Authorization': `Bearer ${token}`,
       },
     })
       .then((response) => response.json())
@@ -150,6 +155,41 @@ const ProductList = () => {
   return (
     <Section>
       <SectionTitle>Products List</SectionTitle>
+
+      {/* Форма для добавления нового товара */}
+      <Form>
+        <Input
+          type="text"
+          value={nameEn}
+          onChange={(e) => setNameEn(e.target.value)}
+          placeholder="Product Name (English)"
+        />
+        <Input
+          type="text"
+          value={nameRu}
+          onChange={(e) => setNameRu(e.target.value)}
+          placeholder="Product Name (Russian)"
+        />
+        <Input
+          type="text"
+          value={nameGeo}
+          onChange={(e) => setNameGeo(e.target.value)}
+          placeholder="Product Name (Georgian)"
+        />
+        <Input
+          type="text"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="Product Price"
+        />
+        <Input
+          type="file"
+          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+        />
+        <Button onClick={handleAddProduct}>Add Product</Button>
+      </Form>
+
+      {/* Список продуктов */}
       <List>
         {products.map((product) => (
           <ListItem key={product.id}>
