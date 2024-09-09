@@ -108,7 +108,7 @@ const StyledHeader = styled.header`
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.7);
   padding: 20px 20px;
-  border-radius: 30px;
+  border-radius: 20px;
   margin: 15px 0;
   position: relative;
   ${responsivePadding()}

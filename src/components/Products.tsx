@@ -85,6 +85,7 @@ const Products = () => {
       .catch(error => console.error(error));
   };
 
+
   return (
     <Showcase>
       <ShopInner>
@@ -101,6 +102,7 @@ const Products = () => {
             titles={product.name}
           />
         ))}
+   
       </ShopInner>
       <StyledMenuWrapper
         isExpanded={isExpanded}
@@ -118,6 +120,9 @@ const Products = () => {
 };
 
 export default Products;
+
+
+
 
 const Showcase = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
