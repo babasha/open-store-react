@@ -73,5 +73,16 @@
   "username": "ईमेल या नंबर",
   "login_button": "लॉगिन",
   "error_login": "कुछ गलत हो गया",
-  "user_data": "लॉगिन के बाद उपयोगकर्ता डेटा:"
+  "user_data": "लॉगिन के बाद उपयोगकर्ता डेटा:",
+  "user_agreement": "उपयोगकर्ता समझौता",
+  "privacy_policy": "गोपनीयता नीति",
+  "service_provision_agreement": "सेवा प्रावधान समझौता",
+  "data_processing_information": "व्यक्तिगत डेटा प्रसंस्करण के बारे में जानकारी",
+  "about_us": "हमारे बारे में",
+  "street_name": "मेलिकिशविली 95, बटुमी",
+  "myadres": "दुकान का पता:",
+  "firstnumber": "फोन:",
+  "secondnumber": "फोन:",
+  "mainemail": "ईमेल:"
+
 }

@@ -73,5 +73,15 @@
   "username": "שם משתמש",
   "login_button": "התחבר",
   "error_login": "משהו השתבש",
-  "user_data": "נתוני המשתמש לאחר התחברות:"
+  "user_data": "נתוני המשתמש לאחר התחברות:",
+  "user_agreement": "הסכם משתמש",
+  "privacy_policy": "מדיניות פרטיות",
+  "service_provision_agreement": "הסכם מתן שירותים",
+  "data_processing_information": "מידע על עיבוד נתונים אישיים",
+  "about_us": "עלינו",
+  "street_name": "מליקישווילי 95, בטומי",
+  "myadres": "כתובת החנות:",
+  "firstnumber": "טלפון:",
+  "secondnumber": "טלפון:",
+  "mainemail": "אימייל:"
 }

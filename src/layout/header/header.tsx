@@ -2,10 +2,11 @@ import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import LanguageSwitcher from '../../components/LanguageSwitcher/LanguageSwitcher';
-import { motion } from 'framer-motion';
-import Modal from '../../components/modal/modal';
+import Modal from '../../components/modal/modal'; // Существующее модальное окно
+import AboutModal from './AboutModal'; // Новое модальное окно
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
+import { motion } from 'framer-motion';
 
 interface HeaderProps {
   activeTab?: 'products' | 'users' | 'orders' | 'couriers';
@@ -14,7 +15,9 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRole }) => {
+  const { t } = useTranslation(); // Подключаем переводчик
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false); // State для нового модального окна
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { i18n } = useTranslation();
@@ -38,6 +41,15 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRol
     setIsModalOpen(false);
   };
 
+  const handleAboutClick = () => {
+    setIsAboutModalOpen(true); // Открыть модальное окно "О нас"
+  };
+
+  const closeAboutModal = () => {
+    setIsAboutModalOpen(false); // Закрыть модальное окно "О нас"
+  };
+
+  
   return (
     <StyledHeader>
       <FlexWrapper>
@@ -79,6 +91,11 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRol
             )}
           </Nav>
         )}
+        
+        {/* Кнопка "О нас" */}
+        <AboutButton onClick={handleAboutClick}>{t('about_us')}</AboutButton>
+
+        {/* Модальное окно с языковым переключателем */}
         <Button
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
@@ -92,6 +109,17 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userRol
         >
           <LanguageSwitcher onLanguageChange={handleLanguageChange} />
         </Modal>
+
+        {/* Модальное окно "О нас" */}
+        {isAboutModalOpen && (
+ <AboutModal onClose={closeAboutModal} isOpen={isAboutModalOpen}> 
+ <h2>{t('about_us')}</h2>
+ <p>{t('myadres')} {t('street_name')}</p>
+ <p>{t('firstnumber')} +995 591 036 627</p>
+ <p>{t('secondnumber')} +995 593 680 786</p>
+ <p>{t('mainemail')} babushkin.e.ge@gmail.com</p>
+</AboutModal>
+)}
       </FlexWrapper>
     </StyledHeader>
   );
@@ -107,7 +135,7 @@ const StyledHeader = styled.header`
   display: flex;
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.7);
-  padding: 20px 20px;
+  padding: 20px 20px 20px 20px;
   border-radius: 20px;
   margin: 15px 0;
   position: relative;
@@ -131,7 +159,7 @@ const Nav = styled.nav`
   gap: 10px;
 `;
 
-const NavButton = styled.button<{ active: boolean }>`
+const NavButton = styled.button<{ active?: boolean }>`
   padding: 10px 20px;
   font-size: 16px;
   border: none;
@@ -142,6 +170,21 @@ const NavButton = styled.button<{ active: boolean }>`
 
   &:hover {
     background-color: ${props => (props.active ? '#0056b3' : '#aaa')};
+  }
+`;
+
+const AboutButton = styled.button<{ active?: boolean }>`
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: ${props => (props.active ? '#007bff' : 'transparent')};
+  color: ${theme.colors.font};
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${props => (props.active ? '#0056b3' : 'transparent')};
+    color: ${theme.button.buttonDisabled};
   }
 `;
 

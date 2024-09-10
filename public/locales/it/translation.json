@@ -73,5 +73,17 @@
   "username": "email o numero",
   "login_button": "Accedi",
   "error_login": "Qualcosa è andato storto",
-  "user_data": "Dati dell'utente dopo l'accesso:"
+  "user_data": "Dati dell'utente dopo l'accesso:",
+  "user_agreement": "Accordo con l'utente",
+  "privacy_policy": "Informativa sulla privacy",
+  "service_provision_agreement": "Contratto di prestazione di servizi",
+  "data_processing_information": "Informazioni sul trattamento dei dati personali",
+  "about_us": "Chi siamo",
+  "street_name": "Melikishvili 95, Batumi",
+  "myadres": "Indirizzo del negozio:",
+  "firstnumber": "Telefono:",
+  "secondnumber": "Telefono:",
+  "mainemail": "Email:"
+
+
 }

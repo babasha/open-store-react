@@ -73,5 +73,18 @@
   "username": "邮箱或号码",
   "login_button": "登录",
   "error_login": "出错了",
-  "user_data": "登录后的用户数据："
+  "user_data": "登录后的用户数据：",
+  "user_agreement": "用户协议",
+  "privacy_policy": "隐私政策",
+  "service_provision_agreement": "服务提供协议",
+  "data_processing_information": "个人数据处理信息",
+  "about_us": "关于我们",
+  "street_name": "梅利基什维利街95号, 巴统",
+  "myadres": "店铺地址:",
+  "firstnumber": "电话:",
+  "secondnumber": "电话:",
+  "mainemail": "电子邮件:"
+
+
+
 }

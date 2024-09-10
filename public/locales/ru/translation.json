@@ -73,6 +73,17 @@
   "username": "email или номер",
   "login_button": "Войти",
   "error_login": "Что-то пошло не так",
-  "user_data": "Данные пользователя после входа:"
+  "user_data": "Данные пользователя после входа:",
+  "user_agreement": "Пользовательское соглашение" ,
+  "privacy_policy": "Политика конфиденциальности",
+  "service_provision_agreement": "Договор на оказание услуг",
+  "data_processing_information": "Информация об обработке персональных данных",
+  "about_us": "О нас",
+  "street_name": "Меликишвили 95, Батуми",
+  "myadres": "Адрес магазина:",
+  "firstnumber": "Телефон:",
+  "secondnumber": "Телефон:",
+  "mainemail": "Электронная почта:"
+
 
 }

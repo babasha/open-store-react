@@ -73,5 +73,18 @@
   "username": "e-posta veya numara",
   "login_button": "Giriş yap",
   "error_login": "Bir şeyler ters gitti",
-  "user_data": "Giriş yaptıktan sonra kullanıcı verileri:"
+  "user_data": "Giriş yaptıktan sonra kullanıcı verileri:",
+  "user_agreement": "Kullanıcı Sözleşmesi",
+  "privacy_policy": "Gizlilik Politikası",
+  "service_provision_agreement": "Hizmet Sağlama Anlaşması",
+  "data_processing_information": "Kişisel Verilerin İşlenmesi Hakkında Bilgi",
+  "about_us": "Hakkımızda",
+  "street_name": "Melikishvili 95, Batum",
+  "myadres": "Mağaza Adresi:",
+  "firstnumber": "Telefon:",
+  "secondnumber": "Telefon:",
+  "mainemail": "E-posta:"
+
+
+
 }

@@ -73,5 +73,16 @@
   "username": "E-Mail oder Nummer",
   "login_button": "Anmelden",
   "error_login": "Etwas ist schiefgelaufen",
-  "user_data": "Benutzerdaten nach der Anmeldung:"
+  "user_data": "Benutzerdaten nach der Anmeldung:",
+  "user_agreement": "Nutzungsvereinbarung",
+  "privacy_policy": "Datenschutzrichtlinie",
+  "service_provision_agreement": "Dienstleistungsvertrag",
+  "data_processing_information": "Informationen zur Datenverarbeitung",
+  "about_us": "Über uns",
+  "street_name": "Melikishvili 95, Batumi",
+  "myadres": "Geschäftsadresse:",
+  "firstnumber": "Telefon:",
+  "secondnumber": "Telefon:",
+  "mainemail": "E-Mail:"
+
 }
