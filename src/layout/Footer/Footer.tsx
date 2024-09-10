@@ -15,16 +15,16 @@ const Footer: React.FC = () => {
       <FooterContent>
         <FooterLinks>
           {/* Использование функции t() для перевода */}
-          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/12QGEtJtfFkD540SK1-LK6LI0GAkW6tmqwNaCm-ZzHJI/edit#heading=h.5mtlu7tpglhg')}>
+          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/12QGEtJtfFkD540SK1-LK6LI0GAkW6tmqwNaCm-ZzHJI/pub')}>
             {t('user_agreement')} {/* Перевод "Пользовательское соглашение" */}
           </LinkParagraph>
-          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/1rmPah6C7OyL1lhSZmwnr7gfttWOHJ_aEqVnxxRrjZwU/edit')}>
+          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/1rmPah6C7OyL1lhSZmwnr7gfttWOHJ_aEqVnxxRrjZwU/pub')}>
             {t('privacy_policy')} {/* Перевод "Политика конфиденциальности" */}
           </LinkParagraph>
-          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/1_4KxKOodcaTTsAVcMnU2SPBWC6tPO3b8qx6O8lXDUyU/edit')}>
+          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/1_4KxKOodcaTTsAVcMnU2SPBWC6tPO3b8qx6O8lXDUyU/pub')}>
             {t('service_provision_agreement')} {/* Перевод "Договор на оказание услуг" */}
           </LinkParagraph>
-          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/1p3wTiD0EJ0r_5cjzYNRNEl_1SHURs7aUxRu_0VuJDzg/edit')}>
+          <LinkParagraph onClick={() => handleRedirect('https://docs.google.com/document/d/1p3wTiD0EJ0r_5cjzYNRNEl_1SHURs7aUxRu_0VuJDzg/pub')}>
             {t('data_processing_information')} {/* Перевод "Информация об обработке персональных данных" */}
           </LinkParagraph>
         </FooterLinks>
