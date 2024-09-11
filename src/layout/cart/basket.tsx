@@ -44,7 +44,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cartItems]);
 
-  const deliveryCost = totalPrice > 30 ? 0 : 5;
+  const deliveryCost = totalPrice > 0.01 ? 0 : 5;
   const totalWithDelivery = totalPrice + deliveryCost;
 
   useEffect(() => {
