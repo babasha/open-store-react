@@ -98,21 +98,25 @@ async function handlePaymentCallback(event, body) {
   console.log('Тип события:', event); // Логируем тип события
   console.log('Данные запроса:', body); // Логируем данные тела запроса
 
-  if (event === 'order_payment') {
-    const { order_id, order_status } = body;
+  if (event === 'payment_success') {
+    const { bank_order_id, userId, items, total, deliveryTime, deliveryAddress } = body;
 
-    // Логируем информацию о заказе
-    console.log('Платеж для заказа с ID:', order_id);
-    console.log('Новый статус заказа:', order_status);
-
-    // Обновляем статус заказа в базе данных
     try {
-      await pool.query('UPDATE orders SET status = $1 WHERE id = $2', [order_status.key, order_id]);
-      console.log('Статус заказа успешно обновлен в базе данных'); // Логируем успешное обновление статуса
-      return { message: 'Платеж успешно обработан' };
+      // Логируем ID заказа, присвоенный банком
+      console.log('ID заказа от банка:', bank_order_id);
+
+      // После успешной оплаты создается заказ
+      const orderResult = await pool.query(
+        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress, bank_order_id]
+      );
+
+      console.log('Заказ успешно создан с ID:', orderResult.rows[0].id); // Логирование успешного создания заказа в базе данных
+
+      return { message: 'Заказ успешно создан' };
     } catch (error) {
-      console.error('Ошибка обновления статуса заказа:', error.message);
-      throw new Error('Ошибка обработки платежа');
+      console.error('Ошибка при создании заказа:', error.message);
+      throw new Error('Ошибка создания заказа после оплаты');
     }
   } else {
     console.error('Неверное событие для обработки платежа');
