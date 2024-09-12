@@ -58,52 +58,34 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       setError(t('cart.notAuthorized'));
       return;
     }
-
+  
     const orderData = {
       userId: user.id,
       items: cartItems.map(item => ({
         productId: item.id,
+        name: item.title, // Добавляем название товара
         quantity: item.quantity,
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
       deliveryAddress: user.address,
     };
-
-    console.log('Создание заказа с данными:', orderData); // Логирование данных перед созданием заказа
-
+  
     try {
-      // Шаг 1: Создание заказа
-      const orderResponse = await fetch('https://enddel.com/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!orderResponse.ok) {
-        const errorText = await orderResponse.text();
-        console.error('Ошибка создания заказа:', errorText); // Логирование ошибки заказа
-        throw new Error(t('cart.orderError'));
-      }
-
-      const order = await orderResponse.json();
-      console.log('Заказ успешно создан:', order); // Логирование успешного создания заказа
-
-      // Шаг 2: Процесс создания платежа
+      // Шаг 1: Создаем заказ и передаем свой собственный ID заказа
+      const externalOrderId = `order-${Date.now()}`; // Пример создания уникального ID
+  
       const paymentData = {
         total: totalWithDelivery,
         items: cartItems.map(item => ({
           productId: item.id,
+          name: item.title, // Передаем название товара
           quantity: item.quantity,
           price: item.price,
-        }))
+        })),
+        externalOrderId // Передаем собственный ID заказа
       };
-
-      console.log('Данные для создания платежа:', paymentData); // Логирование данных платежа
-
+  
       const paymentResponse = await fetch('https://enddel.com/create-payment', {
         method: 'POST',
         headers: {
@@ -112,17 +94,16 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         },
         body: JSON.stringify(paymentData),
       });
-
+  
       if (!paymentResponse.ok) {
         const errorText = await paymentResponse.text();
         console.error('Ошибка создания платежа:', errorText); // Логирование ошибки платежа
         throw new Error(t('cart.paymentError'));
       }
-
+  
       const paymentResult = await paymentResponse.json();
       console.log('Платеж успешно создан, ответ:', paymentResult); // Логирование успешного создания платежа
-
-      // Шаг 3: Перенаправляем пользователя на страницу оплаты
+  
       if (paymentResult.payment_url) {
         console.log('Перенаправление на URL оплаты:', paymentResult.payment_url); // Логирование URL оплаты
         window.location.href = paymentResult.payment_url; // Перенаправление на страницу оплаты
@@ -130,7 +111,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         console.error('Ошибка: URL оплаты не был получен'); // Логирование отсутствия URL оплаты
         throw new Error(t('cart.paymentError'));
       }
-
+  
       clearCart();
       setSelectedDelivery(null);
       alert(t('cart.orderSuccess'));
@@ -139,6 +120,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       setError(t('cart.orderError'));
     }
   }, [user, cartItems, totalWithDelivery, selectedDelivery, t, clearCart]);
+  
 
   const renderCartItem = useCallback(
     (item: CartItem) => (

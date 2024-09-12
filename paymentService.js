@@ -36,7 +36,7 @@ async function getAccessToken() {
 }
 
 // Функция для создания платежа с максимальным логированием
-async function createPayment(total, items) {
+async function createPayment(total, items, externalOrderId) {
   console.log('Начало создания платежа...'); // Логируем начало процесса
 
   try {
@@ -49,11 +49,13 @@ async function createPayment(total, items) {
 
     const paymentData = {
       callback_url: process.env.BOG_CALLBACK_URL,
+      external_order_id: externalOrderId, // Передаем ваш собственный ID заказа
       purchase_units: {
         currency: 'GEL', // Можно сделать динамическую передачу валюты
         total_amount: total,
         basket: items.map(item => ({
           product_id: item.productId,
+          name: item.name, // Передаем название товара
           quantity: item.quantity,
           unit_price: item.price,
         }))
@@ -98,17 +100,30 @@ async function handlePaymentCallback(event, body) {
   console.log('Тип события:', event); // Логируем тип события
   console.log('Данные запроса:', body); // Логируем данные тела запроса
 
-  if (event === 'payment_success') {
-    const { bank_order_id, userId, items, total, deliveryTime, deliveryAddress } = body;
+  if (event === 'order_payment') {
+    const {
+      order_id, // ID заказа от банка
+      external_order_id, // Ваш собственный ID заказа
+      order_status, // Статус заказа
+      payment_detail: { transaction_id, card_type, payer_identifier }, // Детали платежа
+      purchase_units: { request_amount, currency_code, items } // Данные о покупках
+    } = body;
 
     try {
-      // Логируем ID заказа, присвоенный банком
-      console.log('ID заказа от банка:', bank_order_id);
+      // Логируем основные данные заказа
+      console.log('ID заказа от банка:', order_id);
+      console.log('Ваш ID заказа:', external_order_id);
+      console.log('Статус заказа:', order_status.key, '-', order_status.value);
+      console.log('Транзакция ID:', transaction_id);
+      console.log('Тип карты:', card_type);
+      console.log('Идентификатор плательщика:', payer_identifier);
+      console.log('Сумма запроса:', request_amount, currency_code);
+      console.log('Товары:', items);
 
       // После успешной оплаты создается заказ
       const orderResult = await pool.query(
         'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress, bank_order_id]
+        [external_order_id, JSON.stringify(items), request_amount, null, null, order_id]
       );
 
       console.log('Заказ успешно создан с ID:', orderResult.rows[0].id); // Логирование успешного создания заказа в базе данных
