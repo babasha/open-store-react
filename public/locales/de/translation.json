@@ -83,6 +83,6 @@
   "myadres": "Geschäftsadresse:",
   "firstnumber": "Telefon:",
   "secondnumber": "Telefon:",
-  "mainemail": "E-Mail:"
-
+  "mainemail": "E-Mail:",
+  "payment.successTitle": "Erfolgreiche Zahlung" 
 }

@@ -132,8 +132,8 @@ const Wrapper = styled(motion.div)<{ isExpanded: boolean, isPartiallyOpen: boole
 `;
 
 const WrapperMenu = styled.div`
-  width: 100%;
-  height: 20px;
+  /* width: 100%; */
+  /* height: 20px; */
   display: flex;
   justify-content: center;
   align-items: center;

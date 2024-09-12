@@ -83,7 +83,7 @@
   "myadres": "Адрес магазина:",
   "firstnumber": "Телефон:",
   "secondnumber": "Телефон:",
-  "mainemail": "Электронная почта:"
-
+  "mainemail": "Электронная почта:",
+  "payment.successTitle": "Успешная оплата" 
 
 }

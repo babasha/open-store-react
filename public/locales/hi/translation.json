@@ -83,6 +83,7 @@
   "myadres": "दुकान का पता:",
   "firstnumber": "फोन:",
   "secondnumber": "फोन:",
-  "mainemail": "ईमेल:"
+  "mainemail": "ईमेल:",
+  "payment.successTitle": "सफल भुगतान" 
 
 }

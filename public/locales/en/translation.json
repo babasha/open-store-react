@@ -86,5 +86,6 @@
   "myadres": "Store Address:",
   "firstnumber": "Phone:",
   "secondnumber": "Phone:",
-  "mainemail": "Email:"
+  "mainemail": "Email:",
+  "payment.successTitle": "Successful payment" 
 }

@@ -83,7 +83,8 @@
   "myadres": "店铺地址:",
   "firstnumber": "电话:",
   "secondnumber": "电话:",
-  "mainemail": "电子邮件:"
+  "mainemail": "电子邮件:",
+  "payment.successTitle": "支付成功" 
 
 
 

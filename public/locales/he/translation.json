@@ -83,5 +83,6 @@
   "myadres": "כתובת החנות:",
   "firstnumber": "טלפון:",
   "secondnumber": "טלפון:",
-  "mainemail": "אימייל:"
+  "mainemail": "אימייל:",
+  "payment.successTitle": "תשלום הצליח" 
 }

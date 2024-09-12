@@ -3,10 +3,10 @@ import { theme } from '../../styles/Theme';
 
 export const CartdiInner = styled.div`
   background-color: ${theme.colors.mainBg};
-  margin-top: 10px;
+  /* margin-top: 10px; */
   padding: 20px;
   border-radius: 10px;
-  width: 100%;
+  /* width: 100%; */
   @media (max-width: 652px) {
   margin-bottom: 10px;
   padding-top: 20px;

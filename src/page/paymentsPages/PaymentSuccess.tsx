@@ -1,5 +1,4 @@
-// src/pages/PaymentSuccess.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
@@ -12,14 +11,21 @@ const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { purchasedItems, clearPurchasedItems } = usePurchasedItems();
+  const [counter, setCounter] = useState(30); // Инициализируем счётчик на 30 секунд
 
   useEffect(() => {
-    // Перенаправление на главную страницу через 30 секунд
     const timer = setTimeout(() => {
       navigate('/');
     }, 30000);
 
-    return () => clearTimeout(timer);
+    const countdown = setInterval(() => {
+      setCounter(prev => prev - 1); // Уменьшаем значение счётчика каждую секунду
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(countdown); // Очищаем таймеры при размонтировании компонента
+    };
   }, [navigate]);
 
   const handleDownloadReceipt = () => {
@@ -63,7 +69,7 @@ const PaymentSuccess: React.FC = () => {
         </ButtonsWrapper>
 
         <AutoRedirectMessage>
-          {t('payment.autoRedirect')}
+          {t('payment.autoRedirect')} {counter} {t('payment.seconds')}
         </AutoRedirectMessage>
       </FlexWrapper>
     </Container>
@@ -114,4 +120,3 @@ const AutoRedirectMessage = styled.p`
   color: #666;
   text-align: center;
 `;
-

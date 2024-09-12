@@ -83,7 +83,8 @@
   "myadres": "Adres sklepu:",
   "firstnumber": "Telefon:",
   "secondnumber": "Telefon:",
-  "mainemail": "Email:"
+  "mainemail": "Email:",
+  "payment.successTitle": "Pomyślna płatność" 
 
 
 }

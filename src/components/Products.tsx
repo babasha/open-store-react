@@ -1,13 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import styled from 'styled-components';
-// import { useTranslation } from 'react-i18next';
-// import { theme } from '../styles/Theme';
-// import { ProductCart } from '../layout/prouctCart/cart';
-// import Basket from '../layout/cart/basket';
-// import AutorizationComponent from '../layout/autoeization/autoComponent';
-// import StyledMenuWrapper from './Menu/MenuWrapper';
-// import { useCart } from '../layout/cart/CartContext';
-
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
@@ -93,9 +83,9 @@ export default Products;
 // Стили остаются без изменений
 const Showcase = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
-  width: 100%;
+  /* width: 100%;  */
   display: flex;
-  border-radius: 10px;
+  border-radius: 20px;
 `;
 
 const ShopInner = styled.div`
@@ -104,6 +94,6 @@ const ShopInner = styled.div`
   width: 1100px;
   flex-wrap: wrap;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 20px;
   align-content: flex-start;
 `;

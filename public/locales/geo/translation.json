@@ -83,6 +83,8 @@
   "myadres": "მაღაზიის მისამართი:",
   "firstnumber": "ტელეფონი:",
   "secondnumber": "ტელეფონი:",
-  "mainemail": "ელექტრონული ფოსტა:"
+  "mainemail": "ელექტრონული ფოსტა:",
+  "payment.successTitle": "წარმატებული გადახდა" 
+  
 
 }

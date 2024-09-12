@@ -83,7 +83,8 @@
   "myadres": "Mağaza Adresi:",
   "firstnumber": "Telefon:",
   "secondnumber": "Telefon:",
-  "mainemail": "E-posta:"
+  "mainemail": "E-posta:",
+  "payment.successTitle": "Başarılı ödeme" 
 
 
 

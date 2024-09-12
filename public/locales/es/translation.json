@@ -83,6 +83,6 @@
   "myadres": "Dirección de la tienda:",
   "firstnumber": "Teléfono:",
   "secondnumber": "Teléfono:",
-  "mainemail": "Correo electrónico:"
-
+  "mainemail": "Correo electrónico:",
+"payment.successTitle": " Pago exitoso" 
 }

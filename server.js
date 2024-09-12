@@ -49,17 +49,17 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 
 // Маршруты для аутентификации через Google
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+// app.get('/auth/google',
+//   passport.authenticate('google', { scope: ['profile', 'email'] })
+// );
 
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    const token = jwt.sign({ id: req.user.id, role: req.user.role }, 'secret_key', { expiresIn: '1h' });
-    res.redirect(`${process.env.PUBLIC_URL}/auth/success?token=${token}`);
-  }
-);
+// app.get('/auth/google/callback',
+//   passport.authenticate('google', { failureRedirect: '/login' }),
+//   (req, res) => {
+//     const token = jwt.sign({ id: req.user.id, role: req.user.role }, 'secret_key', { expiresIn: '1h' });
+//     res.redirect(`${process.env.PUBLIC_URL}/auth/success?token=${token}`);
+//   }
+// );
 
 
 // Конфигурация multer для загрузки файлов
