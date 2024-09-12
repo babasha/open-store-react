@@ -1,3 +1,4 @@
+// src/layout/cart/Basket.tsx
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Container } from '../../components/Container';
 import { useCart } from './CartContext';
@@ -18,6 +19,7 @@ import {
   ErrorText,
   BascketTitle
 } from './BasketStyles';
+import { usePurchasedItems } from '../../page/paymentsPages/PurchasedItemsContext';
 
 interface BasketProps {
   currentLanguage: string;
@@ -34,6 +36,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const { t } = useTranslation();
   const { cartItems, removeItemFromCart, clearCart } = useCart();
   const { user } = useAuth();
+  const { setPurchasedItems } = usePurchasedItems(); // Используем setPurchasedItems из контекста
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
@@ -63,7 +66,9 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       userId: user.id,
       items: cartItems.map(item => ({
         productId: item.id,
+        title: item.title, // Добавляем название товара
         quantity: item.quantity,
+        price: item.price, // Добавляем цену товара
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
@@ -97,6 +102,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         total: totalWithDelivery,
         items: cartItems.map(item => ({
           productId: item.id,
+          title: item.title,
           quantity: item.quantity,
           price: item.price,
         }))
@@ -122,6 +128,13 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       const paymentResult = await paymentResponse.json();
       console.log('Платеж успешно создан, ответ:', paymentResult); // Логирование успешного создания платежа
 
+      // Сохраняем купленные товары в контекст перед перенаправлением
+      setPurchasedItems(cartItems);
+
+      // Очищаем корзину и выбранное время доставки
+      clearCart();
+      setSelectedDelivery(null);
+
       // Шаг 3: Перенаправляем пользователя на страницу оплаты
       if (paymentResult.payment_url) {
         console.log('Перенаправление на URL оплаты:', paymentResult.payment_url); // Логирование URL оплаты
@@ -131,14 +144,12 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         throw new Error(t('cart.paymentError'));
       }
 
-      clearCart();
-      setSelectedDelivery(null);
       alert(t('cart.orderSuccess'));
     } catch (error) {
       console.error('Ошибка при обработке заказа или платежа:', error); // Логирование общей ошибки
       setError(t('cart.orderError'));
     }
-  }, [user, cartItems, totalWithDelivery, selectedDelivery, t, clearCart]);
+  }, [user, cartItems, totalWithDelivery, selectedDelivery, t, clearCart, setPurchasedItems]);
 
   const renderCartItem = useCallback(
     (item: CartItem) => (
