@@ -63,7 +63,6 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       userId: user.id,
       items: cartItems.map(item => ({
         productId: item.id,
-        name: item.title, // Передаем название товара
         quantity: item.quantity,
       })),
       total: totalWithDelivery,
@@ -74,7 +73,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     console.log('Создание заказа с данными:', orderData); // Логирование данных перед созданием заказа
 
     try {
-      // Шаг 1: Создание заказа на сервере
+      // Шаг 1: Создание заказа
       const orderResponse = await fetch('https://enddel.com/orders', {
         method: 'POST',
         headers: {
@@ -86,25 +85,21 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
       if (!orderResponse.ok) {
         const errorText = await orderResponse.text();
-        console.error('Ошибка создания заказа:', errorText); // Логирование ошибки создания заказа
+        console.error('Ошибка создания заказа:', errorText); // Логирование ошибки заказа
         throw new Error(t('cart.orderError'));
       }
 
       const order = await orderResponse.json();
       console.log('Заказ успешно создан:', order); // Логирование успешного создания заказа
 
-      const externalOrderId = order.id; // Используем ID созданного заказа
-
-      // Шаг 2: Создание платежа
+      // Шаг 2: Процесс создания платежа
       const paymentData = {
         total: totalWithDelivery,
         items: cartItems.map(item => ({
           productId: item.id,
-          name: item.title, // Передаем название товара
           quantity: item.quantity,
           price: item.price,
-        })),
-        externalOrderId, // Используем ID заказа, полученный с бэкенда
+        }))
       };
 
       console.log('Данные для создания платежа:', paymentData); // Логирование данных платежа
@@ -120,7 +115,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
       if (!paymentResponse.ok) {
         const errorText = await paymentResponse.text();
-        console.error('Ошибка создания платежа:', errorText); // Логирование ошибки создания платежа
+        console.error('Ошибка создания платежа:', errorText); // Логирование ошибки платежа
         throw new Error(t('cart.paymentError'));
       }
 
