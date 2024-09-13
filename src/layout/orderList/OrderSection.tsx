@@ -25,7 +25,7 @@ const OrderSection: React.FC<OrderSectionProps> = ({
 
   return (
     <div>
-      <SectionTitle>{title}</SectionTitle>
+      <SectionTitle>{title}</SectionTitle>  
       {user?.role === 'admin' ? (
         <>
           {showCanceledOrders !== undefined && setShowCanceledOrders !== undefined && (

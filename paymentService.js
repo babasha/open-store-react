@@ -5,6 +5,7 @@ const pool = require('./db'); // Подключаем пул для взаимо
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 /**
  * Получение access_token от API Банка Грузии
@@ -42,9 +43,10 @@ async function getAccessToken() {
  * Создание платежной сессии через API Банка Грузии
  * @param {number} total - Общая сумма заказа
  * @param {Array} items - Список товаров
+ * @param {string} externalOrderId - Уникальный идентификатор заказа
  * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
-async function createPayment(total, items) {
+async function createPayment(total, items, externalOrderId) {
   console.log('Начало создания платежа...');
 
   try {
@@ -57,12 +59,13 @@ async function createPayment(total, items) {
 
     const paymentData = {
       callback_url: process.env.BOG_CALLBACK_URL,
+      external_order_id: externalOrderId, // Устанавливаем external_order_id
       purchase_units: {
-        currency: 'GEL', // Можно сделать динамической передачу валюты
+        currency: 'GEL',
         total_amount: total,
-        basket: items.map(item => ({
+        items: items.map(item => ({
           product_id: item.productId,
-          description: item.description, // Используем поле description для названия товара
+          description: item.description,
           quantity: item.quantity,
           unit_price: item.price,
         }))
@@ -73,7 +76,7 @@ async function createPayment(total, items) {
       }
     };
 
-    console.log('Данные для создания платежа:', paymentData);
+    console.log('Данные для создания платежа:', JSON.stringify(paymentData, null, 2));
 
     const response = await axios.post(process.env.BOG_PAYMENT_URL, paymentData, {
       headers: {
@@ -134,10 +137,10 @@ function verifyCallbackSignature(data, signature) {
 async function handlePaymentCallback(event, body) {
   console.log('Обработка обратного вызова платежа...');
   console.log('Тип события:', event);
-  console.log('Данные запроса:', body);
+  console.log('Данные запроса:', JSON.stringify(body, null, 2));
 
   if (event === 'order_payment') { // Соответствует документации банка
-    const { order_id, industry, capture, external_order_id, client, zoned_create_date, zoned_expire_date, order_status, buyer, purchase_units, redirect_links, payment_detail, discount, actions } = body;
+    const { external_order_id, order_status, purchase_units, order_id } = body;
 
     // Проверка статуса платежа
     const paymentStatus = order_status.key;
@@ -148,43 +151,52 @@ async function handlePaymentCallback(event, body) {
 
     try {
       // Извлечение необходимых данных
-      // Предполагается, что external_order_id содержит userId или другой идентификатор
-      const userId = external_order_id;
+      // Предполагается, что external_order_id содержит orderId
+      const orderId = external_order_id;
 
-      // Получение информации о пользователе из базы данных (если необходимо)
-      const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
-      const user = userResult.rows[0];
-      if (!user) {
-        throw new Error('Пользователь не найден');
+      if (!orderId) {
+        throw new Error('external_order_id отсутствует');
       }
 
-      const items = purchase_units.basket.map(item => ({
+      // Получение информации о заказе из базы данных
+      const orderResult = await pool.query('SELECT * FROM orders WHERE order_id = $1', [orderId]);
+      const order = orderResult.rows[0];
+      if (!order) {
+        throw new Error('Заказ не найден');
+      }
+
+      if (!purchase_units || !Array.isArray(purchase_units.items)) {
+        throw new Error('purchase_units.items отсутствуют или не являются массивом');
+      }
+
+      const items = purchase_units.items.map(item => ({
         productId: item.product_id,
         description: item.description,
         quantity: item.quantity,
         price: item.unit_price,
       }));
-      const total = purchase_units.total_amount;
+      const total = parseFloat(purchase_units.transfer_amount);
       const deliveryTime = null; // Или извлечь из других данных, если доступно
-      const deliveryAddress = buyer.address || user.address || null; // Предполагается, что адрес можно получить из buyer или других полей
+      const deliveryAddress = buyer?.address || order.delivery_address || null; // Предполагается, что адрес можно получить из buyer или других полей
 
-      // Создание заказа в базе данных
-      const orderResult = await pool.query(
-        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, bank_order_id, payment_status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-        [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress, order_id, paymentStatus]
+      // Обновление заказа в базе данных
+      const updatedOrderResult = await pool.query(
+        'UPDATE orders SET items = $1, total = $2, delivery_time = $3, delivery_address = $4, payment_status = $5, bank_order_id = $6 WHERE order_id = $7 RETURNING *',
+        [JSON.stringify(items), total, deliveryTime || order.delivery_time, deliveryAddress || order.delivery_address, paymentStatus, order_id, orderId]
       );
 
-      const newOrder = orderResult.rows[0];
-      console.log('Заказ успешно создан с ID:', newOrder.id);
+      const updatedOrder = updatedOrderResult.rows[0];
+      console.log('Заказ успешно обновлён с ID:', updatedOrder.id);
 
       // Если нужно, можно отправить уведомление пользователю через Socket.io
       // Например:
-      // io.emit('newOrder', newOrder);
+      // io.emit('orderUpdated', updatedOrder);
 
-      return { message: 'Заказ успешно создан' };
+     
+      return { message: 'Заказ успешно обновлён' };
     } catch (error) {
-      console.error('Ошибка при создании заказа:', error.message);
-      throw new Error('Ошибка создания заказа после оплаты');
+      console.error('Ошибка при обновлении заказа:', error.message);
+      throw new Error('Ошибка обновления заказа после оплаты');
     }
   } else {
     console.error('Неверное событие для обработки платежа:', event);

@@ -99,7 +99,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       // Перенаправляем пользователя на страницу оплаты
       window.location.href = order.paymentUrl;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка при обработке заказа или платежа:', error);
       setError(t('cart.orderError'));
     }

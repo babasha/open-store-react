@@ -10,6 +10,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
+const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature } = require('./paymentService');
 
@@ -618,38 +619,30 @@ app.post('/orders', async (req, res) => {
   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
 
   try {
-    // Инициируем платёж через API Банка Грузии
-    const paymentUrl = await createPayment(total, items);
+    // Проверяем, существует ли пользователь
+    const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+    const user = userResult.rows[0];
+    if (!user) {
+      throw new Error('Пользователь не найден');
+    }
+
+    // Генерируем уникальный orderId
+    const orderId = uuidv4();
+
+    // Создаём заказ в базе данных со статусом "pending"
+    await pool.query(
+      'INSERT INTO orders (order_id, user_id, items, total, delivery_time, delivery_address, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [orderId, userId, JSON.stringify(items), total, deliveryTime, deliveryAddress, 'pending']
+    );
+
+    // Инициируем платёж, передавая orderId как externalOrderId
+    const paymentUrl = await createPayment(total, items, orderId);
 
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
   } catch (error) {
     console.error('Ошибка при инициировании платежа:', error.message);
     res.status(500).json({ error: 'Не удалось инициировать платёж' });
-  }
-});
-
-// Маршрут для обработки обратного вызова от Банка Грузии
-app.post('/payment/callback', async (req, res) => {
-  const callbackSignature = req.headers['callback-signature']; // Убедитесь, что название заголовка соответствует документации
-  const callbackData = req.body;
-
-  try {
-    // Проверка подписи
-    const isValid = verifyCallbackSignature(callbackData.body, callbackSignature);
-    if (!isValid) {
-      console.error('Неверная подпись обратного вызова');
-      return res.status(400).json({ error: 'Неверная подпись' });
-    }
-
-    // Обработка данных обратного вызова
-    const result = await handlePaymentCallback(callbackData.event, callbackData.body);
-
-    // Возвращаем 200 OK, подтверждая успешную обработку
-    res.status(200).json({ message: 'Callback обработан успешно' });
-  } catch (error) {
-    console.error('Ошибка при обработке callback:', error.message);
-    res.status(500).json({ error: 'Ошибка обработки callback' });
   }
 });
 
