@@ -79,7 +79,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
     try {
       // Инициируем платёж через маршрут /orders
-      const orderResponse = await fetch('https://your-backend.com/orders', { // Замените на ваш URL
+      const orderResponse = await fetch('https://enddel.com/orders', { // Замените на ваш URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
