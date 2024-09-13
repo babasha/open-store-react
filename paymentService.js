@@ -51,7 +51,7 @@ async function createPayment(total, items) {
         total_amount: total,
         basket: items.map(item => ({
           product_id: item.productId,
-          title: item.title, // Добавляем название товара
+          description: item.description, // Используем поле description для названия товара
           quantity: item.quantity,
           unit_price: item.price,
         }))
@@ -99,10 +99,10 @@ async function handlePaymentCallback(event, body) {
     try {
       console.log('ID заказа от банка:', bank_order_id);
 
-      // Преобразуем элементы для хранения в базе данных, включая названия
+      // Преобразуем элементы для хранения в базе данных, включая описания
       const formattedItems = items.map(item => ({
         productId: item.product_id,
-        title: item.title, // Сохраняем название товара
+        description: item.description, // Используем поле description для названия товара
         quantity: item.quantity,
         price: item.unit_price,
       }));

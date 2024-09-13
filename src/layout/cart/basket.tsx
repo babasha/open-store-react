@@ -66,7 +66,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       userId: user.id,
       items: cartItems.map(item => ({
         productId: item.id,
-        title: item.title, // Добавляем название товара
+        description: item.title, // Используем поле description для названия товара
         quantity: item.quantity,
         price: item.price, // Добавляем цену товара
       })),
@@ -102,7 +102,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         total: totalWithDelivery,
         items: cartItems.map(item => ({
           productId: item.id,
-          title: item.title, // Добавляем название товара
+          description: item.title, // Используем поле description для названия товара
           quantity: item.quantity,
           price: item.price,
         }))
