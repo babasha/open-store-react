@@ -619,7 +619,6 @@ app.post('/orders', async (req, res) => {
   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
 
   try {
-    // Логирование userId для отладки
     console.log('Получен userId:', userId);
 
     // Проверяем, существует ли пользователь
@@ -628,7 +627,6 @@ app.post('/orders', async (req, res) => {
     if (!user) {
       throw new Error('Пользователь не найден');
     }
-
     // Создаём заказ в базе данных со статусом "pending" и получаем назначенный id
     const insertResult = await pool.query(
       'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
@@ -644,6 +642,30 @@ app.post('/orders', async (req, res) => {
   } catch (error) {
     console.error('Ошибка при инициировании платежа:', error.message);
     res.status(500).json({ error: 'Не удалось инициировать платёж' });
+  }
+});
+
+// Маршрут для обработки обратного вызова от Банка Грузии
+app.post('/payment/callback', async (req, res) => {
+  const callbackSignature = req.headers['callback-signature'];
+  const callbackData = req.body;
+
+  try {
+    // Проверка подписи
+    const isValid = verifyCallbackSignature(callbackData, callbackSignature);
+    if (!isValid) {
+      console.error('Неверная подпись обратного вызова');
+      return res.status(400).json({ error: 'Неверная подпись' });
+    }
+
+    // Обработка данных обратного вызова
+    const result = await handlePaymentCallback(callbackData.event, callbackData.body);
+
+    // Возвращаем 200 OK, подтверждая успешную обработку
+    res.status(200).json({ message: 'Callback обработан успешно' });
+  } catch (error) {
+    console.error('Ошибка при обработке callback:', error.message);
+    res.status(500).json({ error: 'Ошибка обработки callback' });
   }
 });
 

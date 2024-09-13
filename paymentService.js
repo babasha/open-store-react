@@ -59,15 +59,15 @@ async function createPayment(total, items, externalOrderId) {
 
     const paymentData = {
       callback_url: process.env.BOG_CALLBACK_URL,
-      external_order_id: externalOrderId, // Используем orderId из базы данных
+      external_order_id: externalOrderId,
       purchase_units: {
         currency: 'GEL',
-        total_amount: total,
-        items: items.map(item => ({
-          product_id: item.productId,
-          description: item.description,
+        total_amount: Number(total.toFixed(2)), // Убедитесь, что это число с двумя знаками после запятой
+        basket: items.map(item => ({
+          product_id: item.productId.toString(),
+          description: item.description || 'Товар',
           quantity: item.quantity,
-          unit_price: item.price,
+          unit_price: Number(item.price.toFixed(2)),
         }))
       },
       redirect_urls: {
@@ -84,7 +84,6 @@ async function createPayment(total, items, externalOrderId) {
         'Content-Type': 'application/json'
       }
     });
-
     console.log('Ответ сервера Банка Грузии:', response.data);
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {

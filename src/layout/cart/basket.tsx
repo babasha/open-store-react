@@ -32,12 +32,10 @@ interface CartItem {
   price: number;
 }
 
-
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const { t } = useTranslation();
   const { cartItems, removeItemFromCart, clearCart } = useCart();
   const { user } = useAuth();
-  const { setPurchasedItems } = usePurchasedItems(); // Используем setPurchasedItems из контекста
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
@@ -75,19 +73,19 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
       deliveryAddress: user.address,
     };
-    
 
     console.log('Создание заказа с данными:', orderData);
 
-    try {
-      const orderResponse = await fetch('https://enddel.com/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-      });
-  
+    
+  try {
+    const orderResponse = await fetch('https://enddel.com/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderData),
+    });
+
       if (!orderResponse.ok) {
         const errorText = await orderResponse.text();
         console.error('Ошибка инициирования платежа:', errorText);
@@ -99,19 +97,16 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
       // Перенаправляем пользователя на страницу оплаты
       window.location.href = order.paymentUrl;
-  } catch (error) {
-    console.error('Ошибка при обработке заказа или платежа:', error);
-    setError(t('cart.orderError'));
-  }
-}, [user, cartItems, totalWithDelivery, selectedDelivery, t]);
-
+    } catch (error) {
+      console.error('Ошибка при обработке заказа или платежа:', error);
+      setError(t('cart.orderError'));
+    }
+  }, [user, cartItems, totalWithDelivery, selectedDelivery, t]);
 
   useEffect(() => {
     console.log('Пользователь:', user);
     console.log('user.id:', user?.id);
   }, [user]);
-
-
 
   const renderCartItem = useCallback(
     (item: CartItem) => (
