@@ -11,7 +11,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
 const passport = require('./passport-config'); // Импортируем модуль
-const { createPayment, handlePaymentCallback } = require('./paymentService');
+const { createPayment, handlePaymentCallback, verifyCallbackSignature } = require('./paymentService');
 
 
 const app = express();
@@ -571,46 +571,88 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
 });
 
 // Маршрут для создания заказа
+// app.post('/orders', async (req, res) => {
+//   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
+
+//   try {
+//     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
+//     const user = userResult.rows[0];
+
+//     const orderResult = await pool.query(
+//       'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+//       [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address]
+//     );
+
+//     const orderId = orderResult.rows[0].id;
+
+//     const productIds = items.map(item => item.productId);
+//     const productResult = await pool.query('SELECT id, name_en FROM products WHERE id = ANY($1)', [productIds]);
+
+//     const products = productResult.rows.reduce((acc, product) => {
+//       acc[product.id] = product.name_en;
+//       return acc;
+//     }, {});
+
+//     const newOrder = {
+//       ...orderResult.rows[0],
+//       first_name: user.first_name,
+//       last_name: user.last_name,
+//       address: user.address,
+//       items: items.map(item => ({
+//         ...item,
+//         productName: products[item.productId]
+//       }))
+//     };
+
+//     io.emit('newOrder', newOrder);
+//     res.status(201).json(newOrder);
+//   } catch (error) {
+//     console.error('Ошибка при оформлении заказа:', error.message);
+//     res.status(500).json({ error: 'Ошибка сервера' });
+//   }
+// });
+
+
+// Маршрут для инициирования платежа
 app.post('/orders', async (req, res) => {
   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
 
   try {
-    const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
-    const user = userResult.rows[0];
+    // Инициируем платёж через API Банка Грузии
+    const paymentUrl = await createPayment(total, items);
 
-    const orderResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address]
-    );
-
-    const orderId = orderResult.rows[0].id;
-
-    const productIds = items.map(item => item.productId);
-    const productResult = await pool.query('SELECT id, name_en FROM products WHERE id = ANY($1)', [productIds]);
-
-    const products = productResult.rows.reduce((acc, product) => {
-      acc[product.id] = product.name_en;
-      return acc;
-    }, {});
-
-    const newOrder = {
-      ...orderResult.rows[0],
-      first_name: user.first_name,
-      last_name: user.last_name,
-      address: user.address,
-      items: items.map(item => ({
-        ...item,
-        productName: products[item.productId]
-      }))
-    };
-
-    io.emit('newOrder', newOrder);
-    res.status(201).json(newOrder);
+    // Возвращаем URL для перенаправления пользователя на страницу оплаты
+    res.status(200).json({ paymentUrl });
   } catch (error) {
-    console.error('Ошибка при оформлении заказа:', error.message);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('Ошибка при инициировании платежа:', error.message);
+    res.status(500).json({ error: 'Не удалось инициировать платёж' });
   }
 });
+
+// Маршрут для обработки обратного вызова от Банка Грузии
+app.post('/payment/callback', async (req, res) => {
+  const callbackSignature = req.headers['callback-signature']; // Убедитесь, что название заголовка соответствует документации
+  const callbackData = req.body;
+
+  try {
+    // Проверка подписи
+    const isValid = verifyCallbackSignature(callbackData.body, callbackSignature);
+    if (!isValid) {
+      console.error('Неверная подпись обратного вызова');
+      return res.status(400).json({ error: 'Неверная подпись' });
+    }
+
+    // Обработка данных обратного вызова
+    const result = await handlePaymentCallback(callbackData.event, callbackData.body);
+
+    // Возвращаем 200 OK, подтверждая успешную обработку
+    res.status(200).json({ message: 'Callback обработан успешно' });
+  } catch (error) {
+    console.error('Ошибка при обработке callback:', error.message);
+    res.status(500).json({ error: 'Ошибка обработки callback' });
+  }
+});
+
 
 // Маршрут для обновления статуса заказа
 app.put('/orders/:id/status', async (req, res) => {

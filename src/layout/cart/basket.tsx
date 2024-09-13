@@ -78,78 +78,32 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     console.log('Создание заказа с данными:', orderData);
 
     try {
-      // Шаг 1: Создание заказа
-      const orderResponse = await fetch('https://enddel.com/orders', {
+      // Инициируем платёж через маршрут /orders
+      const orderResponse = await fetch('https://your-backend.com/orders', { // Замените на ваш URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(orderData),
       });
 
       if (!orderResponse.ok) {
         const errorText = await orderResponse.text();
-        console.error('Ошибка создания заказа:', errorText);
+        console.error('Ошибка инициирования платежа:', errorText);
         throw new Error(t('cart.orderError'));
       }
 
       const order = await orderResponse.json();
-      console.log('Заказ успешно создан:', order);
+      console.log('Платёж инициирован, URL для оплаты:', order.paymentUrl);
 
-      // Шаг 2: Процесс создания платежа
-      const paymentData = {
-        total: totalWithDelivery,
-        items: cartItems.map(item => ({
-          productId: item.id,
-          description: item.title, // Используем поле description для названия товара
-          quantity: item.quantity,
-          price: item.price,
-        }))
-      };
+      // Перенаправляем пользователя на страницу оплаты
+      window.location.href = order.paymentUrl;
 
-      console.log('Данные для создания платежа:', paymentData);
-
-      const paymentResponse = await fetch('https://enddel.com/create-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(paymentData),
-      });
-
-      if (!paymentResponse.ok) {
-        const errorText = await paymentResponse.text();
-        console.error('Ошибка создания платежа:', errorText);
-        throw new Error(t('cart.paymentError'));
-      }
-
-      const paymentResult = await paymentResponse.json();
-      console.log('Платеж успешно создан, ответ:', paymentResult);
-
-      // Сохраняем купленные товары в контекст перед перенаправлением
-      setPurchasedItems(cartItems);
-
-      // Очищаем корзину и выбранное время доставки
-      clearCart();
-      setSelectedDelivery(null);
-
-      // Шаг 3: Перенаправляем пользователя на страницу оплаты
-      if (paymentResult.payment_url) {
-        console.log('Перенаправление на URL оплаты:', paymentResult.payment_url);
-        window.location.href = paymentResult.payment_url; // Перенаправление на страницу оплаты
-      } else {
-        console.error('Ошибка: URL оплаты не был получен');
-        throw new Error(t('cart.paymentError'));
-      }
-
-      alert(t('cart.orderSuccess'));
     } catch (error) {
       console.error('Ошибка при обработке заказа или платежа:', error);
       setError(t('cart.orderError'));
     }
-  }, [user, cartItems, totalWithDelivery, selectedDelivery, t, clearCart, setPurchasedItems]);
+  }, [user, cartItems, totalWithDelivery, selectedDelivery, t]);
 
   const renderCartItem = useCallback(
     (item: CartItem) => (
