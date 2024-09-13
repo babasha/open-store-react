@@ -619,6 +619,9 @@ app.post('/orders', async (req, res) => {
   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
 
   try {
+    // Логирование userId для отладки
+    console.log('Получен userId:', userId);
+
     // Проверяем, существует ли пользователь
     const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
@@ -626,17 +629,15 @@ app.post('/orders', async (req, res) => {
       throw new Error('Пользователь не найден');
     }
 
-    // Генерируем уникальный orderId
-    const orderId = uuidv4();
-
-    // Создаём заказ в базе данных со статусом "pending"
-    await pool.query(
-      'INSERT INTO orders (order_id, user_id, items, total, delivery_time, delivery_address, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [orderId, userId, JSON.stringify(items), total, deliveryTime, deliveryAddress, 'pending']
+    // Создаём заказ в базе данных со статусом "pending" и получаем назначенный id
+    const insertResult = await pool.query(
+      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [userId, JSON.stringify(items), total, deliveryTime, deliveryAddress, 'pending']
     );
+    const orderId = insertResult.rows[0].id; // Получаем назначенный id
 
     // Инициируем платёж, передавая orderId как externalOrderId
-    const paymentUrl = await createPayment(total, items, orderId);
+    const paymentUrl = await createPayment(total, items, orderId.toString());
 
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });

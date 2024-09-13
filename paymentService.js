@@ -59,7 +59,7 @@ async function createPayment(total, items, externalOrderId) {
 
     const paymentData = {
       callback_url: process.env.BOG_CALLBACK_URL,
-      external_order_id: externalOrderId, // Устанавливаем external_order_id
+      external_order_id: externalOrderId, // Используем orderId из базы данных
       purchase_units: {
         currency: 'GEL',
         total_amount: total,
@@ -139,27 +139,26 @@ async function handlePaymentCallback(event, body) {
   console.log('Тип события:', event);
   console.log('Данные запроса:', JSON.stringify(body, null, 2));
 
-  if (event === 'order_payment') { // Соответствует документации банка
+  if (event === 'order_payment') {
     const { external_order_id, order_status, purchase_units, order_id } = body;
 
     // Проверка статуса платежа
-    const paymentStatus = order_status.key;
+   const paymentStatus = order_status.key;
     if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
       console.warn('Платёж не завершён успешно:', paymentStatus);
       return { message: 'Платёж не завершён успешно' };
     }
 
     try {
-      // Извлечение необходимых данных
-      // Предполагается, что external_order_id содержит orderId
-      const orderId = external_order_id;
+      const orderId = parseInt(external_order_id, 10); // Преобразуем external_order_id в число
 
-      if (!orderId) {
-        throw new Error('external_order_id отсутствует');
+      if (isNaN(orderId)) {
+        throw new Error('external_order_id некорректен');
       }
 
+
       // Получение информации о заказе из базы данных
-      const orderResult = await pool.query('SELECT * FROM orders WHERE order_id = $1', [orderId]);
+       const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
       const order = orderResult.rows[0];
       if (!order) {
         throw new Error('Заказ не найден');
@@ -176,13 +175,13 @@ async function handlePaymentCallback(event, body) {
         price: item.unit_price,
       }));
       const total = parseFloat(purchase_units.transfer_amount);
-      const deliveryTime = null; // Или извлечь из других данных, если доступно
-      const deliveryAddress = buyer?.address || order.delivery_address || null; // Предполагается, что адрес можно получить из buyer или других полей
+      const deliveryAddress = order.delivery_address; // Используем адрес из заказа
+
 
       // Обновление заказа в базе данных
-      const updatedOrderResult = await pool.query(
-        'UPDATE orders SET items = $1, total = $2, delivery_time = $3, delivery_address = $4, payment_status = $5, bank_order_id = $6 WHERE order_id = $7 RETURNING *',
-        [JSON.stringify(items), total, deliveryTime || order.delivery_time, deliveryAddress || order.delivery_address, paymentStatus, order_id, orderId]
+ const updatedOrderResult = await pool.query(
+        'UPDATE orders SET items = $1, total = $2, payment_status = $3, bank_order_id = $4 WHERE id = $5 RETURNING *',
+        [JSON.stringify(items), total, paymentStatus, order_id, orderId]
       );
 
       const updatedOrder = updatedOrderResult.rows[0];
