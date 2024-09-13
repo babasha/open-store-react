@@ -22,7 +22,7 @@ const StyledButton = styled(motion.button)<ButtonProps>`
   border: ${({ isActive }) => (isActive ? `1px solid ${theme.button.buttonActive}` : '1px solid #0098EA')};
   font-size: 16px;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   padding: 5px 15px;
   transition: 0.2s;
   pointer-events: ${({ isDisabled }) => (isDisabled ? 'none' : 'auto')};

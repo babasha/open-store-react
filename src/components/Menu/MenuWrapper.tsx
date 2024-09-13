@@ -37,10 +37,14 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
     }
   }, [isExpanded, setIsOpen, setIsExpanded]);
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : 'auto';
-  }, [isOpen]);
 
+  useEffect(() => {
+    if (window.innerWidth <= 652) {
+      document.body.style.overflow = isOpen ? 'hidden' : 'auto';
+    } else {
+      document.body.style.overflow = 'auto'; // Возвращаем авто для десктопа
+    }
+  }, [isOpen]);
   const handleDragStart = useCallback(() => {
     setIsAnimating(true);
   }, []);
