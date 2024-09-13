@@ -6,7 +6,7 @@ const pool = require('./db'); // Подключаем пул для взаимо
 async function getAccessToken() {
   const auth = Buffer.from(`${process.env.BOG_CLIENT_ID}:${process.env.BOG_CLIENT_SECRET}`).toString('base64');
   
-  console.log('Получаем токен доступа...'); // Логируем начало процесса
+  console.log('Получаем токен доступа...');
 
   try {
     const response = await axios.post(process.env.BOG_TOKEN_URL, 'grant_type=client_credentials', {
@@ -16,19 +16,16 @@ async function getAccessToken() {
       }
     });
 
-    console.log('Токен успешно получен:', response.data); // Логируем успешное получение токена
+    console.log('Токен успешно получен:', response.data);
     return response.data.access_token;
   } catch (error) {
     if (error.response) {
-      // Сервер вернул ответ с ошибкой (4xx или 5xx)
       console.error('Ошибка получения токена доступа:', error.response.data);
       throw new Error(`Не удалось получить токен доступа: ${error.response.data.error_description || error.response.statusText}`);
     } else if (error.request) {
-      // Запрос был отправлен, но ответа не последовало
       console.error('Сервер не ответил на запрос:', error.request);
       throw new Error('Сервер Банка Грузии не ответил на запрос. Попробуйте позже.');
     } else {
-      // Ошибка при настройке запроса
       console.error('Ошибка настройки запроса:', error.message);
       throw new Error('Ошибка настройки запроса к API Банка Грузии');
     }
@@ -37,11 +34,11 @@ async function getAccessToken() {
 
 // Функция для создания платежа с максимальным логированием
 async function createPayment(total, items) {
-  console.log('Начало создания платежа...'); // Логируем начало процесса
+  console.log('Начало создания платежа...');
 
   try {
-    const accessToken = await getAccessToken(); // Получаем токен доступа
-    console.log('Токен доступа для платежа:', accessToken); // Логируем токен доступа
+    const accessToken = await getAccessToken();
+    console.log('Токен доступа для платежа:', accessToken);
 
     if (!accessToken) {
       throw new Error('Не удалось получить токен доступа');
@@ -54,6 +51,7 @@ async function createPayment(total, items) {
         total_amount: total,
         basket: items.map(item => ({
           product_id: item.productId,
+          title: item.title, // Добавляем название товара
           quantity: item.quantity,
           unit_price: item.price,
         }))
@@ -64,7 +62,7 @@ async function createPayment(total, items) {
       }
     };
 
-    console.log('Данные для создания платежа:', paymentData); // Логируем данные платежа
+    console.log('Данные для создания платежа:', paymentData);
 
     const response = await axios.post(process.env.BOG_PAYMENT_URL, paymentData, {
       headers: {
@@ -73,19 +71,16 @@ async function createPayment(total, items) {
       }
     });
 
-    console.log('Ответ сервера Банка Грузии:', response.data); // Логируем успешный ответ от сервера
+    console.log('Ответ сервера Банка Грузии:', response.data);
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {
-      // Сервер вернул ответ с ошибкой
       console.error('Ошибка создания платежа:', error.response.data);
       throw new Error(`Ошибка создания платежа: ${error.response.data.message || error.response.statusText}`);
     } else if (error.request) {
-      // Запрос был отправлен, но ответа не последовало
       console.error('Сервер не ответил на запрос создания платежа:', error.request);
       throw new Error('Сервер Банка Грузии не ответил на запрос создания платежа. Попробуйте позже.');
     } else {
-      // Ошибка при настройке запроса
       console.error('Ошибка настройки запроса создания платежа:', error.message);
       throw new Error('Ошибка настройки запроса к API Банка Грузии при создании платежа');
     }
@@ -94,24 +89,31 @@ async function createPayment(total, items) {
 
 // Функция для обработки обратного вызова с логированием
 async function handlePaymentCallback(event, body) {
-  console.log('Обработка обратного вызова платежа...'); // Логируем начало обработки
-  console.log('Тип события:', event); // Логируем тип события
-  console.log('Данные запроса:', body); // Логируем данные тела запроса
+  console.log('Обработка обратного вызова платежа...');
+  console.log('Тип события:', event);
+  console.log('Данные запроса:', body);
 
-  if (event === 'payment_success') {
+  if (event === 'payment_success' || event === 'order_payment') { // Добавляем 'order_payment' если оно должно обрабатываться
     const { bank_order_id, userId, items, total, deliveryTime, deliveryAddress } = body;
 
     try {
-      // Логируем ID заказа, присвоенный банком
       console.log('ID заказа от банка:', bank_order_id);
 
-      // После успешной оплаты создается заказ
+      // Преобразуем элементы для хранения в базе данных, включая названия
+      const formattedItems = items.map(item => ({
+        productId: item.product_id,
+        title: item.title, // Сохраняем название товара
+        quantity: item.quantity,
+        price: item.unit_price,
+      }));
+
+      // Вставка заказа в базу данных
       const orderResult = await pool.query(
         'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress, bank_order_id]
+        [userId, JSON.stringify(formattedItems), total, deliveryTime || null, deliveryAddress, bank_order_id]
       );
 
-      console.log('Заказ успешно создан с ID:', orderResult.rows[0].id); // Логирование успешного создания заказа в базе данных
+      console.log('Заказ успешно создан с ID:', orderResult.rows[0].id);
 
       return { message: 'Заказ успешно создан' };
     } catch (error) {
