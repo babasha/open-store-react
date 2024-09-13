@@ -62,13 +62,19 @@ async function createPayment(total, items, externalOrderId) {
       external_order_id: externalOrderId,
       purchase_units: {
         currency: 'GEL',
-        total_amount: Number(total.toFixed(2)), // Убедитесь, что это число с двумя знаками после запятой
-        basket: items.map(item => ({
-          product_id: item.productId.toString(),
-          description: item.description || 'Товар',
-          quantity: item.quantity,
-          unit_price: Number(item.price.toFixed(2)),
-        }))
+        total_amount: Number(parseFloat(total).toFixed(2)), // Преобразуем total в число
+        basket: items.map(item => {
+          // Преобразуем item.price в число
+          const unitPrice = Number(parseFloat(item.price).toFixed(2));
+          console.log('item.price:', item.price, 'unitPrice:', unitPrice);
+
+          return {
+            product_id: item.productId.toString(),
+            description: item.description || 'Товар',
+            quantity: item.quantity,
+            unit_price: unitPrice,
+          };
+        })
       },
       redirect_urls: {
         success: `${process.env.PUBLIC_URL}/payment/success`,
@@ -84,7 +90,8 @@ async function createPayment(total, items, externalOrderId) {
         'Content-Type': 'application/json'
       }
     });
-    console.log('Ответ сервера Банка Грузии:', response.data);
+
+   console.log('Ответ сервера Банка Грузии:', response.data);
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {

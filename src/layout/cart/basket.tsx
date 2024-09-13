@@ -66,14 +66,14 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       items: cartItems.map(item => ({
         productId: item.id,
         description: item.title,
-        quantity: item.quantity,
-        price: item.price,
+        quantity: Number(item.quantity),
+        price: Number(item.price),
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
       deliveryAddress: user.address,
     };
-
+    
     console.log('Создание заказа с данными:', orderData);
 
     
