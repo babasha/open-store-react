@@ -1,14 +1,14 @@
 // MapPicker.js
-import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import React, { useState, useEffect, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import axios from 'axios';
 import styled from 'styled-components';
-import markerIcon from './path-to-your-marker-icon.png'; // Путь к вашему значку маркера
+import markerIcon from './path-to-your-marker-icon.png'; // Замените на путь к вашему значку маркера
 import { useTranslation } from 'react-i18next';
 import { debounce } from 'lodash';
 
-import 'leaflet/dist/leaflet.css'; // Не забудьте импортировать стили Leaflet
+import 'leaflet/dist/leaflet.css'; // Импортируем стили Leaflet
 
 // Решение проблемы с отсутствующим значком маркера по умолчанию в Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -77,6 +77,10 @@ const SuggestionItem = styled.li`
   }
 `;
 
+const AdditionalFields = styled.div`
+  margin-top: 10px;
+`;
+
 const MapPicker = ({ onAddressSelect }) => {
   const { t, i18n } = useTranslation();
   const [position, setPosition] = useState(null);
@@ -84,6 +88,8 @@ const MapPicker = ({ onAddressSelect }) => {
   const [searchInput, setSearchInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [entrance, setEntrance] = useState('');
+  const [apartment, setApartment] = useState('');
 
   const batumiBounds = [
     [41.5796, 41.5881], // Юго-западная точка
@@ -96,38 +102,44 @@ const MapPicker = ({ onAddressSelect }) => {
     return lat >= swLat && lat <= neLat && lon >= swLon && lon <= neLon;
   };
 
-  // Дебаунсинг функции обновления ввода
-  const debouncedFetchSuggestions = useMemo(
-    () =>
-      debounce(async (inputValue) => {
-        if (!inputValue) {
-          setSuggestions([]);
-          return;
-        }
+  // Дебаунсинг функции fetchSuggestions
+  const fetchSuggestions = useCallback(
+    debounce(async (inputValue) => {
+      if (!inputValue) {
+        setSuggestions([]);
+        return;
+      }
 
-        try {
-          const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-            params: {
-              q: inputValue,
-              format: 'json',
-              addressdetails: 1,
-              city: 'Batumi',
-              countrycodes: 'GE',
-              limit: 5,
-              'accept-language': i18n.language,
-            },
-          });
-          setSuggestions(response.data);
-        } catch (error) {
-          console.error(t('fetch_address_error'), error);
-        }
-      }, 500),
+      try {
+        const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+          params: {
+            q: inputValue,
+            format: 'json',
+            addressdetails: 1,
+            city: 'Batumi',
+            countrycodes: 'GE',
+            limit: 5,
+            'accept-language': i18n.language,
+          },
+        });
+        setSuggestions(response.data);
+      } catch (error) {
+        console.error(t('fetch_address_error'), error);
+      }
+    }, 500),
     [i18n.language, t]
   );
 
+  useEffect(() => {
+    return () => {
+      // Отменяем отложенные вызовы при размонтировании компонента
+      fetchSuggestions.cancel();
+    };
+  }, [fetchSuggestions]);
+
   const handleInputChange = (e) => {
     setSearchInput(e.target.value);
-    debouncedFetchSuggestions(e.target.value);
+    fetchSuggestions(e.target.value);
   };
 
   const fetchAddress = async (lat, lon) => {
@@ -146,7 +158,7 @@ const MapPicker = ({ onAddressSelect }) => {
       const shortAddress = `${addressData.road || ''} ${addressData.house_number || ''}`.trim();
       setAddress(shortAddress);
       setSearchInput(shortAddress);
-      onAddressSelect(shortAddress);
+      onAddressSelect(shortAddress, lat, lon, entrance, apartment);
     } catch (error) {
       console.error(t('fetch_address_error'), error);
     } finally {
@@ -164,7 +176,7 @@ const MapPicker = ({ onAddressSelect }) => {
       setAddress(display_name);
       setSearchInput(display_name);
       setSuggestions([]);
-      onAddressSelect(display_name);
+      onAddressSelect(display_name, latitude, longitude, entrance, apartment);
     } else {
       alert(t('location_outside_batumi'));
     }
@@ -192,6 +204,14 @@ const MapPicker = ({ onAddressSelect }) => {
     return position === null ? null : (
       <Marker position={position} icon={customIcon}></Marker>
     );
+  };
+
+  const handleEntranceChange = (e) => {
+    setEntrance(e.target.value);
+  };
+
+  const handleApartmentChange = (e) => {
+    setApartment(e.target.value);
   };
 
   return (
@@ -228,7 +248,22 @@ const MapPicker = ({ onAddressSelect }) => {
         </MapContainer>
         {loading && <LoadingIndicator>{t('loading')}</LoadingIndicator>}
       </MapWrapper>
-      {address && <p>{t('selected_address')}: {address}</p>}
+      {address && (
+        <div>
+          <p>{t('selected_address')}: {address}</p>
+          <AdditionalFields>
+            <label>
+              {t('entrance_number')}:
+              <input type="text" value={entrance} onChange={handleEntranceChange} />
+            </label>
+            <br />
+            <label>
+              {t('apartment_number')}:
+              <input type="text" value={apartment} onChange={handleApartmentChange} />
+            </label>
+          </AdditionalFields>
+        </div>
+      )}
     </div>
   );
 };
