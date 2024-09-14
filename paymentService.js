@@ -147,39 +147,38 @@ async function handlePaymentCallback(event, body) {
   console.log('Данные запроса:', JSON.stringify(body, null, 2));
 
   if (event === 'order_payment') {
-    const { external_order_id, order_status, purchase_units, order_id } = body;
+    const { external_order_id, order_status, order_id } = body;
 
-    // Проверка статуса платежа
+     // Проверка статуса платежа
      const paymentStatus = order_status.key;
-    if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
-      console.warn('Платёж не завершён успешно:', paymentStatus);
-      return { message: 'Платёж не завершён успешно' };
-    }
+     if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
+       console.warn('Платёж не завершён успешно:', paymentStatus);
+       return { message: 'Платёж не завершён успешно' };
+     }
 
-
-    try {
+     try {
       // Получаем сохранённые данные заказа
       const orderData = temporaryOrders[external_order_id];
       if (!orderData) {
         throw new Error('Данные заказа не найдены');
       }
 
-      // Создаём заказ в базе данных
-      const insertResult = await pool.query(
-        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
-        [
-          orderData.userId,
-          JSON.stringify(orderData.items),
-          orderData.total,
-          orderData.deliveryTime,
-          orderData.deliveryAddress,
-          'completed', // Статус заказа
-          paymentStatus, // Статус платежа
-          order_id, // Идентификатор заказа в банке
-        ]
-      );
-      const newOrderId = insertResult.rows[0].id;
-      console.log('Заказ успешно создан с ID:', newOrderId);
+    // Создаём заказ в базе данных
+    const insertResult = await pool.query(
+      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+      [
+        orderData.userId,
+        JSON.stringify(orderData.items),
+        orderData.total,
+        orderData.deliveryTime,
+        orderData.deliveryAddress,
+        'completed', // Статус заказа
+        paymentStatus, // Статус платежа
+        order_id, // Идентификатор заказа в банке
+      ]
+    );
+    const newOrderId = insertResult.rows[0].id;
+    console.log('Заказ успешно создан с ID:', newOrderId);
 
       // Удаляем временные данные заказа
       delete temporaryOrders[external_order_id];
