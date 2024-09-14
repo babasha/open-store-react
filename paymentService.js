@@ -1,4 +1,3 @@
-// paymentService.js
 require('dotenv').config();
 const axios = require('axios');
 const pool = require('./db'); // Подключаем пул для взаимодействия с базой данных
@@ -7,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
+
+const temporaryOrders = {}; 
 /**
  * Получение access_token от API Банка Грузии
  */
@@ -149,59 +150,44 @@ async function handlePaymentCallback(event, body) {
     const { external_order_id, order_status, purchase_units, order_id } = body;
 
     // Проверка статуса платежа
-   const paymentStatus = order_status.key;
+     const paymentStatus = order_status.key;
     if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
       console.warn('Платёж не завершён успешно:', paymentStatus);
       return { message: 'Платёж не завершён успешно' };
     }
 
+
     try {
-      const orderId = parseInt(external_order_id, 10); // Преобразуем external_order_id в число
-
-      if (isNaN(orderId)) {
-        throw new Error('external_order_id некорректен');
+      // Получаем сохранённые данные заказа
+      const orderData = temporaryOrders[external_order_id];
+      if (!orderData) {
+        throw new Error('Данные заказа не найдены');
       }
 
-
-      // Получение информации о заказе из базы данных
-       const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
-      const order = orderResult.rows[0];
-      if (!order) {
-        throw new Error('Заказ не найден');
-      }
-
-      if (!purchase_units || !Array.isArray(purchase_units.items)) {
-        throw new Error('purchase_units.items отсутствуют или не являются массивом');
-      }
-
-      const items = purchase_units.items.map(item => ({
-        productId: item.product_id,
-        description: item.description,
-        quantity: item.quantity,
-        price: item.unit_price,
-      }));
-      const total = parseFloat(purchase_units.transfer_amount);
-      const deliveryAddress = order.delivery_address; // Используем адрес из заказа
-
-
-      // Обновление заказа в базе данных
- const updatedOrderResult = await pool.query(
-        'UPDATE orders SET items = $1, total = $2, payment_status = $3, bank_order_id = $4 WHERE id = $5 RETURNING *',
-        [JSON.stringify(items), total, paymentStatus, order_id, orderId]
+      // Создаём заказ в базе данных
+      const insertResult = await pool.query(
+        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+        [
+          orderData.userId,
+          JSON.stringify(orderData.items),
+          orderData.total,
+          orderData.deliveryTime,
+          orderData.deliveryAddress,
+          'completed', // Статус заказа
+          paymentStatus, // Статус платежа
+          order_id, // Идентификатор заказа в банке
+        ]
       );
+      const newOrderId = insertResult.rows[0].id;
+      console.log('Заказ успешно создан с ID:', newOrderId);
 
-      const updatedOrder = updatedOrderResult.rows[0];
-      console.log('Заказ успешно обновлён с ID:', updatedOrder.id);
+      // Удаляем временные данные заказа
+      delete temporaryOrders[external_order_id];
 
-      // Если нужно, можно отправить уведомление пользователю через Socket.io
-      // Например:
-      // io.emit('orderUpdated', updatedOrder);
-
-     
-      return { message: 'Заказ успешно обновлён' };
+      return { message: 'Заказ успешно создан' };
     } catch (error) {
-      console.error('Ошибка при обновлении заказа:', error.message);
-      throw new Error('Ошибка обновления заказа после оплаты');
+      console.error('Ошибка при создании заказа:', error.message);
+      throw new Error('Ошибка создания заказа после оплаты');
     }
   } else {
     console.error('Неверное событие для обработки платежа:', event);
@@ -213,5 +199,6 @@ module.exports = {
   getAccessToken,
   createPayment,
   handlePaymentCallback,
-  verifyCallbackSignature
+  verifyCallbackSignature,
+  temporaryOrders, // Экспортируем temporaryOrders для использования в server.js
 };

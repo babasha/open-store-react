@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
-const { createPayment, handlePaymentCallback, verifyCallbackSignature } = require('./paymentService');
+const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 
 
 const app = express();
@@ -627,15 +627,21 @@ app.post('/orders', async (req, res) => {
     if (!user) {
       throw new Error('Пользователь не найден');
     }
-    // Создаём заказ в базе данных со статусом "pending" и получаем назначенный id
-    const insertResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-      [userId, JSON.stringify(items), total, deliveryTime, deliveryAddress, 'pending']
-    );
-    const orderId = insertResult.rows[0].id; // Получаем назначенный id
 
-    // Инициируем платёж, передавая orderId как externalOrderId
-    const paymentUrl = await createPayment(total, items, orderId.toString());
+    // Генерируем уникальный externalOrderId
+    const externalOrderId = uuidv4();
+
+    // Сохраняем данные заказа временно
+    temporaryOrders[externalOrderId] = {
+      userId,
+      items,
+      total,
+      deliveryTime,
+      deliveryAddress,
+    };
+
+    // Инициируем платёж, передавая externalOrderId
+    const paymentUrl = await createPayment(total, items, externalOrderId);
 
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
