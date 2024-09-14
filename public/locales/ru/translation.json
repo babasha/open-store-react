@@ -84,6 +84,8 @@
   "firstnumber": "Телефон:",
   "secondnumber": "Телефон:",
   "mainemail": "Электронная почта:",
-  "payment.successTitle": "Успешная оплата" 
+  "payment.successTitle": "Успешная оплата" ,
+  "enter_address": "Введите адрес",
+  "location_outside_batumi": "Пожалуйста, выберите адрес внутри Батуми"
+  }
 
-}
