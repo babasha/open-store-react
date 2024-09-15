@@ -288,23 +288,25 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
   }
 });
 
-// Маршрут для добавления нового продукта
+/// Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
-  const { nameEn, nameRu, nameGeo, price } = req.body;
+  const { nameEn, nameRu, nameGeo, price, unit, step } = req.body; // Добавили unit и step
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
-    const newProduct = await pool.query(
-      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [nameEn, nameRu, nameGeo, price, imageUrl]
+    const newProductResult = await pool.query(
+      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : null] // Сохраняем step только если unit === 'g'
     );
+    const newProduct = newProductResult.rows[0];
+
     const product = {
-      ...newProduct.rows[0],
+      ...newProduct,
       name: {
-        en: newProduct.rows[0].name_en,
-        ru: newProduct.rows[0].name_ru,
-        geo: newProduct.rows[0].name_geo
-      }
+        en: newProduct.name_en,
+        ru: newProduct.name_ru,
+        geo: newProduct.name_geo,
+      },
     };
     res.json(product);
   } catch (err) {
@@ -464,21 +466,46 @@ app.put('/orders/:id/assign-courier', isAuthenticated, async (req, res) => {
 // Маршрут для обновления продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
-  const { nameEn, nameRu, nameGeo, price } = req.body;
+  const { nameEn, nameRu, nameGeo, price, unit, step } = req.body; // Добавили unit и step
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
-    const updatedProduct = await pool.query(
-      'UPDATE products SET name_en = $1, name_ru = $2, name_geo = $3, price = $4, image_url = $5 WHERE id = $6 RETURNING *',
-      [nameEn, nameRu, nameGeo, price, imageUrl, id]
+    // Получаем текущие данные продукта
+    const currentProductResult = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+
+    if (currentProductResult.rows.length === 0) {
+      return res.status(404).send('Продукт не найден');
+    }
+
+    const currentProduct = currentProductResult.rows[0];
+
+    // Используем старое изображение, если новое не загружено
+    const finalImageUrl = imageUrl || currentProduct.image_url;
+
+    // Обновляем продукт
+    const updatedProductResult = await pool.query(
+      'UPDATE products SET name_en = $1, name_ru = $2, name_geo = $3, price = $4, image_url = $5, unit = $6, step = $7 WHERE id = $8 RETURNING *',
+      [
+        nameEn,
+        nameRu,
+        nameGeo,
+        price,
+        finalImageUrl,
+        unit,
+        unit === 'g' ? step : null, // Сохраняем step только если unit === 'g'
+        id,
+      ]
     );
+
+    const updatedProduct = updatedProductResult.rows[0];
+
     const product = {
-      ...updatedProduct.rows[0],
+      ...updatedProduct,
       name: {
-        en: updatedProduct.rows[0].name_en,
-        ru: updatedProduct.rows[0].name_ru,
-        geo: updatedProduct.rows[0].name_geo
-      }
+        en: updatedProduct.name_en,
+        ru: updatedProduct.name_ru,
+        geo: updatedProduct.name_geo,
+      },
     };
     res.json(product);
   } catch (err) {
