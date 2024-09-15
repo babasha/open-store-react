@@ -1,12 +1,11 @@
 // MapPicker.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import axios from 'axios';
 import styled from 'styled-components';
 import markerIcon from './path-to-your-marker-icon.png'; // Замените на путь к вашему значку маркера
 import { useTranslation } from 'react-i18next';
-import { debounce } from 'lodash';
 
 import 'leaflet/dist/leaflet.css'; // Импортируем стили Leaflet
 
@@ -102,44 +101,41 @@ const MapPicker = ({ onAddressSelect }) => {
     return lat >= swLat && lat <= neLat && lon >= swLon && lon <= neLon;
   };
 
-  // Дебаунсинг функции fetchSuggestions
-  const fetchSuggestions = useCallback(
-    debounce(async (inputValue) => {
-      if (!inputValue) {
-        setSuggestions([]);
-        return;
-      }
-
-      try {
-        const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-          params: {
-            q: inputValue,
-            format: 'json',
-            addressdetails: 1,
-            city: 'Batumi',
-            countrycodes: 'GE',
-            limit: 5,
-            'accept-language': i18n.language,
-          },
-        });
-        setSuggestions(response.data);
-      } catch (error) {
-        console.error(t('fetch_address_error'), error);
-      }
-    }, 500),
-    [i18n.language, t]
-  );
-
-  useEffect(() => {
-    return () => {
-      // Отменяем отложенные вызовы при размонтировании компонента
-      fetchSuggestions.cancel();
-    };
-  }, [fetchSuggestions]);
-
   const handleInputChange = (e) => {
     setSearchInput(e.target.value);
-    fetchSuggestions(e.target.value);
+  };
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchInput) {
+        fetchSuggestions(searchInput);
+      } else {
+        setSuggestions([]);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchInput, i18n.language]);
+
+  const fetchSuggestions = async (inputValue) => {
+    try {
+      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+        params: {
+          q: inputValue,
+          format: 'json',
+          addressdetails: 1,
+          city: 'Batumi',
+          countrycodes: 'GE',
+          limit: 5,
+          'accept-language': i18n.language,
+        },
+      });
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error(t('fetch_address_error'), error);
+    }
   };
 
   const fetchAddress = async (lat, lon) => {
@@ -241,7 +237,7 @@ const MapPicker = ({ onAddressSelect }) => {
           maxBounds={batumiBounds}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png"
           />
           <LocationMarker />
