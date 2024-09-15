@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 interface CartItem {
   id: number;
   title: string;
+  unit: string;      // Добавлено
+  step?: number;     // Добавлено
   titles: {
     en: string;
     ru: string;

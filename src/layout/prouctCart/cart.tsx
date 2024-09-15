@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../styles/Theme';
 import QuantityControl from '../../components/quantityCotrol/QuantityControl';
- // Исправленный путь
+import Price from '../../components/productPrice/price';
 import { useCart } from '../cart/CartContext';
 import { useTranslation } from 'react-i18next';
+import ToggleButton from '../../components/button/button';
+import { FlexWrapper } from '../../components/FlexWrapper';
 
 type CartPropsType = {
   id: number;
@@ -24,7 +26,8 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
   const { i18n } = useTranslation();
 
   const cartItem = cartItems.find(item => item.id === id);
-  const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : step || 1);
+  const initialQuantity = cartItem ? cartItem.quantity : step || 1;
+  const [quantity, setQuantity] = useState<number>(initialQuantity);
   const [isActive, setIsActive] = useState(!!cartItem);
 
   useEffect(() => {
@@ -47,12 +50,20 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
   const handleAddToCart = () => {
     if (!isActive) {
       const title = titles[i18n.language as keyof typeof titles] || titles.en;
-      addItemToCart({ id, title, price, quantity, titles });
+      addItemToCart({ id, title, price, quantity, titles, unit, step });
       setIsActive(true);
     }
   };
 
   const localizedTitle = titles[i18n.language as keyof typeof titles] || titles.en;
+
+  const calculateTotalPrice = (price: number, quantity: number, unit: string, step: number) => {
+    if (unit === 'g') {
+      return price * (quantity / step);
+    } else {
+      return price * quantity;
+    }
+  };
 
   return (
     <Cart>
@@ -65,9 +76,10 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
         unit={unit}
         step={step || 1}
       />
-      <Button onClick={handleAddToCart}>
-        {isActive ? 'Update in Cart' : 'Add to Cart'}
-      </Button>
+      <FlexWrapper justify="space-between">
+        <Price amount={calculateTotalPrice(price, quantity, unit, step || 1)} />
+        <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
+      </FlexWrapper>
     </Cart>
   );
 };
@@ -92,19 +104,6 @@ const ProductImage = styled.img`
 
 const Title = styled.p`
   text-align: center;
-`;
-
-const Button = styled.button`
-  background-color: ${theme.colors.primaryBg}; // Исправленный стиль
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-top: 10px;
-  &:hover {
-    background-color: ${theme.colors.accent}; // Исправленный стиль
-  }
 `;
 
 export default ProductCart;
