@@ -17,6 +17,8 @@ type Product = {
   };
   price: number;
   image_url: string | null;
+  unit: string;  // Добавил unit
+  step?: number; // Добавил step
 };
 
 const Products: React.FC = () => {
@@ -41,6 +43,8 @@ const Products: React.FC = () => {
             ru: product.name_ru,
             geo: product.name_geo,
           },
+          unit: product.unit || 'kg', // Добавил unit
+          step: product.step || 1,    // Добавил step
         }));
         setProducts(updatedProducts);
       } catch (error) {
@@ -61,6 +65,8 @@ const Products: React.FC = () => {
             price={product.price}
             imageUrl={product.image_url}
             titles={product.name}
+            unit={product.unit}  // Использую unit
+            step={product.step}  // Использую step
           />
         ))}
       </ShopInner>
@@ -80,10 +86,8 @@ const Products: React.FC = () => {
 
 export default Products;
 
-// Стили остаются без изменений
 const Showcase = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
-  /* width: 100%;  */
   display: flex;
   border-radius: 20px;
 `;

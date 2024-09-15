@@ -1,22 +1,10 @@
-// import React, { useState, useEffect } from 'react';
-// import styled from 'styled-components';
-// import { theme } from '../../styles/Theme';
-// import QuantityControl from '../../components/quantityCotrol/QuantityControl';
-// import Price from '../../components/productPrice/price';
-// import { useCart } from '../cart/CartContext';
-// import { useTranslation } from 'react-i18next';
-// import ToggleButton from '../../components/button/button';
-// import { FlexWrapper } from '../../components/FlexWrapper';
-
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../styles/Theme';
 import QuantityControl from '../../components/quantityCotrol/QuantityControl';
-import Price from '../../components/productPrice/price';
+ // Исправленный путь
 import { useCart } from '../cart/CartContext';
 import { useTranslation } from 'react-i18next';
-import ToggleButton from '../../components/button/button';
-import { FlexWrapper } from '../../components/FlexWrapper';
 
 type CartPropsType = {
   id: number;
@@ -27,14 +15,16 @@ type CartPropsType = {
     ru: string;
     geo: string;
   };
+  unit: string;
+  step?: number;
 };
 
-export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titles }) => {
+export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titles, unit, step }) => {
   const { addItemToCart, cartItems, updateItemInCart } = useCart();
   const { i18n } = useTranslation();
 
   const cartItem = cartItems.find(item => item.id === id);
-  const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : 1);
+  const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : step || 1);
   const [isActive, setIsActive] = useState(!!cartItem);
 
   useEffect(() => {
@@ -42,10 +32,10 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
       setQuantity(cartItem.quantity);
       setIsActive(true);
     } else {
-      setQuantity(1);
+      setQuantity(step || 1);
       setIsActive(false);
     }
-  }, [cartItem]);
+  }, [cartItem, step]);
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
@@ -72,11 +62,12 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
         pricePerUnit={price}
         quantity={quantity}
         onQuantityChange={handleQuantityChange}
+        unit={unit}
+        step={step || 1}
       />
-      <FlexWrapper justify='space-between'>
-        <Price amount={price * quantity} />
-        <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
-      </FlexWrapper>
+      <Button onClick={handleAddToCart}>
+        {isActive ? 'Update in Cart' : 'Add to Cart'}
+      </Button>
     </Cart>
   );
 };
@@ -89,44 +80,6 @@ const Cart = styled.div`
   margin: 10px;
   border-radius: 30px;
   padding: 10px;
-  transition: width 0.3s ease-in-out;
-
-  @media (max-width: 1024px) {
-    width: 45%;
-  }
-  @media (max-width: 820px) {
-    width: 40%;
-    margin: 5px;
-  }
-  @media (max-width: 768px) {
-    width: 46%;
-  }
-  @media (max-width: 540px) {
-    width: 40%;
-  }
-  @media (max-width: 430px) {
-    width: 47%;
-    margin: 6px;
-  }
-  @media (max-width: 414px) {
-    width: 46%;
-    margin: 7px;
-  }
-  @media (max-width: 390px) {
-    width: 46%;
-    margin: 6px;
-  }
-  @media (max-width: 375px) {
-    width: 43%;
-  }
-  @media (max-width: 360px) {
-    width: 46%;
-    margin: 5px;
-  }
-  @media (max-width: 344px) {
-    width: 45%;
-    margin: 5px;
-  }
 `;
 
 const ProductImage = styled.img`
@@ -135,35 +88,23 @@ const ProductImage = styled.img`
   object-fit: cover;
   border-radius: 30px;
   margin-bottom: 10px;
-
-  @media (max-width: 1024px) {
-    height: 40%;
-  }
-  @media (max-width: 820px) {
-    height: 50%;
-  }
-  @media (max-width: 540px) {
-    height: 50%;
-  }
-  @media (max-width: 430px) {
-    height: 50%;
-  }
-  @media (max-width: 390px) {
-    height: 50%;
-  }
-  @media (max-width: 375px) {
-    height: 50%;
-  }
-  @media (max-width: 360px) {
-    height: 50%;
-  }
-  @media (max-width: 344px) {
-    height: 50%;
-  }
 `;
 
 const Title = styled.p`
   text-align: center;
+`;
+
+const Button = styled.button`
+  background-color: ${theme.colors.primaryBg}; // Исправленный стиль
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  &:hover {
+    background-color: ${theme.colors.accent}; // Исправленный стиль
+  }
 `;
 
 export default ProductCart;
