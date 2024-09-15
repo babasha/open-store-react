@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+interface Discount {
+  quantity: number;  // Минимальное количество для скидки
+  percentage?: number;  // Процент скидки
+  amount?: number;  // Фиксированная сумма скидки
+}
+
 interface CartItem {
   id: number;
   title: string;
@@ -13,6 +19,7 @@ interface CartItem {
   };
   price: number;
   quantity: number;
+  discounts?: Discount[]; // Добавлено поле для скидок
 }
 
 interface CartContextType {
@@ -63,7 +70,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const existingItem = prevItems.find((i) => i.id === item.id);
       if (existingItem) {
         return prevItems.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+          i.id === item.id
+            ? { ...i, quantity: i.quantity + item.quantity, discounts: item.discounts } // Обновляем количество и скидки
+            : i
         );
       }
       return [...prevItems, item];

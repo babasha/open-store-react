@@ -11,6 +11,12 @@ import {
   Button,
 } from '../../styles/AdminPanelStyles';
 
+interface Discount {
+  quantity: number; // Минимальное количество для скидки
+  percentage?: number; // Процент скидки
+  amount?: number; // Фиксированная сумма скидки
+}
+
 interface Product {
   id: number;
   name: {
@@ -22,6 +28,7 @@ interface Product {
   image_url: string | null;
   unit: string;
   step?: number;
+  discounts?: Discount[]; // Добавлено свойство discounts
 }
 
 const ProductList = () => {
@@ -34,7 +41,9 @@ const ProductList = () => {
   const [image, setImage] = useState<File | null>(null);
   const [unit, setUnit] = useState('kg');
   const [step, setStep] = useState('1');
+  const [discounts, setDiscounts] = useState<Discount[]>([]); // Скидки
 
+  // Загружаем товары при загрузке компонента
   useEffect(() => {
     fetch('/products')
       .then((response) => response.json())
@@ -46,13 +55,30 @@ const ProductList = () => {
             ru: product.name_ru,
             geo: product.name_geo,
           },
-          unit: product.unit || 'kg', // Добавлено свойство unit
-          step: product.step || 1, // Добавлено свойство step
+          unit: product.unit || 'kg',
+          step: product.step || 1,
+          discounts: product.discounts || [], // Подгружаем скидки
         }));
         setProducts(updatedProducts);
       })
       .catch((error) => console.error('Error fetching products:', error));
   }, []);
+
+  const handleAddDiscount = () => {
+    setDiscounts([...discounts, { quantity: 0, percentage: 0 }]);
+  };
+
+  const handleDiscountChange = (index: number, field: keyof Discount, value: string) => {
+    const updatedDiscounts = discounts.map((discount, i) =>
+      i === index ? { ...discount, [field]: Number(value) } : discount
+    );
+    setDiscounts(updatedDiscounts);
+  };
+
+  const handleRemoveDiscount = (index: number) => {
+    const updatedDiscounts = discounts.filter((_, i) => i !== index);
+    setDiscounts(updatedDiscounts);
+  };
 
   const handleAddProduct = () => {
     const formData = new FormData();
@@ -67,6 +93,7 @@ const ProductList = () => {
     if (image) {
       formData.append('image', image);
     }
+    formData.append('discounts', JSON.stringify(discounts)); // Добавляем скидки
 
     const token = localStorage.getItem('token');
 
@@ -79,7 +106,7 @@ const ProductList = () => {
     })
       .then((response) => response.json())
       .then((newProduct) => {
-        const updatedProduct = {
+        const updatedProduct = {  
           ...newProduct,
           name: {
             en: newProduct.name_en,
@@ -88,6 +115,7 @@ const ProductList = () => {
           },
           unit: newProduct.unit || 'kg',
           step: newProduct.step || 1,
+          discounts: newProduct.discounts || [],
         };
         setProducts([...products, updatedProduct]);
         setNameEn('');
@@ -95,9 +123,11 @@ const ProductList = () => {
         setNameGeo('');
         setPrice('');
         setImage(null);
+        setDiscounts([]); // Очищаем скидки после добавления
       })
       .catch((error) => console.error('Error adding product:', error));
   };
+
 
   const handleDeleteProduct = (id: number) => {
     const token = localStorage.getItem('token');
@@ -114,6 +144,7 @@ const ProductList = () => {
       .catch((error) => console.error('Error deleting product:', error));
   };
 
+
   const handleEditProduct = (id: number) => {
     const product = products.find((p) => p.id === id);
     if (product) {
@@ -124,6 +155,7 @@ const ProductList = () => {
       setPrice(product.price.toString());
       setUnit(product.unit || 'kg');
       setStep(product.step ? product.step.toString() : '1');
+      setDiscounts(product.discounts || []); // Устанавливаем текущие скидки
     }
   };
 
@@ -176,6 +208,7 @@ const ProductList = () => {
       })
       .catch((error) => console.error('Error updating product:', error));
   };
+
 
   return (
     <Section>
@@ -230,9 +263,39 @@ const ProductList = () => {
           </label>
         )}
 
+        {/* Секция скидок */}
+        <div>
+          <h3>Discounts</h3>
+          {discounts.map((discount, index) => (
+            <div key={index}>
+              <Input
+                type="number"
+                value={discount.quantity}
+                onChange={(e) => handleDiscountChange(index, 'quantity', e.target.value)}
+                placeholder="Minimum Quantity"
+              />
+              <Input
+                type="number"
+                value={discount.percentage || ''}
+                onChange={(e) => handleDiscountChange(index, 'percentage', e.target.value)}
+                placeholder="Discount Percentage"
+              />
+              <Input
+                type="number"
+                value={discount.amount || ''}
+                onChange={(e) => handleDiscountChange(index, 'amount', e.target.value)}
+                placeholder="Discount Amount"
+              />
+              <Button onClick={() => handleRemoveDiscount(index)}>Remove Discount</Button>
+            </div>
+          ))}
+          <Button onClick={handleAddDiscount}>Add Discount</Button>
+        </div>
+
         <Button onClick={handleAddProduct}>Add Product</Button>
       </Form>
 
+      {/* Список товаров */}
       <List>
         {products.map((product) => (
           <ListItem key={product.id}>
@@ -293,6 +356,8 @@ const ProductList = () => {
                   <Button onClick={() => handleEditProduct(product.id)}>Edit</Button>
                 </>
               )}
+              <p>{product.name.en} - {product.price} {product.unit}</p>
+              <Button onClick={() => handleEditProduct(product.id)}>Edit</Button>
             </ProductDetails>
           </ListItem>
         ))}

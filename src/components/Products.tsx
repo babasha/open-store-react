@@ -8,7 +8,13 @@ import AuthorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
 import { useCart } from '../layout/cart/CartContext';
 
-type Product = {
+interface Discount {
+  quantity: number;      // Минимальное количество для скидки
+  percentage?: number;   // Процент скидки
+  amount?: number;       // Фиксированная сумма скидки
+}
+
+interface Product {
   id: number;
   name: {
     en: string;
@@ -19,7 +25,8 @@ type Product = {
   image_url: string | null;
   unit: string;  // Добавил unit
   step?: number; // Добавил step
-};
+  discounts?: Discount[]; // Ошибка здесь
+}
 
 const Products: React.FC = () => {
   const { i18n } = useTranslation();
@@ -67,6 +74,8 @@ const Products: React.FC = () => {
             titles={product.name}
             unit={product.unit}  // Использую unit
             step={product.step}  // Использую step
+            discounts={product.discounts}
+
           />
         ))}
       </ShopInner>

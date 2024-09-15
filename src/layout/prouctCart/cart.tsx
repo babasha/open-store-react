@@ -8,6 +8,12 @@ import { useTranslation } from 'react-i18next';
 import ToggleButton from '../../components/button/button';
 import { FlexWrapper } from '../../components/FlexWrapper';
 
+interface Discount {
+  quantity: number;
+  percentage?: number;
+  amount?: number;
+}
+
 type CartPropsType = {
   id: number;
   price: number;
@@ -19,9 +25,10 @@ type CartPropsType = {
   };
   unit: string;
   step?: number;
+  discounts?: Discount[]; // Добавлено
 };
 
-export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titles, unit, step }) => {
+export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titles, unit, step, discounts }) => {
   const { addItemToCart, cartItems, updateItemInCart } = useCart();
   const { i18n } = useTranslation();
 
@@ -50,19 +57,38 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
   const handleAddToCart = () => {
     if (!isActive) {
       const title = titles[i18n.language as keyof typeof titles] || titles.en;
-      addItemToCart({ id, title, price, quantity, titles, unit, step });
+      addItemToCart({ id, title, price, quantity, titles, unit, step, discounts });
       setIsActive(true);
     }
   };
 
   const localizedTitle = titles[i18n.language as keyof typeof titles] || titles.en;
 
-  const calculateTotalPrice = (price: number, quantity: number, unit: string, step: number) => {
-    if (unit === 'g') {
-      return price * (quantity / step);
-    } else {
-      return price * quantity;
+  const calculateTotalPrice = (
+    price: number,
+    quantity: number,
+    unit: string,
+    step: number,
+    discounts?: Discount[]
+  ) => {
+    let totalPrice = unit === 'g' ? price * (quantity / step) : price * quantity;
+  
+    if (discounts && discounts.length > 0) {
+      // Сортируем скидки по количеству в порядке убывания
+      discounts.sort((a, b) => b.quantity - a.quantity);
+      for (const discount of discounts) {
+        if (quantity >= discount.quantity) {
+          if (discount.percentage) {
+            totalPrice = totalPrice - (totalPrice * discount.percentage) / 100;
+          } else if (discount.amount) {
+            totalPrice = totalPrice - discount.amount;
+          }
+          break; // Применяем только одну наиболее подходящую скидку
+        }
+      }
     }
+  
+    return totalPrice;
   };
 
   return (
@@ -77,7 +103,7 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
         step={step || 1}
       />
       <FlexWrapper justify="space-between">
-        <Price amount={calculateTotalPrice(price, quantity, unit, step || 1)} />
+        <Price amount={calculateTotalPrice(price, quantity, unit, step || 1, discounts)} />
         <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
       </FlexWrapper>
     </Cart>

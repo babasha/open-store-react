@@ -292,11 +292,12 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price, unit, step } = req.body; // Добавили unit и step
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+  const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
 
   try {
     const newProductResult = await pool.query(
-      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : null] // Сохраняем step только если unit === 'g'
+      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : null, discounts]
     );
     const newProduct = newProductResult.rows[0];
 
@@ -468,6 +469,8 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
   const { id } = req.params;
   const { nameEn, nameRu, nameGeo, price, unit, step } = req.body; // Добавили unit и step
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+  const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
+
 
   try {
     // Получаем текущие данные продукта
@@ -484,7 +487,7 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
 
     // Обновляем продукт
     const updatedProductResult = await pool.query(
-      'UPDATE products SET name_en = $1, name_ru = $2, name_geo = $3, price = $4, image_url = $5, unit = $6, step = $7 WHERE id = $8 RETURNING *',
+      'UPDATE products SET name_en = $1, name_ru = $2, name_geo = $3, price = $4, image_url = $5, unit = $6, step = $7, discounts = $8 WHERE id = $9 RETURNING *',
       [
         nameEn,
         nameRu,
@@ -492,7 +495,8 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
         price,
         finalImageUrl,
         unit,
-        unit === 'g' ? step : null, // Сохраняем step только если unit === 'g'
+        unit === 'g' ? step : null,
+        discounts,
         id,
       ]
     );

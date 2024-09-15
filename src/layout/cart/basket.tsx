@@ -23,6 +23,12 @@ interface BasketProps {
   currentLanguage: string;
 }
 
+interface Discount {
+  quantity: number;
+  percentage?: number;
+  amount?: number;
+}
+
 interface CartItem {
   id: number;
   title: string;
@@ -30,6 +36,7 @@ interface CartItem {
   price: number;
   unit: string;
   step?: number;
+  discounts?: Discount[]; // Добавлено
 }
 
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
@@ -42,18 +49,37 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
   const handleEditClick = () => setIsEditing(!isEditing);
 
-  const calculateTotalPrice = (price: number, quantity: number, unit: string, step: number) => {
-    if (unit === 'g') {
-      return price * (quantity / step);
-    } else {
-      return price * quantity;
+  const calculateTotalPrice = (
+    price: number,
+    quantity: number,
+    unit: string,
+    step: number,
+    discounts?: Discount[]
+  ) => {
+    let totalPrice = unit === 'g' ? price * (quantity / step) : price * quantity;
+
+    if (discounts && discounts.length > 0) {
+      discounts.sort((a, b) => b.quantity - a.quantity);
+      for (const discount of discounts) {
+        if (quantity >= discount.quantity) {
+          if (discount.percentage) {
+            totalPrice = totalPrice - (totalPrice * discount.percentage) / 100;
+          } else if (discount.amount) {
+            totalPrice = totalPrice - discount.amount;
+          }
+          break;
+        }
+      }
     }
+
+    return totalPrice;
   };
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce(
       (sum, item) =>
-        sum + calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1),
+        sum +
+         calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1, item.discounts),
       0
     );
   }, [cartItems]);
@@ -79,7 +105,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         productId: item.id,
         description: item.title,
         quantity: Number(item.quantity),
-        price: calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1),
+        price: calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1, item.discounts),
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery
@@ -106,7 +132,6 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       const order = await orderResponse.json();
       console.log('Платёж инициирован, URL для оплаты:', order.paymentUrl);
 
-      // Перенаправляем пользователя на страницу оплаты
       window.location.href = order.paymentUrl;
     } catch (error) {
       console.error('Ошибка при обработке заказа или платежа:', error);
@@ -123,7 +148,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             {item.quantity} {item.unit}
           </ItemContext>
           <ItemContext>
-            {calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1)} ₾
+             {calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1, item.discounts)} ₾
           </ItemContext>
         </ItemDetails>
         <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
