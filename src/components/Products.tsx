@@ -8,13 +8,7 @@ import AuthorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
 import { useCart } from '../layout/cart/CartContext';
 
-interface Discount {
-  quantity: number;      // Минимальное количество для скидки
-  percentage?: number;   // Процент скидки
-  amount?: number;       // Фиксированная сумма скидки
-}
-
-interface Product {
+type Product = {
   id: number;
   name: {
     en: string;
@@ -25,8 +19,7 @@ interface Product {
   image_url: string | null;
   unit: string;  // Добавил unit
   step?: number; // Добавил step
-  discounts?: Discount[]; // Ошибка здесь
-}
+};
 
 const Products: React.FC = () => {
   const { i18n } = useTranslation();
@@ -34,7 +27,6 @@ const Products: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { cartItems } = useCart();
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -58,10 +50,8 @@ const Products: React.FC = () => {
         console.error('Ошибка при загрузке продуктов:', error);
       }
     };
-
     fetchProducts();
   }, []);
-
   return (
     <Showcase>
       <ShopInner>
@@ -74,8 +64,6 @@ const Products: React.FC = () => {
             titles={product.name}
             unit={product.unit}  // Использую unit
             step={product.step}  // Использую step
-            discounts={product.discounts}
-
           />
         ))}
       </ShopInner>
@@ -92,15 +80,12 @@ const Products: React.FC = () => {
     </Showcase>
   );
 };
-
 export default Products;
-
 const Showcase = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
   display: flex;
   border-radius: 20px;
 `;
-
 const ShopInner = styled.div`
   display: flex;
   background-color: ${theme.colors.ShopWindowBg};

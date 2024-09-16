@@ -18,15 +18,8 @@ import {
   ErrorText,
   BascketTitle,
 } from './BasketStyles';
-
 interface BasketProps {
   currentLanguage: string;
-}
-
-interface Discount {
-  quantity: number;
-  percentage?: number;
-  amount?: number;
 }
 
 interface CartItem {
@@ -36,7 +29,6 @@ interface CartItem {
   price: number;
   unit: string;
   step?: number;
-  discounts?: Discount[]; // Добавлено
 }
 
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
@@ -49,63 +41,40 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
   const handleEditClick = () => setIsEditing(!isEditing);
 
-  const calculateTotalPrice = (
-    price: number,
-    quantity: number,
-    unit: string,
-    step: number,
-    discounts?: Discount[]
-  ) => {
-    let totalPrice = unit === 'g' ? price * (quantity / step) : price * quantity;
-
-    if (discounts && discounts.length > 0) {
-      discounts.sort((a, b) => b.quantity - a.quantity);
-      for (const discount of discounts) {
-        if (quantity >= discount.quantity) {
-          if (discount.percentage) {
-            totalPrice = totalPrice - (totalPrice * discount.percentage) / 100;
-          } else if (discount.amount) {
-            totalPrice = totalPrice - discount.amount;
-          }
-          break;
-        }
-      }
+  const calculateTotalPrice = (price: number, quantity: number, unit: string, step: number) => {
+    if (unit === 'g') {
+      return price * (quantity / step);
+    } else {
+      return price * quantity;
     }
-
-    return totalPrice;
   };
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce(
       (sum, item) =>
-        sum +
-         calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1, item.discounts),
+        sum + calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1),
       0
     );
   }, [cartItems]);
-
   const deliveryCost = totalPrice > 0.01 ? 0 : 5;
   const totalWithDelivery = totalPrice + deliveryCost;
-
   useEffect(() => {
     if (user && error === t('cart.notAuthorized')) {
       setError(null);
     }
   }, [user, error, t]);
-
   const handlePurchase = useCallback(async () => {
     if (!user) {
       setError(t('cart.notAuthorized'));
       return;
     }
-
     const orderData = {
       userId: user.id,
       items: cartItems.map((item) => ({
         productId: item.id,
         description: item.title,
         quantity: Number(item.quantity),
-        price: calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1, item.discounts),
+        price: calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1),
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery
@@ -113,7 +82,6 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         : null,
       deliveryAddress: user.address,
     };
-
     try {
       const orderResponse = await fetch('https://enddel.com/orders', {
         method: 'POST',
@@ -122,23 +90,21 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         },
         body: JSON.stringify(orderData),
       });
-
       if (!orderResponse.ok) {
         const errorText = await orderResponse.text();
         console.error('Ошибка инициирования платежа:', errorText);
         throw new Error(t('cart.orderError'));
       }
-
       const order = await orderResponse.json();
       console.log('Платёж инициирован, URL для оплаты:', order.paymentUrl);
 
+      // Перенаправляем пользователя на страницу оплаты
       window.location.href = order.paymentUrl;
     } catch (error) {
       console.error('Ошибка при обработке заказа или платежа:', error);
       setError(t('cart.orderError'));
     }
   }, [user, cartItems, totalWithDelivery, selectedDelivery, t]);
-
   const renderCartItem = useCallback(
     (item: CartItem) => (
       <CartItemWrapper key={item.id}>
@@ -148,7 +114,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             {item.quantity} {item.unit}
           </ItemContext>
           <ItemContext>
-             {calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1, item.discounts)} ₾
+            {calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1)} ₾
           </ItemContext>
         </ItemDetails>
         <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
@@ -158,7 +124,6 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     ),
     [isEditing, removeItemFromCart, t]
   );
-
   return (
     <Container width={'100%'}>
       <CartdiInner>
@@ -168,7 +133,6 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             {isEditing ? t('cart.finishEditing') : t('cart.edit')}
           </EditButton>
         </FlexWrapper>
-
         {cartItems.length === 0 ? (
           <p>{t('cart.empty')}</p>
         ) : (
@@ -211,5 +175,4 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     </Container>
   );
 };
-
 export default Basket;

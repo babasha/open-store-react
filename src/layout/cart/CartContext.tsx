@@ -1,12 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface Discount {
-  quantity: number;  // Минимальное количество для скидки
-  percentage?: number;  // Процент скидки
-  amount?: number;  // Фиксированная сумма скидки
-}
-
 interface CartItem {
   id: number;
   title: string;
@@ -19,7 +13,6 @@ interface CartItem {
   };
   price: number;
   quantity: number;
-  discounts?: Discount[]; // Добавлено поле для скидок
 }
 
 interface CartContextType {
@@ -29,9 +22,7 @@ interface CartContextType {
   removeItemFromCart: (id: number) => void;
   clearCart: () => void;
 }
-
 const CartContext = createContext<CartContextType | undefined>(undefined);
-
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -39,15 +30,12 @@ export const useCart = () => {
   }
   return context;
 };
-
 interface CartProviderProps {
   children: ReactNode;
 }
-
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const { i18n } = useTranslation();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
   useEffect(() => {
     const handleLanguageChange = () => {
       setCartItems((prevItems) =>
@@ -57,42 +45,33 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         }))
       );
     };
-
     i18n.on('languageChanged', handleLanguageChange);
-
     return () => {
       i18n.off('languageChanged', handleLanguageChange);
     };
   }, [i18n]);
-
   const addItemToCart = (item: CartItem) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((i) => i.id === item.id);
       if (existingItem) {
         return prevItems.map((i) =>
-          i.id === item.id
-            ? { ...i, quantity: i.quantity + item.quantity, discounts: item.discounts } // Обновляем количество и скидки
-            : i
+          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
         );
       }
       return [...prevItems, item];
     });
   };
-
   const updateItemInCart = (item: CartItem) => {
     setCartItems((prevItems) =>
       prevItems.map((i) => (i.id === item.id ? { ...i, quantity: item.quantity } : i))
     );
   };
-
   const removeItemFromCart = (id: number) => {
     setCartItems((prevItems) => prevItems.filter((i) => i.id !== id));
   };
-
   const clearCart = () => {
     setCartItems([]);
   };
-
   return (
     <CartContext.Provider
       value={{ cartItems, addItemToCart, updateItemInCart, removeItemFromCart, clearCart }}
