@@ -17,7 +17,9 @@ const RegisterForm = styled.form`
   gap: 1.1rem;
 `;
 
-const RegisterButton = styled(ButtonWithRipple)``;
+const RegisterButton = styled(ButtonWithRipple)`
+  /* Вы можете добавить дополнительные стили здесь */
+`;
 
 const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange }) => {
   const { t } = useTranslation();
@@ -27,60 +29,68 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
     email: '',
     address: '',
     phone: '',
-    password: ''
+    password: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  // Удален неиспользуемый импорт login из useAuth
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
   };
 
-  const validateForm = () => {
+  const validateForm = (): string | null => {
     const { firstName, lastName, email, address, phone, password } = formData;
+
     if (!firstName || !lastName || !email || !address || !phone || !password) {
       return t('all_fields_required');
     }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return t('invalid_email');
     }
+
     return null;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    setError(null); // Сбрасываем ошибку перед новым запросом
+    setError(null);
     setIsSubmitting(true);
+
     try {
-      const response = await fetch("https://enddel.com/auth/register", {
+      const response = await fetch('https://enddel.com/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
+
       const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.error || t('something_went_wrong'));
+        const errorMessage = data.error || t('something_went_wrong');
+        throw new Error(errorMessage);
       }
 
       alert(t('success'));
       onAuthModeChange('login');
-    } catch (error) {
-      const errorMessage = (error as Error).message;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : t('something_went_wrong');
       console.error(t('error'), errorMessage);
-      setError(errorMessage); // Отобразите сообщение об ошибке пользователю
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -88,7 +98,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
 
   return (
     <div>
-      <LoginTitle>{t('title')}</LoginTitle>
+      <LoginTitle>{t('register')}</LoginTitle>
       <RegisterForm onSubmit={handleSubmit}>
         <TextInput
           label={t('first_name')}
@@ -96,6 +106,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
           name="firstName"
           value={formData.firstName}
           onChange={handleChange}
+          required
         />
         <TextInput
           label={t('last_name')}
@@ -103,6 +114,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
           name="lastName"
           value={formData.lastName}
           onChange={handleChange}
+          required
         />
         <TextInput
           label={t('email')}
@@ -110,6 +122,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
           name="email"
           value={formData.email}
           onChange={handleChange}
+          required
         />
         <TextInput
           label={t('address')}
@@ -117,13 +130,15 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
           name="address"
           value={formData.address}
           onChange={handleChange}
+          required
         />
         <TextInput
           label={t('phone')}
-          type="text"
+          type="tel"
           name="phone"
           value={formData.phone}
           onChange={handleChange}
+          required
         />
         <TextInput
           label={t('password')}
@@ -131,10 +146,11 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
           name="password"
           value={formData.password}
           onChange={handleChange}
+          required
         />
-        <RegisterButton type="submit" isActive={!isSubmitting} isDisabled={isSubmitting}>
-          {isSubmitting ? t('loading') : t('register')}
-        </RegisterButton>
+        <RegisterButton type="submit" isDisabled={isSubmitting} isActive={!isSubmitting}>
+  {isSubmitting ? t('loading') : t('register')}
+</RegisterButton>
       </RegisterForm>
       {error && <ErrorMessage>{error}</ErrorMessage>}
     </div>
@@ -142,12 +158,12 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
 };
 
 const LoginTitle = styled.h3`
-  margin: 10px 0px;
+  margin: 10px 0;
 `;
 
 const ErrorMessage = styled.p`
   color: ${theme.button.errorbtn};
-  margin: 15px  0px;
+  margin: 15px 0;
 `;
 
 export default RegisterComponent;

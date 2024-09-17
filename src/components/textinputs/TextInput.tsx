@@ -65,6 +65,7 @@ interface TextInputProps {
   name?: string;
   type?: string;
   value: string;
+  required?: boolean; // Добавлено
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 

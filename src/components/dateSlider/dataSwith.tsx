@@ -5,35 +5,43 @@ import Modal from './modal';
 import StyledButton from './StyledButton';
 import { TextContainer, ActiveText, ClickableText } from './DataSwitchStyles';
 import { ModalInnerContent } from './ModalStyles';
-import { toZonedTime, format } from 'date-fns-tz';
-import styled from 'styled-components';
+import { toZonedTime } from 'date-fns-tz';
+
+interface Delivery {
+  day: string;
+  time: string;
+}
 
 interface DataSwitchProps {
   buttonText1: string;
   buttonText2: string;
-  isActive1: boolean;
-  isActive2: boolean;
-  onSelectedDelivery: (delivery: { day: string; time: string }) => void;
+  onSelectedDelivery: (delivery: Delivery) => void;
 }
 
-const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isActive1, isActive2, onSelectedDelivery }) => {
-  const [active, setActive] = useState<number>(1);
+const DataSwitch: React.FC<DataSwitchProps> = ({
+  buttonText1,
+  buttonText2,
+  onSelectedDelivery,
+}) => {
   const { t } = useTranslation();
+  const [activeOption, setActiveOption] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
-  const [currentBatumiTime, setCurrentBatumiTime] = useState<Date>(new Date());
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
+  const [currentBatumiTime, setCurrentBatumiTime] = useState<Date>(
+    toZonedTime(new Date(), 'Asia/Tbilisi')
+  );
   const [deliveryDay, setDeliveryDay] = useState<string>('today');
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBatumiTime(toZonedTime(new Date(), 'Asia/Tbilisi'));
-    }, 60000); // Обновляем время каждые 60 секунд
+    }, 60000); // Обновляем время каждую минуту
 
     return () => clearInterval(interval);
   }, []);
 
-  const handleChange = (option: number) => {
-    setActive(option);
+  const handleOptionChange = (option: number) => {
+    setActiveOption(option);
   };
 
   const toggleModal = () => {
@@ -46,8 +54,9 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
     const day = formData.get('day') as string;
     const time = formData.get('time') as string;
 
-    onSelectedDelivery({ day, time });
-    setSelectedDelivery({ day, time });
+    const delivery = { day, time };
+    setSelectedDelivery(delivery);
+    onSelectedDelivery(delivery);
     setIsModalOpen(false);
   };
 
@@ -60,41 +69,58 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
     const endTime = 23;
     const currentHour = currentBatumiTime.getHours();
     const currentMinutes = currentBatumiTime.getMinutes();
-    const minSelectableTime = currentHour + 1 + (currentMinutes >= 30 ? 1 : 0); // Следующий полный час или следующий час, если >= 30 минут
+    const minSelectableTime = currentHour + (currentMinutes >= 30 ? 1.5 : 1);
 
-    return Array.from({ length: (endTime - startTime + 1) * 2 }).map((_, index) => {
-      const hours = startTime + Math.floor(index / 2);
-      const minutes = index % 2 === 0 ? '00' : '30';
+    const options = [];
 
-      if (day === 'today' && hours < minSelectableTime) return null; // Убираем невалидные опции для "сегодня"
+    for (let hour = startTime; hour <= endTime; hour++) {
+      for (let minutes of ['00', '30']) {
+        const timeValue = `${hour}:${minutes}`;
+        const timeNumber = hour + (minutes === '30' ? 0.5 : 0);
 
-      return (
-        <option key={index} value={`${hours}:${minutes}`}>
-          {`${hours}:${minutes}`}
-        </option>
-      );
-    }).filter(option => option !== null); // Убираем невалидные опции
+        if (day === 'today' && timeNumber < minSelectableTime) {
+          continue;
+        }
+
+        options.push(
+          <option key={timeValue} value={timeValue}>
+            {timeValue}
+          </option>
+        );
+      }
+    }
+
+    return options;
   };
 
   return (
-    <FlexWrapper direction='column'>
+    <FlexWrapper direction="column">
       <FlexWrapper>
-        <StyledButton isActive={active === 1} onClick={() => handleChange(1)}>
+        <StyledButton
+          isActive={activeOption === 1}
+          onClick={() => handleOptionChange(1)}
+        >
           {buttonText1}
         </StyledButton>
-        <StyledButton isActive={active === 2} onClick={() => handleChange(2)}>
+        <StyledButton
+          isActive={activeOption === 2}
+          onClick={() => handleOptionChange(2)}
+        >
           {buttonText2}
         </StyledButton>
       </FlexWrapper>
       <TextContainer>
-        {active === 1 ? (
+        {activeOption === 1 ? (
           <ActiveText>{t('as_soon_as_possible')}</ActiveText>
+        ) : selectedDelivery ? (
+          <ActiveText>
+            {t('delivery_time_selected')}: {selectedDelivery.day},{' '}
+            {selectedDelivery.time}
+          </ActiveText>
         ) : (
-          selectedDelivery ? (
-            <ActiveText>{t('delivery_time_selected')}: {selectedDelivery.day}, {selectedDelivery.time}</ActiveText>
-          ) : (
-            <ClickableText onClick={toggleModal}>{t('choose_delivery_time')}</ClickableText>
-          )
+          <ClickableText onClick={toggleModal}>
+            {t('choose_delivery_time')}
+          </ClickableText>
         )}
       </TextContainer>
       {isModalOpen && (
@@ -104,7 +130,11 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
             <form onSubmit={handleDeliverySelect}>
               <label>
                 {t('delivery_day')}:
-                <select name="day" value={deliveryDay} onChange={handleDayChange}>
+                <select
+                  name="day"
+                  value={deliveryDay}
+                  onChange={handleDayChange}
+                >
                   <option value="today">{t('today')}</option>
                   <option value="tomorrow">{t('tomorrow')}</option>
                 </select>
@@ -125,4 +155,3 @@ const DataSwitch: React.FC<DataSwitchProps> = ({ buttonText1, buttonText2, isAct
 };
 
 export default DataSwitch;
-

@@ -18,6 +18,7 @@ import {
   ErrorText,
   BascketTitle,
 } from './BasketStyles';
+
 interface BasketProps {
   currentLanguage: string;
 }
@@ -37,37 +38,45 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(
+    null
+  );
 
-  const handleEditClick = () => setIsEditing(!isEditing);
+  const handleEditClick = useCallback(() => {
+    setIsEditing((prev) => !prev);
+  }, []);
 
-  const calculateTotalPrice = (price: number, quantity: number, unit: string, step: number) => {
-    if (unit === 'g') {
-      return price * (quantity / step);
-    } else {
-      return price * quantity;
-    }
-  };
+  const calculateTotalPrice = useCallback(
+    (price: number, quantity: number, unit: string, step: number = 1) => {
+      return unit === 'g' ? price * (quantity / step) : price * quantity;
+    },
+    []
+  );
 
   const totalPrice = useMemo(() => {
-    return cartItems.reduce(
-      (sum, item) =>
-        sum + calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1),
-      0
-    );
-  }, [cartItems]);
+    return cartItems.reduce((sum, item) => {
+      return (
+        sum +
+        calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1)
+      );
+    }, 0);
+  }, [cartItems, calculateTotalPrice]);
+
   const deliveryCost = totalPrice > 0.01 ? 0 : 5;
   const totalWithDelivery = totalPrice + deliveryCost;
+
   useEffect(() => {
     if (user && error === t('cart.notAuthorized')) {
       setError(null);
     }
   }, [user, error, t]);
+
   const handlePurchase = useCallback(async () => {
     if (!user) {
       setError(t('cart.notAuthorized'));
       return;
     }
+
     const orderData = {
       userId: user.id,
       items: cartItems.map((item) => ({
@@ -82,50 +91,68 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         : null,
       deliveryAddress: user.address,
     };
+
     try {
       const orderResponse = await fetch('https://enddel.com/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
+
       if (!orderResponse.ok) {
         const errorText = await orderResponse.text();
-        console.error('Ошибка инициирования платежа:', errorText);
+        console.error('Error initiating payment:', errorText);
         throw new Error(t('cart.orderError'));
       }
-      const order = await orderResponse.json();
-      console.log('Платёж инициирован, URL для оплаты:', order.paymentUrl);
 
-      // Перенаправляем пользователя на страницу оплаты
+      const order = await orderResponse.json();
+      console.log('Payment initiated, payment URL:', order.paymentUrl);
+
       window.location.href = order.paymentUrl;
     } catch (error) {
-      console.error('Ошибка при обработке заказа или платежа:', error);
+      console.error('Error processing order or payment:', error);
       setError(t('cart.orderError'));
     }
-  }, [user, cartItems, totalWithDelivery, selectedDelivery, t]);
+  }, [
+    user,
+    cartItems,
+    totalWithDelivery,
+    selectedDelivery,
+    t,
+    calculateTotalPrice,
+  ]);
+
   const renderCartItem = useCallback(
-    (item: CartItem) => (
-      <CartItemWrapper key={item.id}>
-        <ItemDetails>
-          <ItemContextTitle>{item.title}</ItemContextTitle>
-          <ItemContext>
-            {item.quantity} {item.unit}
-          </ItemContext>
-          <ItemContext>
-            {calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1)} ₾
-          </ItemContext>
-        </ItemDetails>
-        <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
-          {t('cart.remove')}
-        </DeleteButton>
-      </CartItemWrapper>
-    ),
-    [isEditing, removeItemFromCart, t]
+    (item: CartItem) => {
+      const itemTotalPrice = calculateTotalPrice(
+        item.price,
+        item.quantity,
+        item.unit,
+        item.step || 1
+      );
+
+      return (
+        <CartItemWrapper key={item.id}>
+          <ItemDetails>
+            <ItemContextTitle>{item.title}</ItemContextTitle>
+            <ItemContext>
+              {item.quantity} {item.unit}
+            </ItemContext>
+            <ItemContext>{itemTotalPrice} ₾</ItemContext>
+          </ItemDetails>
+          {isEditing && (
+  <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
+    {t('cart.remove')}
+  </DeleteButton>
+)}
+        </CartItemWrapper>
+      );
+    },
+    [isEditing, removeItemFromCart, t, calculateTotalPrice]
   );
+
   return (
-    <Container width={'100%'}>
+    <Container width="100%">
       <CartdiInner>
         <FlexWrapper align="center" justify="space-between">
           <BascketTitle>{t('cart.title')}</BascketTitle>
@@ -140,25 +167,21 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             {cartItems.map(renderCartItem)}
             <CartItemWrapper>
               <ItemDetails>
-                <span>
-                  <strong>{t('cart.delivery')}</strong>
-                </span>
+                <strong>{t('cart.delivery')}</strong>
                 <span>{deliveryCost === 0 ? t('cart.free') : `${deliveryCost} GEL`}</span>
               </ItemDetails>
             </CartItemWrapper>
             {user && (
               <CartItemWrapper>
                 <ItemDetails>
-                  <span>{t('cart.delivery_address')}</span>
-                  <span>: {user.address || t('cart.no_address')}</span>
+                  <span>{t('cart.delivery_address')}:</span>
+                  <span>{user.address || t('cart.no_address')}</span>
                 </ItemDetails>
               </CartItemWrapper>
             )}
             <DataSwitch
               buttonText1={t('as_soon_as_possible')}
               buttonText2={t('schedule_delivery')}
-              isActive1={false}
-              isActive2={false}
               onSelectedDelivery={setSelectedDelivery}
             />
             <TotalPrice>
@@ -175,4 +198,5 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     </Container>
   );
 };
-export default Basket;
+
+export default React.memo(Basket);
