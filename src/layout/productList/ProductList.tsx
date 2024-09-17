@@ -10,6 +10,7 @@ import {
   Input,
   Button,
 } from '../../styles/AdminPanelStyles';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Product {
   id: number;
@@ -46,13 +47,14 @@ const ProductList = () => {
             ru: product.name_ru,
             geo: product.name_geo,
           },
-          unit: product.unit || 'kg', // Добавлено свойство unit
-          step: product.step || 1, // Добавлено свойство step
+          unit: product.unit || 'kg',
+          step: product.step || 1,
         }));
         setProducts(updatedProducts);
       })
       .catch((error) => console.error('Error fetching products:', error));
   }, []);
+
 
   const handleAddProduct = () => {
     const formData = new FormData();
@@ -176,34 +178,41 @@ const ProductList = () => {
       .catch((error) => console.error('Error updating product:', error));
   };
 
+  const listItemVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 20 },
+  };
+
   return (
     <Section>
-      <SectionTitle>Products List</SectionTitle>
+      <SectionTitle>Список продуктов</SectionTitle>
 
+      {/* Форма для добавления продукта */}
       <Form>
         <Input
           type="text"
           value={nameEn}
           onChange={(e) => setNameEn(e.target.value)}
-          placeholder="Product Name (English)"
+          placeholder="Название продукта (английский)"
         />
         <Input
           type="text"
           value={nameRu}
           onChange={(e) => setNameRu(e.target.value)}
-          placeholder="Product Name (Russian)"
+          placeholder="Название продукта (русский)"
         />
         <Input
           type="text"
           value={nameGeo}
           onChange={(e) => setNameGeo(e.target.value)}
-          placeholder="Product Name (Georgian)"
+          placeholder="Название продукта (грузинский)"
         />
         <Input
           type="text"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          placeholder="Product Price"
+          placeholder="Цена продукта"
         />
         <Input
           type="file"
@@ -227,71 +236,85 @@ const ProductList = () => {
             </select>
           </label>
         )}
-        <Button onClick={handleAddProduct}>Add Product</Button>
+        <Button onClick={handleAddProduct}>Добавить продукт</Button>
       </Form>
 
+      {/* Список продуктов с анимациями */}
       <List>
-        {products.map((product) => (
-          <ListItem key={product.id}>
-            <ProductDetails>
-              <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
-              {editProductId === product.id ? (
-                <Form>
-                  <Input
-                    type="text"
-                    value={nameEn}
-                    onChange={(e) => setNameEn(e.target.value)}
-                    placeholder="Product Name (English)"
-                  />
-                  <Input
-                    type="text"
-                    value={nameRu}
-                    onChange={(e) => setNameRu(e.target.value)}
-                    placeholder="Product Name (Russian)"
-                  />
-                  <Input
-                    type="text"
-                    value={nameGeo}
-                    onChange={(e) => setNameGeo(e.target.value)}
-                    placeholder="Product Name (Georgian)"
-                  />
-                  <Input
-                    type="text"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="Product Price"
-                  />
-                  <label>
-                    Единица измерения:
-                    <select value={unit} onChange={(e) => setUnit(e.target.value)}>
-                      <option value="kg">Килограммы</option>
-                      <option value="pcs">Штуки</option>
-                      <option value="g">Граммы</option>
-                    </select>
-                  </label>
-                  {unit === 'g' && (
-                    <label>
-                      Шаг (граммы):
-                      <select value={step} onChange={(e) => setStep(e.target.value)}>
-                        <option value="10">10 грамм</option>
-                        <option value="100">100 грамм</option>
-                        <option value="500">500 грамм</option>
-                      </select>
-                    </label>
+        <AnimatePresence>
+          {products.map((product) => (
+            <motion.div
+              key={product.id}
+              variants={listItemVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <ListItem>
+                <ProductDetails>
+                  <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
+                  {editProductId === product.id ? (
+                    <Form>
+                      <Input
+                        type="text"
+                        value={nameEn}
+                        onChange={(e) => setNameEn(e.target.value)}
+                        placeholder="Название продукта (английский)"
+                      />
+                      <Input
+                        type="text"
+                        value={nameRu}
+                        onChange={(e) => setNameRu(e.target.value)}
+                        placeholder="Название продукта (русский)"
+                      />
+                      <Input
+                        type="text"
+                        value={nameGeo}
+                        onChange={(e) => setNameGeo(e.target.value)}
+                        placeholder="Название продукта (грузинский)"
+                      />
+                      <Input
+                        type="text"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="Цена продукта"
+                      />
+                      <label>
+                        Единица измерения:
+                        <select value={unit} onChange={(e) => setUnit(e.target.value)}>
+                          <option value="kg">Килограммы</option>
+                          <option value="pcs">Штуки</option>
+                          <option value="g">Граммы</option>
+                        </select>
+                      </label>
+                      {unit === 'g' && (
+                        <label>
+                          Шаг (граммы):
+                          <select value={step} onChange={(e) => setStep(e.target.value)}>
+                            <option value="10">10 грамм</option>
+                            <option value="100">100 грамм</option>
+                            <option value="500">500 грамм</option>
+                          </select>
+                        </label>
+                      )}
+                      <Button onClick={() => handleSaveProduct(product.id)}>Сохранить</Button>
+                      <Button onClick={() => setEditProductId(null)}>Отмена</Button>
+                    </Form>
+                  ) : (
+                    <>
+                      <p>
+                        {product.name.en} - ${product.price} {product.unit}
+                      </p>
+                      <Button onClick={() => handleDeleteProduct(product.id)}>Удалить</Button>
+                      <Button onClick={() => handleEditProduct(product.id)}>Редактировать</Button>
+                    </>
                   )}
-                  <Button onClick={() => handleSaveProduct(product.id)}>Save</Button>
-                  <Button onClick={() => setEditProductId(null)}>Cancel</Button>
-                </Form>
-              ) : (
-                <>
-                  {product.name.en} - ${product.price} {product.unit}
-                  <Button onClick={() => handleDeleteProduct(product.id)}>Delete</Button>
-                  <Button onClick={() => handleEditProduct(product.id)}>Edit</Button>
-                </>
-              )}
-            </ProductDetails>
-          </ListItem>
-        ))}
+                </ProductDetails>
+              </ListItem>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </List>
     </Section>
   );
