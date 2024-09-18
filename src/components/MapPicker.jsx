@@ -22,7 +22,7 @@ L.Icon.Default.mergeOptions({
 const MapPickerContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: ${(props) => (props.isForRegister ? '70%' : '100%')}; /* Изменяем высоту */
 `;
 
 const MapWrapper = styled.div`
@@ -87,7 +87,7 @@ const AdditionalFields = styled.div`
   margin-top: 10px;
 `;
 
-const MapPicker = ({ onAddressSelect }) => {
+const MapPicker = ({ onAddressSelect, isForRegister = false }) => {  // Добавляем пропс isForRegister
   const { t, i18n } = useTranslation();
   const [position, setPosition] = useState(null);
   const [address, setAddress] = useState('');
@@ -218,7 +218,7 @@ const MapPicker = ({ onAddressSelect }) => {
   };
 
   return (
-    <MapPickerContainer>
+    <MapPickerContainer isForRegister={isForRegister}>
       <SearchContainer>
         <SearchInput
           type="text"
@@ -253,9 +253,7 @@ const MapPicker = ({ onAddressSelect }) => {
       </MapWrapper>
       {address && (
         <div>
-          <p>
-            {t('selected_address')}: {address}
-          </p>
+          <p>{t('selected_address')}: {address}</p>
           <AdditionalFields>
             <label>
               {t('entrance_number')}:

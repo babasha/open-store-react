@@ -18,7 +18,7 @@ const MapModalComponent: React.FC<MapModalComponentProps> = ({ showMapPicker, ha
     <MapModal>
       <MapContent>
         <CloseButton onClick={handleClose}>{t('close')}</CloseButton>
-        <MapPicker onAddressSelect={handleAddressSelect} />
+        <MapPicker onAddressSelect={handleAddressSelect} isForRegister={true} /> {/* Передаем пропс */}
       </MapContent>
     </MapModal>
   );
