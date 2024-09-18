@@ -1,4 +1,5 @@
-// MapPicker.js
+// src/components/MapPicker.js
+
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -18,9 +19,15 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
+const MapPickerContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
+
 const MapWrapper = styled.div`
   position: relative;
-  height: 400px;
+  flex: 1;
   margin-top: 10px;
 `;
 
@@ -211,7 +218,7 @@ const MapPicker = ({ onAddressSelect }) => {
   };
 
   return (
-    <div>
+    <MapPickerContainer>
       <SearchContainer>
         <SearchInput
           type="text"
@@ -246,7 +253,9 @@ const MapPicker = ({ onAddressSelect }) => {
       </MapWrapper>
       {address && (
         <div>
-          <p>{t('selected_address')}: {address}</p>
+          <p>
+            {t('selected_address')}: {address}
+          </p>
           <AdditionalFields>
             <label>
               {t('entrance_number')}:
@@ -260,7 +269,7 @@ const MapPicker = ({ onAddressSelect }) => {
           </AdditionalFields>
         </div>
       )}
-    </div>
+    </MapPickerContainer>
   );
 };
 

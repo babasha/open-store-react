@@ -10,16 +10,14 @@ const InputContainer = styled.div`
 
 const Input = styled(motion.input)`
   height: 30px;
-  /* width: 90%; */
   border: 1.5px solid black;
   border-radius: 10px;
   font-size: 14px;
   padding: 0 12px;
-/* margin-top: 5px; */
 
   &:focus {
     outline: none;
-    border-color: ${theme.button.buttonActive}
+    border-color: ${theme.button.buttonActive};
   }
 
   &:focus + label .text,
@@ -65,11 +63,22 @@ interface TextInputProps {
   name?: string;
   type?: string;
   value: string;
-  required?: boolean; // Добавлено
+  required?: boolean; // Поддержка required
+  onFocus?: () => void; // Поддержка onFocus
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  readOnly?: boolean; // Поддержка readOnly
 }
 
-const TextInput: React.FC<TextInputProps> = ({ label, name, type = 'text', value, onChange }) => {
+const TextInput: React.FC<TextInputProps> = ({
+  label,
+  name,
+  type = 'text',
+  value,
+  required = false,
+  onFocus,
+  onChange,
+  readOnly = false, // Значение по умолчанию для readOnly
+}) => {
   return (
     <InputContainer>
       <Input
@@ -77,6 +86,9 @@ const TextInput: React.FC<TextInputProps> = ({ label, name, type = 'text', value
         type={type}
         value={value}
         onChange={onChange}
+        onFocus={onFocus}
+        required={required}
+        readOnly={readOnly} // Передаем readOnly в input
         autoComplete="off"
         aria-labelledby={`placeholder-${label}`}
         initial={{ borderColor: 'black' }}
