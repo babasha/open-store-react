@@ -1,5 +1,3 @@
-// src/components/MapPicker.js
-
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -7,27 +5,19 @@ import axios from 'axios';
 import styled from 'styled-components';
 import markerIcon from './path-to-your-marker-icon.png'; // Замените на путь к вашему значку маркера
 import { useTranslation } from 'react-i18next';
-
 import 'leaflet/dist/leaflet.css'; // Импортируем стили Leaflet
 
 // Решение проблемы с отсутствующим значком маркера по умолчанию в Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
-
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon,
   iconUrl: markerIcon,
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-const MapPickerContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: ${(props) => (props.isForRegister ? '70%' : '100%')}; /* Изменяем высоту */
-`;
-
 const MapWrapper = styled.div`
   position: relative;
-  flex: 1;
+  height: 400px;
   margin-top: 10px;
 `;
 
@@ -79,7 +69,7 @@ const SuggestionItem = styled.li`
   padding: 10px;
   cursor: pointer;
   &:hover {
-    background-color: #eee;
+    background-color: #f0f0f0;
   }
 `;
 
@@ -87,61 +77,51 @@ const AdditionalFields = styled.div`
   margin-top: 10px;
 `;
 
-const MapPicker = ({ onAddressSelect, isForRegister = false }) => {  // Добавляем пропс isForRegister
+const MapPicker = ({ onAddressSelect }) => {
   const { t, i18n } = useTranslation();
   const [position, setPosition] = useState(null);
-  const [address, setAddress] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [entrance, setEntrance] = useState('');
   const [apartment, setApartment] = useState('');
 
   const batumiBounds = [
-    [41.5796, 41.5881], // Юго-западная точка
-    [41.6704, 41.6968], // Северо-восточная точка
+    [41.5856, 41.5909], // SW corner
+    [41.6614, 41.6883], // NE corner
   ];
 
   const isPointInBounds = (lat, lon) => {
-    const [swLat, swLon] = batumiBounds[0];
-    const [neLat, neLon] = batumiBounds[1];
-    return lat >= swLat && lat <= neLat && lon >= swLon && lon <= neLon;
+    return (
+      lat >= batumiBounds[0][0] &&
+      lat <= batumiBounds[1][0] &&
+      lon >= batumiBounds[0][1] &&
+      lon <= batumiBounds[1][1]
+    );
   };
 
-  const handleInputChange = (e) => {
-    setSearchInput(e.target.value);
-  };
+  const handleInputChange = async (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (searchInput) {
-        fetchSuggestions(searchInput);
-      } else {
-        setSuggestions([]);
+    if (value.length > 2) {
+      try {
+        const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+          params: {
+            q: value,
+            format: 'json',
+            addressdetails: 1,
+            limit: 5,
+            'accept-language': i18n.language,
+          },
+        });
+        setSuggestions(response.data);
+      } catch (error) {
+        console.error(t('fetch_address_error'), error);
       }
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchInput, i18n.language]);
-
-  const fetchSuggestions = async (inputValue) => {
-    try {
-      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: inputValue,
-          format: 'json',
-          addressdetails: 1,
-          city: 'Batumi',
-          countrycodes: 'GE',
-          limit: 5,
-          'accept-language': i18n.language,
-        },
-      });
-      setSuggestions(response.data);
-    } catch (error) {
-      console.error(t('fetch_address_error'), error);
+    } else {
+      setSuggestions([]);
     }
   };
 
@@ -204,9 +184,7 @@ const MapPicker = ({ onAddressSelect, isForRegister = false }) => {  // Доба
       }
     }, [position, map]);
 
-    return position === null ? null : (
-      <Marker position={position} icon={customIcon}></Marker>
-    );
+    return position === null ? null : <Marker position={position} icon={customIcon} />;
   };
 
   const handleEntranceChange = (e) => {
@@ -218,7 +196,7 @@ const MapPicker = ({ onAddressSelect, isForRegister = false }) => {  // Доба
   };
 
   return (
-    <MapPickerContainer isForRegister={isForRegister}>
+    <div>
       <SearchContainer>
         <SearchInput
           type="text"
@@ -267,7 +245,7 @@ const MapPicker = ({ onAddressSelect, isForRegister = false }) => {  // Доба
           </AdditionalFields>
         </div>
       )}
-    </MapPickerContainer>
+    </div>
   );
 };
 
