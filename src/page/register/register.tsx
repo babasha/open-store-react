@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../layout/autoeization/AuthContext';
 import TextInput from '../../components/textinputs/TextInput';
 import styled from 'styled-components';
 import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 import { theme } from '../../styles/Theme';
 import { useTranslation } from 'react-i18next';
+import MapPicker from '../../components/MapPicker'; // Исправлен путь до MapPicker
 
 interface RegisterComponentProps {
   onAuthModeChange: (mode: 'login' | 'register' | '') => void;
@@ -18,7 +18,40 @@ const RegisterForm = styled.form`
 `;
 
 const RegisterButton = styled(ButtonWithRipple)`
-  /* Вы можете добавить дополнительные стили здесь */
+  /* Add additional styles here if needed */
+`;
+
+const Modal = styled.div`
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  background-color: white;
+  z-index: 1000;
+  border: 1px solid #ccc;
+  overflow: auto;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
 `;
 
 const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange }) => {
@@ -34,6 +67,25 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // State for controlling the modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleAddressClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleAddressSelect = (selectedAddress: string) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      address: selectedAddress,
+    }));
+    setIsModalOpen(false);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -43,9 +95,9 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
   };
 
   const validateForm = (): string | null => {
-    const { firstName, lastName, email, address, phone, password } = formData;
+    const { firstName, lastName, email, phone, password } = formData;
 
-    if (!firstName || !lastName || !email || !address || !phone || !password) {
+    if (!firstName || !lastName || !email || !phone || !password) {
       return t('all_fields_required');
     }
 
@@ -128,8 +180,9 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
           type="text"
           name="address"
           value={formData.address}
-          onChange={handleChange}
-          required
+          onClick={handleAddressClick}
+          readOnly
+          onChange={() => {}} // Добавили пустую функцию
         />
         <TextInput
           label={t('phone')}
@@ -152,6 +205,17 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
         </RegisterButton>
       </RegisterForm>
       {error && <ErrorMessage>{error}</ErrorMessage>}
+
+      {/* Modal for MapPicker */}
+      {isModalOpen && (
+        <>
+          <ModalOverlay onClick={handleModalClose} />
+          <Modal>
+            <CloseButton onClick={handleModalClose}>✕</CloseButton>
+            <MapPicker onAddressSelect={handleAddressSelect} />
+          </Modal>
+        </>
+      )}
     </div>
   );
 };

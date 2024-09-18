@@ -125,6 +125,13 @@ const MapPicker = ({ onAddressSelect }) => {
     }
   };
 
+  const handleAddressSelect = (address, lat, lon, entrance, apartment) => {
+    const fullAddress = `${address}, Entrance: ${entrance}, Apartment: ${apartment}`;
+    onAddressSelect(fullAddress);
+  };
+
+
+
   const fetchAddress = async (lat, lon) => {
     setLoading(true);
     try {
@@ -159,7 +166,7 @@ const MapPicker = ({ onAddressSelect }) => {
       setAddress(display_name);
       setSearchInput(display_name);
       setSuggestions([]);
-      onAddressSelect(display_name, latitude, longitude, entrance, apartment);
+      handleAddressSelect(display_name, latitude, longitude, entrance, apartment);
     } else {
       alert(t('location_outside_batumi'));
     }

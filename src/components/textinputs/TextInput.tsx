@@ -67,6 +67,7 @@ interface TextInputProps {
   onFocus?: () => void; // Поддержка onFocus
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readOnly?: boolean; // Поддержка readOnly
+  onClick?: () => void; // Исправлено: тип onClick теперь функция
 }
 
 const TextInput: React.FC<TextInputProps> = ({
@@ -78,6 +79,7 @@ const TextInput: React.FC<TextInputProps> = ({
   onFocus,
   onChange,
   readOnly = false, // Значение по умолчанию для readOnly
+  onClick,
 }) => {
   return (
     <InputContainer>
@@ -92,6 +94,7 @@ const TextInput: React.FC<TextInputProps> = ({
         autoComplete="off"
         aria-labelledby={`placeholder-${label}`}
         initial={{ borderColor: 'black' }}
+        onClick={onClick} // Теперь onClick принимает функцию
         whileFocus={{ borderColor: `${theme.button.buttonActive}` }}
       />
       <Label htmlFor={name} id={`placeholder-${label}`}>
