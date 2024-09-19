@@ -78,24 +78,24 @@ const upload = multer({ storage: storage });
 const isAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(403).json({ error: 'Access denied.' });
+    return res.status(403).json({ error: 'Доступ запрещен.' });
   }
 
   const token = authHeader.split(' ')[1];
   if (!token) {
-    return res.status(403).json({ error: 'Access denied.' });
+    return res.status(403).json({ error: 'Доступ запрещен.' });
   }
 
   try {
     const decoded = jwt.verify(token, 'secret_key');
     req.user = decoded;
     if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied.' });
+      return res.status(403).json({ error: 'Доступ запрещен.' });
     }
     next();
   } catch (error) {
-    console.error('Token verification error:', error.message);
-    res.status(400).json({ error: 'Invalid token.' });
+    console.error('Ошибка при проверке токена:', error.message);
+    res.status(400).json({ error: 'Неверный токен.' });
   }
 };
 
@@ -104,7 +104,7 @@ const isAdmin = (req, res, next) => {
 const isAuthenticated = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).json({ message: 'Token not provided' });
+    return res.status(401).json({ message: 'Токен не предоставлен' });
   }
 
   const token = authHeader.split(' ')[1];
@@ -113,8 +113,8 @@ const isAuthenticated = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.error('Token verification error:', error.message);
-    res.status(400).json({ message: 'Invalid token' });
+    console.error('Ошибка при проверке токена:', error.message);
+    res.status(400).json({ message: 'Неверный токен' });
   }
 };
 
@@ -176,26 +176,23 @@ app.post('/auth/reset-password/:token', async (req, res) => {
 });
 
 // Маршрут для получения всех продуктов
-app.get(
-  '/products',
-  asyncHandler(async (req, res) => {
-    const client = await pool.connect();
-    try {
-      const result = await client.query('SELECT * FROM products');
-      const products = result.rows.map((product) => ({
-        ...product,
-        name: {
-          en: product.name_en,
-          ru: product.name_ru,
-          geo: product.name_geo,
-        },
-      }));
-      res.json(products);
-    } finally {
-      client.release();
-    }
-  })
-);
+app.get('/products', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM products');
+    const products = result.rows.map((product) => ({
+      ...product,
+      name: {
+        en: product.name_en,
+        ru: product.name_ru,
+        geo: product.name_geo
+      }
+    }));
+    res.json(products);
+  } catch (err) {
+    console.error('Ошибка получения продуктов:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
 
 // Маршрут для получения всех курьеров
 app.get('/couriers', isAuthenticated, async (req, res) => {
