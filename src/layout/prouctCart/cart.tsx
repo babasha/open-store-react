@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../styles/Theme';
 import QuantityControl from '../../components/quantityCotrol/QuantityControl';
@@ -21,29 +21,32 @@ type CartPropsType = {
   step?: number;
 };
 
-export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titles, unit, step }) => {
+export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titles, unit, step = 1 }) => {
   const { addItemToCart, cartItems, updateItemInCart } = useCart();
   const { i18n } = useTranslation();
 
   const cartItem = cartItems.find(item => item.id === id);
-  const initialQuantity = cartItem ? cartItem.quantity : step || 1;
-  const [quantity, setQuantity] = useState<number>(initialQuantity);
-  const [isActive, setIsActive] = useState(!!cartItem);
+  const [quantity, setQuantity] = useState<number>(cartItem ? cartItem.quantity : step);
+  const [isActive, setIsActive] = useState<boolean>(!!cartItem);
+  const [isImageLoaded, setIsImageLoaded] = useState<boolean>(false);
+
   useEffect(() => {
     if (cartItem) {
       setQuantity(cartItem.quantity);
       setIsActive(true);
     } else {
-      setQuantity(step || 1);
+      setQuantity(step);
       setIsActive(false);
     }
   }, [cartItem, step]);
+
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
     if (cartItem) {
       updateItemInCart({ ...cartItem, quantity: newQuantity });
     }
   };
+
   const handleAddToCart = () => {
     if (!isActive) {
       const title = titles[i18n.language as keyof typeof titles] || titles.en;
@@ -52,34 +55,61 @@ export const ProductCart: React.FC<CartPropsType> = ({ id, price, imageUrl, titl
     }
   };
 
-  const localizedTitle = titles[i18n.language as keyof typeof titles] || titles.en;
+  const handleImageLoad = () => {
+    setIsImageLoaded(true);
+  };
 
-  const calculateTotalPrice = (price: number, quantity: number, unit: string, step: number) => {
+  const handleImageError = () => {
+    setIsImageLoaded(true);
+  };
+
+  const localizedTitle = useMemo(() => {
+    return titles[i18n.language as keyof typeof titles] || titles.en;
+  }, [titles, i18n.language]);
+
+  const totalPrice = useMemo(() => {
+    return calculateTotalPrice(price, quantity, unit, step);
+  }, [price, quantity, unit, step]);
+
+  function calculateTotalPrice(price: number, quantity: number, unit: string, step: number) {
     if (unit === 'g') {
       return price * (quantity / step);
     } else {
       return price * quantity;
     }
-  };
+  }
 
   return (
     <Cart>
-      {imageUrl && <ProductImage src={imageUrl} alt={localizedTitle} />}
+      <ImageWrapper>
+        <Placeholder isLoaded={isImageLoaded} />
+        {imageUrl && (
+          <ProductImage
+            src={imageUrl}
+            alt={localizedTitle}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            isLoaded={isImageLoaded}
+          />
+        )}
+      </ImageWrapper>
       <Title>{localizedTitle}</Title>
       <QuantityControl
         pricePerUnit={price}
         quantity={quantity}
         onQuantityChange={handleQuantityChange}
         unit={unit}
-        step={step || 1}
+        step={step}
       />
       <FlexWrapper justify="space-between">
-        <Price amount={calculateTotalPrice(price, quantity, unit, step || 1)} />
+        <Price amount={totalPrice} />
         <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
       </FlexWrapper>
     </Cart>
   );
 };
+
+// Styled Components
 const Cart = styled.div`
   background-color: ${theme.colors.mainBg};
   width: 250px;
@@ -89,14 +119,38 @@ const Cart = styled.div`
   border-radius: 30px;
   padding: 10px;
 `;
-const ProductImage = styled.img`
+
+const ImageWrapper = styled.div`
+  position: relative;
   width: 100%;
   height: 65%;
+  overflow: hidden;
+`;
+
+const ProductImage = styled.img<{ isLoaded: boolean }>`
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 30px;
-  margin-bottom: 10px;
+  opacity: ${({ isLoaded }) => (isLoaded ? 1 : 0)};
+  transition: opacity 0.3s ease-in-out;
 `;
+
+const Placeholder = styled.div<{ isLoaded: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: ${theme.colors.mainBg};
+  border-radius: 30px;
+  opacity: ${({ isLoaded }) => (isLoaded ? 0 : 1)};
+  transition: opacity 0.3s ease-in-out;
+  z-index: 1;
+`;
+
 const Title = styled.p`
   text-align: center;
 `;
+
 export default ProductCart;
