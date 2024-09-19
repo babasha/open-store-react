@@ -14,7 +14,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose, children, isOpen }) =>
     <>
       {isOpen && (
         <Backdrop
-          as={motion.div} // Добавляем анимацию для backdrop
+          as={motion.div} 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
