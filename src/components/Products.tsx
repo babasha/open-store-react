@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../styles/Theme';
-import { ProductCart } from '../layout/prouctCart/cart';
+import  ProductCart  from '../layout/prouctCart/cart';
 import Basket from '../layout/cart/basket';
 import AuthorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
