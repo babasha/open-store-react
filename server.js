@@ -87,7 +87,7 @@ const isAdmin = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, 'secret_key');
     req.user = decoded;
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied.' });
@@ -109,7 +109,7 @@ const isAuthenticated = (req, res, next) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, 'secret_key');
     req.user = decoded;
     next();
   } catch (error) {
