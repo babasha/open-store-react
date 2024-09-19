@@ -78,24 +78,24 @@ const upload = multer({ storage: storage });
 const isAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(403).json({ error: 'Доступ запрещен.' });
+    return res.status(403).json({ error: 'Access denied.' });
   }
 
   const token = authHeader.split(' ')[1];
   if (!token) {
-    return res.status(403).json({ error: 'Доступ запрещен.' });
+    return res.status(403).json({ error: 'Access denied.' });
   }
 
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Доступ запрещен.' });
+      return res.status(403).json({ error: 'Access denied.' });
     }
     next();
   } catch (error) {
-    console.error('Ошибка при проверке токена:', error.message);
-    res.status(400).json({ error: 'Неверный токен.' });
+    console.error('Token verification error:', error.message);
+    res.status(400).json({ error: 'Invalid token.' });
   }
 };
 
@@ -104,17 +104,17 @@ const isAdmin = (req, res, next) => {
 const isAuthenticated = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).json({ message: 'Токен не предоставлен' });
+    return res.status(401).json({ message: 'Token not provided' });
   }
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
-    console.error('Ошибка при проверке токена:', error.message);
-    res.status(400).json({ message: 'Неверный токен' });
+    console.error('Token verification error:', error.message);
+    res.status(400).json({ message: 'Invalid token' });
   }
 };
 
@@ -176,23 +176,26 @@ app.post('/auth/reset-password/:token', async (req, res) => {
 });
 
 // Маршрут для получения всех продуктов
-app.get('/products', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM products');
-    const products = result.rows.map((product) => ({
-      ...product,
-      name: {
-        en: product.name_en,
-        ru: product.name_ru,
-        geo: product.name_geo
-      }
-    }));
-    res.json(products);
-  } catch (err) {
-    console.error('Ошибка получения продуктов:', err.message);
-    res.status(500).send('Ошибка сервера');
-  }
-});
+app.get(
+  '/products',
+  asyncHandler(async (req, res) => {
+    const client = await pool.connect();
+    try {
+      const result = await client.query('SELECT * FROM products');
+      const products = result.rows.map((product) => ({
+        ...product,
+        name: {
+          en: product.name_en,
+          ru: product.name_ru,
+          geo: product.name_geo,
+        },
+      }));
+      res.json(products);
+    } finally {
+      client.release();
+    }
+  })
+);
 
 // Маршрут для получения всех курьеров
 app.get('/couriers', isAuthenticated, async (req, res) => {

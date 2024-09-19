@@ -1,18 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   Section,
   SectionTitle,
   List,
-  ListItem,
-  ProductDetails,
-  ProductImage,
-  Form,
-  Input,
-  Button,
 } from '../../styles/AdminPanelStyles';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Spinner } from '../../components/Spinner'; // Предположим, что есть компонент Spinner
-import { validateProductForm } from '../../components/utils/validation'; // Предположим, что есть функция валидации
+import { Spinner } from '../../components/Spinner';
+import ProductForm from './ProductForm';
+import ProductListItem from './ProductListItem';
+import useProducts from '../../components/hooks/useProducts';
 
 interface Product {
   id: number;
@@ -27,159 +23,21 @@ interface Product {
   step?: number;
 }
 
-const ProductForm = ({
-  onSubmit,
-  initialData = {},
-  onCancel,
-}: {
-  onSubmit: (data: any) => void;
-  initialData?: any;
-  onCancel?: () => void;
-}) => {
-  const [nameEn, setNameEn] = useState(initialData.nameEn || '');
-  const [nameRu, setNameRu] = useState(initialData.nameRu || '');
-  const [nameGeo, setNameGeo] = useState(initialData.nameGeo || '');
-  const [price, setPrice] = useState(initialData.price || '');
-  const [image, setImage] = useState<File | null>(null);
-  const [unit, setUnit] = useState(initialData.unit || 'kg');
-  const [step, setStep] = useState(initialData.step || '1');
-  const [errors, setErrors] = useState<any>({});
-
-  const handleSubmit = () => {
-    const formData = {
-      nameEn,
-      nameRu,
-      nameGeo,
-      price,
-      unit,
-      step,
-      image,
-    };
-
-    const validationErrors = validateProductForm(formData);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    onSubmit(formData);
-    setNameEn('');
-    setNameRu('');
-    setNameGeo('');
-    setPrice('');
-    setImage(null);
-    setUnit('kg');
-    setStep('1');
-    setErrors({});
-  };
-
-  return (
-    <Form>
-      <Input
-        type="text"
-        value={nameEn}
-        onChange={(e) => setNameEn(e.target.value)}
-        placeholder="Название продукта (английский)"
-      />
-      {errors.nameEn && <p>{errors.nameEn}</p>}
-      <Input
-        type="text"
-        value={nameRu}
-        onChange={(e) => setNameRu(e.target.value)}
-        placeholder="Название продукта (русский)"
-      />
-      {errors.nameRu && <p>{errors.nameRu}</p>}
-      <Input
-        type="text"
-        value={nameGeo}
-        onChange={(e) => setNameGeo(e.target.value)}
-        placeholder="Название продукта (грузинский)"
-      />
-      {errors.nameGeo && <p>{errors.nameGeo}</p>}
-      <Input
-        type="text"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        placeholder="Цена продукта"
-      />
-      {errors.price && <p>{errors.price}</p>}
-      <Input
-        type="file"
-        onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-      />
-      {errors.image && <p>{errors.image}</p>}
-      <label>
-        Единица измерения:
-        <select value={unit} onChange={(e) => setUnit(e.target.value)}>
-          <option value="kg">Килограммы</option>
-          <option value="pcs">Штуки</option>
-          <option value="g">Граммы</option>
-        </select>
-      </label>
-      {unit === 'g' && (
-        <label>
-          Шаг (граммы):
-          <select value={step} onChange={(e) => setStep(e.target.value)}>
-            <option value="10">10 грамм</option>
-            <option value="100">100 грамм</option>
-            <option value="500">500 грамм</option>
-          </select>
-        </label>
-      )}
-      <Button onClick={handleSubmit}>Сохранить</Button>
-      {onCancel && <Button onClick={onCancel}>Отмена</Button>}
-    </Form>
-  );
-};
-
-const ProductListItem = React.memo(({ product, onDelete, onEdit }: any) => (
-  <ListItem>
-    <ProductDetails>
-      <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
-      <p>
-        {product.name.en} - ${product.price} {product.unit}
-      </p>
-      <Button onClick={() => onDelete(product.id)}>Удалить</Button>
-      <Button onClick={() => onEdit(product.id)}>Редактировать</Button>
-    </ProductDetails>
-  </ListItem>
-));
-
-const ProductList = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+const ProductList: React.FC = () => {
+  // Деструктурируем setLoading из хука useProducts
+  const {
+    products,
+    setProducts,
+    loading,
+    setLoading, // Добавляем setLoading здесь
+    globalError,
+    fetchProducts,
+    setGlobalError
+  } = useProducts();
   const [editProductId, setEditProductId] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [globalError, setGlobalError] = useState<string | null>(null);
-
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('/products');
-      const data = await response.json();
-      const updatedProducts = data.map((product: any) => ({
-        ...product,
-        name: {
-          en: product.name_en,
-          ru: product.name_ru,
-          geo: product.name_geo,
-        },
-        unit: product.unit || 'kg',
-        step: product.step || 1,
-      }));
-      setProducts(updatedProducts);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      setGlobalError('Ошибка загрузки продуктов.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
 
   const handleAddProduct = async (formData: any) => {
+    setGlobalError(null);
     setLoading(true);
     try {
       const sendData = new FormData();
@@ -197,6 +55,11 @@ const ProductList = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to add product');
+      }
+
       const newProduct = await response.json();
       const updatedProduct = {
         ...newProduct,
@@ -218,15 +81,21 @@ const ProductList = () => {
   };
 
   const handleDeleteProduct = async (id: number) => {
+    setGlobalError(null);
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await fetch(`/products/${id}`, {
+      const response = await fetch(`/products/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+
       setProducts(products.filter((product) => product.id !== id));
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -241,6 +110,7 @@ const ProductList = () => {
   };
 
   const handleSaveProduct = async (formData: any) => {
+    setGlobalError(null);
     setLoading(true);
     try {
       const sendData = new FormData();
@@ -258,6 +128,11 @@ const ProductList = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to update product');
+      }
+
       const updatedProduct = await response.json();
       const updatedProducts = products.map((product) =>
         product.id === editProductId
@@ -287,16 +162,15 @@ const ProductList = () => {
     return <Spinner />;
   }
 
-  if (globalError) {
-    return <p>{globalError}</p>;
-  }
-
   return (
     <Section>
       <SectionTitle>Список продуктов</SectionTitle>
 
       {/* Форма для добавления продукта */}
       <ProductForm onSubmit={handleAddProduct} />
+
+      {/* Отображение глобальной ошибки */}
+      {globalError && <p>{globalError}</p>}
 
       {/* Список продуктов с анимациями */}
       <List>
