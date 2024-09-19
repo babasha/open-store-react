@@ -17,8 +17,8 @@ type Product = {
   };
   price: number;
   image_url: string | null;
-  unit: string;  // Добавил unit
-  step?: number; // Добавил step
+  unit: string;  
+  step?: number; 
 };
 
 const Products: React.FC = () => {
