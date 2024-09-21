@@ -182,9 +182,10 @@ app.get('/products', async (req, res) => {
     const result = await pool.query('SELECT * FROM products');
     const products = result.rows.map((product) => ({
       ...product,
+      image_url: product.image_url ? path.basename(product.image_url) : null,
       name: {
         en: product.name_en,
-        ru: product.name_ru,
+        ru: product.name_geo,
         geo: product.name_geo
       }
     }));
@@ -300,6 +301,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     const imagePath = `uploads/${req.file.filename}`;
     const webpFileName = `${req.file.filename}.webp`;
     const webpImagePath = `uploads/${webpFileName}`;
+    imageUrl = webpFileName;
 
     // Конвертируем изображение в WebP
     await sharp(req.file.path)
