@@ -13,6 +13,7 @@ const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
+const sharp = require('sharp');
 
 
 const app = express();
@@ -290,9 +291,27 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 
 /// Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
-  const { nameEn, nameRu, nameGeo, price, unit, step } = req.body; // Добавили unit и step
-  const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+  const { nameEn, nameRu, nameGeo, price, unit, step } = req.body;
   const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
+
+  let imageUrl = null;
+
+  if (req.file) {
+    const imagePath = `uploads/${req.file.filename}`;
+    const webpFileName = `${req.file.filename}.webp`;
+    const webpImagePath = `uploads/${webpFileName}`;
+
+    // Конвертируем изображение в WebP
+    await sharp(req.file.path)
+      .webp({ quality: 80 })
+      .toFile(webpImagePath);
+
+    // Удаляем оригинальный файл
+    fs.unlinkSync(req.file.path);
+
+    // Сохраняем только имя файла в базе данных
+    imageUrl = webpFileName;
+  }
 
   try {
     const newProductResult = await pool.query(
@@ -315,6 +334,35 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
+
+
+// Маршрут для обслуживания изображений
+app.get('/images/:filename', async (req, res) => {
+  const { filename } = req.params;
+  const { format = 'webp', width } = req.query;
+
+  const imagePath = path.join(__dirname, 'uploads', filename);
+
+  try {
+    let transformer = sharp(imagePath);
+
+    if (width) {
+      transformer = transformer.resize(parseInt(width));
+    }
+
+    if (format) {
+      transformer = transformer.toFormat(format);
+    }
+
+    res.set('Cache-Control', 'public, max-age=31536000'); // Добавляем кэширование
+    res.type(`image/${format}`);
+    transformer.pipe(res);
+  } catch (err) {
+    console.error('Ошибка при обработке изображения:', err.message);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
 
 // Маршрут для удаления продукта
 app.delete('/products/:id', isAdmin, async (req, res) => {

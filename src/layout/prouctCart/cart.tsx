@@ -7,6 +7,7 @@ import { useCart } from '../cart/CartContext';
 import { useTranslation } from 'react-i18next';
 import ToggleButton from '../../components/button/button';
 import { FlexWrapper } from '../../components/FlexWrapper';
+import { useInView } from 'react-intersection-observer';
 
 type CartPropsType = {
   id: number;
@@ -40,6 +41,29 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
     isImageLoaded: false,
     isContentLoaded: !!imageUrl ? false : true,
   });
+
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    rootMargin: '100px', // Начинаем загружать за 100px до видимости
+  });
+
+  // Функция для проверки поддержки WebP
+  const supportsWebP = useMemo(() => {
+    const elem = document.createElement('canvas');
+    if (!!(elem.getContext && elem.getContext('2d'))) {
+      return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    }
+    return false;
+  }, []);
+
+  // Определяем формат изображения
+  const imageFormat = supportsWebP ? 'webp' : 'jpeg';
+
+  // Получаем имя файла изображения (imageUrl содержит только имя файла)
+  const imageFileName = imageUrl;
+
+  // Формируем полный URL изображения
+  const fullImageUrl = `/images/${imageFileName}`;
 
   useEffect(() => {
     if (cartItem) {
@@ -99,22 +123,27 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   }
 
   return (
-    <Cart>
+    <Cart ref={ref}>
       <ImageWrapper>
-        {imageUrl && (
+        {inView && (
           <>
             <ProductImage
-              src={imageUrl}
+              src={`${fullImageUrl}?format=${imageFormat}&width=800`}
+              srcSet={`
+                ${fullImageUrl}?format=${imageFormat}&width=320 320w,
+                ${fullImageUrl}?format=${imageFormat}&width=480 480w,
+                ${fullImageUrl}?format=${imageFormat}&width=800 800w
+              `}
+              sizes="(max-width: 600px) 320px, (max-width: 900px) 480px, 800px"
               alt={localizedTitle}
               onLoad={handleImageLoad}
               onError={handleImageError}
               isLoaded={state.isImageLoaded}
-              loading="lazy"
             />
             {!state.isImageLoaded && <Placeholder isLoaded={state.isImageLoaded} />}
           </>
         )}
-        {!imageUrl && <Placeholder isLoaded={state.isImageLoaded} />}
+        {!inView && <Placeholder isLoaded={false} />}
       </ImageWrapper>
       <Title>{localizedTitle}</Title>
       <QuantityControl
