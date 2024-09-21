@@ -182,12 +182,12 @@ app.get('/products', async (req, res) => {
     const result = await pool.query('SELECT * FROM products');
     const products = result.rows.map((product) => ({
       ...product,
-      imageUrl: product.image_url ? path.basename(product.image_url) : null,
-      titles: {
+      image_url: product.image_url ? path.basename(product.image_url) : null,
+      name: {
         en: product.name_en,
-        ru: product.name_ru,
-        geo: product.name_geo,
-      },
+        ru: product.name_geo,
+        geo: product.name_geo
+      }
     }));
     res.json(products);
   } catch (err) {
@@ -298,8 +298,9 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   let imageUrl = null;
 
   if (req.file) {
+    const imagePath = `uploads/${req.file.filename}`;
     const webpFileName = `${req.file.filename}.webp`;
-    const webpImagePath = path.join('uploads', webpFileName);
+    const webpImagePath = `uploads/${webpFileName}`;
     imageUrl = webpFileName;
 
     // Конвертируем изображение в WebP
@@ -309,6 +310,8 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 
     // Удаляем оригинальный файл
     fs.unlinkSync(req.file.path);
+    // Сохраняем только имя файла в базе данных
+    imageUrl = webpFileName;
   }
 
   try {
@@ -320,7 +323,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 
     const product = {
       ...newProduct,
-      titles: {
+      name: {
         en: newProduct.name_en,
         ru: newProduct.name_ru,
         geo: newProduct.name_geo,
@@ -338,20 +341,27 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 // Маршрут для обслуживания изображений
 app.get('/images/:filename', async (req, res) => {
   const { filename } = req.params;
+  const { format = 'webp', width } = req.query;
   const imagePath = path.join(__dirname, 'uploads', filename);
 
-  if (!fs.existsSync(imagePath)) {
-    return res.status(404).send('Изображение не найдено');
-  }
-
   try {
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
-    res.sendFile(imagePath);
+    let transformer = sharp(imagePath);
+    if (width) {
+      transformer = transformer.resize(parseInt(width));
+    }
+    if (format) {
+      transformer = transformer.toFormat(format);
+    }
+
+    res.set('Cache-Control', 'public, max-age=31536000'); // Добавляем кэширование
+    res.type(`image/${format}`);
+    transformer.pipe(res);
   } catch (err) {
-    console.error('Ошибка при отправке изображения:', err.message);
+    console.error('Ошибка при обработке изображения:', err.message);
     res.status(500).send('Ошибка сервера');
   }
 });
+
 
 // Маршрут для удаления продукта
 app.delete('/products/:id', isAdmin, async (req, res) => {

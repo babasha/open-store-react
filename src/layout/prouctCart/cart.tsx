@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { theme } from '../../styles/Theme';
+import QuantityControl from '../../components/quantityCotrol/QuantityControl';
+import Price from '../../components/productPrice/price';
 import { useCart } from '../cart/CartContext';
 import { useTranslation } from 'react-i18next';
+import ToggleButton from '../../components/button/button';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import { useInView } from 'react-intersection-observer';
-
-// Лениво загружаем компоненты
-const QuantityControl = lazy(() => import('../../components/quantityCotrol/QuantityControl'));
-const Price = lazy(() => import('../../components/productPrice/price'));
-const ToggleButton = lazy(() => import('../../components/button/button'));
 
 type CartPropsType = {
   id: number;
@@ -37,78 +35,87 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
 
   const cartItem = useMemo(() => cartItems.find(item => item.id === id), [cartItems, id]);
 
-  const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : step);
-  const [isActive, setIsActive] = useState(!!cartItem);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const [isContentLoaded, setIsContentLoaded] = useState(!imageUrl);
+  const [state, setState] = useState({
+    quantity: cartItem ? cartItem.quantity : step,
+    isActive: !!cartItem,
+    isImageLoaded: false,
+    isContentLoaded: !!imageUrl ? false : true,
+  });
 
   const { ref, inView } = useInView({
     triggerOnce: true,
-    rootMargin: '100px',
+    rootMargin: '100px', // Начинаем загружать за 100px до видимости
   });
 
+  // Функция для проверки поддержки WebP
+  const supportsWebP = useMemo(() => {
+    const elem = document.createElement('canvas');
+    if (!!(elem.getContext && elem.getContext('2d'))) {
+      return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    }
+    return false;
+  }, []);
   // Определяем формат изображения
-  const imageFormat = 'webp';
+  const imageFormat = supportsWebP ? 'webp' : 'jpeg';
+  // Получаем имя файла изображения (imageUrl содержит только имя файла)
   const imageFileName = imageUrl;
+  // Формируем полный URL изображения
   const fullImageUrl = `/images/${imageFileName}`;
 
   useEffect(() => {
     if (cartItem) {
-      setQuantity(cartItem.quantity);
-      setIsActive(true);
+      setState(prev => ({ ...prev, quantity: cartItem.quantity, isActive: true }));
     } else {
-      setQuantity(step);
-      setIsActive(false);
+      setState(prev => ({ ...prev, quantity: step, isActive: false }));
     }
   }, [cartItem, step]);
 
   useEffect(() => {
     if (!imageUrl) {
-      setIsContentLoaded(true);
+      setState(prev => ({ ...prev, isContentLoaded: true }));
     }
   }, [imageUrl]);
 
   useEffect(() => {
-    if (imageUrl && !isContentLoaded) {
+    if (imageUrl && !state.isContentLoaded) {
       const timeout = setTimeout(() => {
-        setIsContentLoaded(true);
+        setState(prev => ({ ...prev, isContentLoaded: true }));
       }, 5000);
 
       return () => clearTimeout(timeout);
     }
-  }, [imageUrl, isContentLoaded]);
+  }, [imageUrl, state.isContentLoaded]);
 
   const handleImageLoad = useCallback(() => {
-    setIsImageLoaded(true);
-    setIsContentLoaded(true);
+    setState(prev => ({ ...prev, isImageLoaded: true, isContentLoaded: true }));
   }, []);
 
   const handleImageError = useCallback(() => {
-    setIsContentLoaded(true);
+    setState(prev => ({ ...prev, isContentLoaded: true }));
   }, []);
 
   const handleQuantityChange = useCallback((newQuantity: number) => {
-    setQuantity(newQuantity);
+    setState(prev => ({ ...prev, quantity: newQuantity }));
     if (cartItem) {
       updateItemInCart({ ...cartItem, quantity: newQuantity });
     }
   }, [cartItem, updateItemInCart]);
 
   const handleAddToCart = useCallback(() => {
-    if (!isActive) {
+    if (!state.isActive) {
       const title = titles[i18n.language as keyof typeof titles] || titles.en;
-      addItemToCart({ id, title, price, quantity, titles, unit, step });
-      setIsActive(true);
+      addItemToCart({ id, title, price, quantity: state.quantity, titles, unit, step });
+      setState(prev => ({ ...prev, isActive: true }));
     }
-  }, [isActive, addItemToCart, id, price, titles, unit, step, i18n.language, quantity]);
+  }, [state.isActive, addItemToCart, id, price, titles, unit, step, i18n.language, state.quantity]);
 
   const localizedTitle = useMemo(() => {
     return titles[i18n.language as keyof typeof titles] || titles.en;
   }, [titles, i18n.language]);
 
-  const totalPrice = useMemo(() => calculateTotalPrice(price, quantity, unit, step), [price, quantity, unit, step]);
+  const totalPrice = useMemo(() => calculateTotalPrice(price, state.quantity, unit, step), [price, state.quantity, unit, step]);
 
-  if (!isContentLoaded) {
+  if (!state.isContentLoaded) {
     return <PlaceholderCard />;
   }
 
@@ -128,28 +135,25 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
               alt={localizedTitle}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              isLoaded={isImageLoaded}
-              loading="lazy"
+              isLoaded={state.isImageLoaded}
             />
-            {!isImageLoaded && <Placeholder isLoaded={isImageLoaded} />}
+            {!state.isImageLoaded && <Placeholder isLoaded={state.isImageLoaded} />}
           </>
         )}
         {!inView && <Placeholder isLoaded={false} />}
       </ImageWrapper>
       <Title>{localizedTitle}</Title>
-      <Suspense fallback={<div>Загрузка...</div>}>
-        <QuantityControl
-          pricePerUnit={price}
-          quantity={quantity}
-          onQuantityChange={handleQuantityChange}
-          unit={unit}
-          step={step}
-        />
-        <FlexWrapper justify="space-between">
-          <Price amount={totalPrice} />
-          <ToggleButton onClick={handleAddToCart} isActive={isActive} isDisabled={isActive} />
-        </FlexWrapper>
-      </Suspense>
+      <QuantityControl
+        pricePerUnit={price}
+        quantity={state.quantity}
+        onQuantityChange={handleQuantityChange}
+        unit={unit}
+        step={step}
+      />
+      <FlexWrapper justify="space-between">
+        <Price amount={totalPrice} />
+        <ToggleButton onClick={handleAddToCart} isActive={state.isActive} isDisabled={state.isActive} />
+      </FlexWrapper>
     </Cart>
   );
 });
