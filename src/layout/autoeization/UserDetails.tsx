@@ -20,51 +20,49 @@ interface UserDetailsProps {
 const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, orders }) => {
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState('');
-  const [isEditingPhone, setIsEditingPhone] = useState(false); // Новое состояние
-  const [newPhone, setNewPhone] = useState(''); // Новое состояние
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [newPhone, setNewPhone] = useState('');
   const [displayedCount, setDisplayedCount] = useState<{ [key: string]: number }>({ canceled: 3, completed: 3 });
   const [isOpen, setIsOpen] = useState<{ [key: string]: boolean }>({ canceled: false, completed: false });
   const { t } = useTranslation();
-  const { updateUser } = useAuth(); // Получаем функцию updateUser из AuthContext
+  const { updateUser } = useAuth();
 
-const handleAddressSave = async () => {
-  if (user && newAddress) {
-    try {
-      console.log('Отправляем данные на сервер:', { address: newAddress });
-      const response = await axios.put(
-        `https://enddel.com/api/users/${user.id}`,
-        { address: newAddress },
-        { withCredentials: true }
-      );
-      console.log('Ответ от сервера:', response.data);
-      // Обновляем только поле address
-      updateUser({ address: response.data.address });
-      setIsEditingAddress(false);
-    } catch (error: any) {
-      console.error('Ошибка при обновлении адреса:', error.response?.data || error.message);
+  const handleAddressSave = async () => {
+    if (user && newAddress) {
+      try {
+        console.log('Отправляем данные на сервер:', { address: newAddress });
+        await axios.put(
+          `https://enddel.com/api/users/${user.id}`,
+          { address: newAddress },
+          { withCredentials: true }
+        );
+        // Обновляем только поле address
+        updateUser({ address: newAddress });
+        setIsEditingAddress(false);
+      } catch (error: any) {
+        console.error('Ошибка при обновлении адреса:', error.response?.data || error.message);
+      }
     }
-  }
-};
+  };
 
-  // Функция для сохранения номера телефона
   const handlePhoneSave = async () => {
     if (user && newPhone) {
       try {
         console.log('Отправляем данные на сервер:', { phone: newPhone });
-        const response = await axios.put(
+        await axios.put(
           `https://enddel.com/api/users/${user.id}`,
           { phone: newPhone },
           { withCredentials: true }
         );
-        console.log('Ответ от сервера:', response.data);
         // Обновляем только поле phone
-        updateUser({ phone: response.data.phone });
+        updateUser({ phone: newPhone });
         setIsEditingPhone(false);
       } catch (error: any) {
         console.error('Ошибка при обновлении номера телефона:', error.response?.data || error.message);
       }
     }
   };
+
   const loadMoreOrders = (type: string) => {
     setDisplayedCount((prevState) => ({
       ...prevState,
@@ -112,8 +110,8 @@ const handleAddressSave = async () => {
     <UserDetailsContainer>
       <h2>{t('welcome')}</h2>
       <h5>
-  {user.firstName} {user.lastName}
-       </h5>
+        {user.first_name} {user.last_name}
+      </h5>
       <p>
         {t('address')}: {user.address}
         <EditButton onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</EditButton>

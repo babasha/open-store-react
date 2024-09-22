@@ -5,10 +5,10 @@ import socket from '../../socket';
 
 export interface User {
   id: number;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  address: string;
+  address: string | null;
   phone: string;
   role: string;
 }
@@ -17,7 +17,7 @@ export interface AuthContextType {
   user: User | null;
   login: (user: User, token: string) => void;
   logout: () => void;
-  updateUser: (updatedFields: Partial<User>) => void; // Добавлено здесь
+  updateUser: (updatedFields: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,11 +38,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         socket.emit('login', parsedUser.id);
       } catch (error) {
         console.error('Ошибка при парсинге данных пользователя из localStorage:', error);
-        
       }
-    
     }
-    
   }, []);
 
   const login = (user: User, token: string) => {
@@ -53,7 +50,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     axios.defaults.withCredentials = true;
     socket.emit('login', user.id);
     console.log('User data from server:', user);
-
   };
 
   const logout = () => {
@@ -70,7 +66,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUser = (updatedFields: Partial<User>) => {
     setUser((prevUser) => {
       if (!prevUser) return prevUser;
-      const updatedUser = { ...prevUser, ...updatedFields };
+      const updatedUser: User = { ...prevUser };
+  
+      // Явное приведение типов для ключей
+      (Object.keys(updatedFields) as (keyof User)[]).forEach((key) => {
+        const value = updatedFields[key];
+        if (value !== null && value !== undefined) {
+          // Приведение типов значений
+          (updatedUser[key] as any) = value;
+        }
+      });
+  
       localStorage.setItem('user', JSON.stringify(updatedUser));
       return updatedUser;
     });

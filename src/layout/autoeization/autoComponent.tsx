@@ -12,7 +12,6 @@ import { EditButton } from '../../styles/btns/secondBtns';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import UserDetails from './UserDetails';
 
-
 const LoginComponent = React.lazy(() => import('../UserAuteriztion/UserCart'));
 const RegisterComponent = React.lazy(() => import('../../page/register/register'));
 
