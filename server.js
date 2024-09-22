@@ -929,7 +929,7 @@ app.get('/users', async (req, res) => {
 // Подключение статических файлов
 app.use('/uploads', express.static('uploads'));
 
-// Маршрут для обслуживания фронтенда
+// Маршрут для обслуживания фронтенд
 app.use(express.static(path.join(__dirname, 'build')));
 
 app.get('*', (req, res) => {
