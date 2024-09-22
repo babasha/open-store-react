@@ -300,7 +300,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   if (req.file) {
     const imagePath = `uploads/${req.file.filename}`;
     const webpFileName = `${req.file.filename}.webp`;
-    const webpImagePath = `uploads/${webpFileName}`;
+    const webpImagePath = path.join('uploads', webpFileName);
     imageUrl = webpFileName;
 
     // Конвертируем изображение в WebP
@@ -353,7 +353,7 @@ app.get('/images/:filename', async (req, res) => {
       transformer = transformer.toFormat(format);
     }
 
-    res.set('Cache-Control', 'public, max-age=31536000'); // Добавляем кэширование
+    res.set('Cache-Control', 'public, max-age=31536000');
     res.type(`image/${format}`);
     transformer.pipe(res);
   } catch (err) {

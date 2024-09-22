@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import styled, { keyframes } from 'styled-components';
-import { theme } from '../../styles/Theme';
-import QuantityControl from '../../components/quantityCotrol/QuantityControl';
-import Price from '../../components/productPrice/price';
 import { useCart } from '../cart/CartContext';
 import { useTranslation } from 'react-i18next';
-import ToggleButton from '../../components/button/button';
-import { FlexWrapper } from '../../components/FlexWrapper';
 import { useInView } from 'react-intersection-observer';
+import {
+  Cart,
+  ImageWrapper,
+  ProductImage,
+  Placeholder,
+  Title,
+} from './ProductCartStyles'; // Импортируем стили из нового файла
+import PlaceholderCard from './PlaceholderCard'; // Импортируем плейсхолдер
+
+// Добавляем недостающие импорты
+import QuantityControl from '../../components/quantityCotrol/QuantityControl'; // Импортируем контроллер количества
+import { FlexWrapper } from '../../components/FlexWrapper'; // Импортируем обертку для Flex
+import Price from '../../components/productPrice/price'; 
+import ToggleButton from '../../components/button/button';  // Импортируем кнопку
 
 type CartPropsType = {
   id: number;
@@ -58,7 +66,7 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   // Определяем формат изображения
   const imageFormat = supportsWebP ? 'webp' : 'jpeg';
   // Получаем имя файла изображения (imageUrl содержит только имя файла)
-  const imageFileName = imageUrl;
+  const imageFileName = imageUrl ? imageUrl.replace(/^\/+/, '') : 'placeholder-image.webp'; // Или укажите имя плейсхолдера
   // Формируем полный URL изображения
   const fullImageUrl = `/images/${imageFileName}`;
 
@@ -161,142 +169,5 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
 function calculateTotalPrice(price: number, quantity: number, unit: string, step: number) {
   return unit === 'g' ? price * (quantity / step) : price * quantity;
 }
-
-// Плейсхолдер карточки с анимацией загрузки
-const PlaceholderCard = () => (
-  <PlaceholderCart>
-    <PlaceholderImage>
-      <LoadWrapper>
-        <Activity />
-      </LoadWrapper>
-    </PlaceholderImage>
-    <PlaceholderContent>
-      <LoadWrapper>
-        <Activity />
-      </LoadWrapper>
-    </PlaceholderContent>
-    <PlaceholderControls>
-      <LoadWrapper>
-        <Activity />
-      </LoadWrapper>
-    </PlaceholderControls>
-  </PlaceholderCart>
-);
-
-// Styled Components
-
-const Cart = styled.div`
-  background-color: ${theme.colors.mainBg};
-  width: 250px;
-  min-height: 300px;
-  height: max-content;
-  margin: 10px;
-  border-radius: 30px;
-  padding: 10px;
-`;
-
-const ImageWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  height: 160px;
-  overflow: hidden;
-  border-radius: 20px;
-  margin-bottom: 10px;
-`;
-
-const ProductImage = styled.img<{ isLoaded: boolean }>`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 30px;
-  opacity: ${({ isLoaded }) => (isLoaded ? 1 : 0)};
-  transition: opacity 0.3s ease-in-out;
-  display: block;
-`;
-
-const Placeholder = styled.div<{ isLoaded: boolean }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: ${theme.colors.mainBg || '#f0f0f0'};
-  border-radius: 30px;
-  opacity: ${({ isLoaded }) => (isLoaded ? 0 : 1)};
-  transition: opacity 0.3s ease-in-out;
-  z-index: 1;
-`;
-
-const Title = styled.p`
-  text-align: center;
-  margin-top: 10px;
-  font-size: 1.2rem;
-  color: ${theme.colors.font || '#333'};
-`;
-
-const PlaceholderCart = styled.div`
-  background-color: ${theme.colors.mainBg};
-  width: 250px;
-  min-height: 300px;
-  margin: 10px;
-  border-radius: 30px;
-  padding: 10px;
-`;
-
-const PlaceholderImage = styled.div`
-  width: 100%;
-  height: 160px;
-  border-radius: 20px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 10px;
-`;
-
-const PlaceholderContent = styled.div`
-  height: 20px;
-  margin-bottom: 20px;
-  position: relative;
-`;
-
-const PlaceholderControls = styled.div`
-  height: 40px;
-  position: relative;
-`;
-
-// Анимация загрузки
-
-const loadingAnimation = keyframes`
-  0% {
-    left: -45%;
-  }
-  100% {
-    left: 100%;
-  }
-`;
-
-const LoadWrapper = styled.div`
-  position: relative;
-  height: 100%;
-  width: 100%;
-  background-color: rgb(211, 211, 211);
-  overflow: hidden;
-  border-radius: 5px;
-`;
-
-const Activity = styled.div`
-  position: absolute;
-  left: -45%;
-  height: 100%;
-  width: 45%;
-  background-image: linear-gradient(
-    to left,
-    rgba(251, 251, 251, 0.05),
-    rgba(251, 251, 251, 0.3),
-    rgba(251, 251, 251, 0.6),
-    rgba(251, 251, 251, 0.3),
-    rgba(251, 251, 251, 0.05)
-  );
-  animation: ${loadingAnimation} 1s infinite;
-`;
 
 export default ProductCart;
