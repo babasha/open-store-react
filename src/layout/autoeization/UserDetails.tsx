@@ -5,7 +5,7 @@ import MapPicker from '../../components/MapPicker';
 import Accordion from './Accordion';
 import OrderCard from './OrderCart/OrderCard';
 import { UserDetails as UserDetailsContainer, OrderList } from './styledauth/AuthorizationStyles';
-import { User } from '../autoeization/AuthContext';
+import { useAuth, User } from '../autoeization/AuthContext';
 import { Order } from '../orderList/OrderList';
 import { EditButton } from '../../styles/btns/secondBtns';
 import { FlexWrapper } from '../../components/FlexWrapper';
@@ -13,17 +13,19 @@ import { FlexWrapper } from '../../components/FlexWrapper';
 interface UserDetailsProps {
   user: User;
   logout: () => void;
-  login: (user: User, token: string) => void; // Изменено здесь
   orders: Order[];
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
 }
 
-const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders }) => {
+const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, orders }) => {
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState('');
+  const [isEditingPhone, setIsEditingPhone] = useState(false); // Новое состояние
+  const [newPhone, setNewPhone] = useState(''); // Новое состояние
   const [displayedCount, setDisplayedCount] = useState<{ [key: string]: number }>({ canceled: 3, completed: 3 });
   const [isOpen, setIsOpen] = useState<{ [key: string]: boolean }>({ canceled: false, completed: false });
   const { t } = useTranslation();
+  const { updateUser } = useAuth(); // Получаем функцию updateUser из AuthContext
 
   const handleAddressSave = async () => {
     if (user && newAddress) {
@@ -33,10 +35,27 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders }
           { address: newAddress },
           { withCredentials: true }
         );
-        login(response.data, localStorage.getItem('token') || ''); // Обновлено здесь
+        updateUser({ address: response.data.address });
         setIsEditingAddress(false);
       } catch (error: any) {
         console.error('Ошибка при обновлении адреса:', error.message);
+      }
+    }
+  };
+
+  // Функция для сохранения номера телефона
+  const handlePhoneSave = async () => {
+    if (user && newPhone) {
+      try {
+        const response = await axios.put(
+          `https://enddel.com/api/users/${user.id}`,
+          { phone: newPhone },
+          { withCredentials: true }
+        );
+        updateUser({ phone: response.data.phone });
+        setIsEditingPhone(false);
+      } catch (error: any) {
+        console.error('Ошибка при обновлении номера телефона:', error.message);
       }
     }
   };
@@ -92,17 +111,29 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, login, orders }
       </h5>
       <p>
         {t('address')}: {user.address}
-      </p>
-      <EditButton onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</EditButton>
-
-      <p>
-        {t('phone')}: {user.phone}
+        <EditButton onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</EditButton>
       </p>
       {isEditingAddress && (
         <div>
           <MapPicker onAddressSelect={(address: string) => setNewAddress(address)} />
           <button onClick={handleAddressSave}>{t('save_address')}</button>
           <button onClick={() => setIsEditingAddress(false)}>{t('cancel')}</button>
+        </div>
+      )}
+      <p>
+        {t('phone')}: {user.phone}
+        <EditButton onClick={() => setIsEditingPhone(true)}>{t('edit_phone')}</EditButton>
+      </p>
+      {isEditingPhone && (
+        <div>
+          <input
+            type="text"
+            value={newPhone}
+            onChange={(e) => setNewPhone(e.target.value)}
+            placeholder={t('enter_new_phone')}
+          />
+          <button onClick={handlePhoneSave}>{t('save_phone')}</button>
+          <button onClick={() => setIsEditingPhone(false)}>{t('cancel')}</button>
         </div>
       )}
       <h3>{t('active_orders')}</h3>

@@ -17,6 +17,7 @@ export interface AuthContextType {
   user: User | null;
   login: (user: User, token: string) => void;
   logout: () => void;
+  updateUser: (updatedFields: Partial<User>) => void; // Добавлено здесь
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,7 +61,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/auth');
   };
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  const updateUser = (updatedFields: Partial<User>) => {
+    setUser((prevUser) => {
+      if (!prevUser) return prevUser;
+      const updatedUser = { ...prevUser, ...updatedFields };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
+  return <AuthContext.Provider value={{ user, login, logout, updateUser }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

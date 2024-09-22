@@ -91,7 +91,7 @@ const AuthorizationComponent: React.FC = () => {
     <Container width={'100%'}>
       <CardInner>
         {user ? (
-          <UserDetails user={user} logout={logout} login={login} orders={orders} setOrders={setOrders} />
+          <UserDetails user={user} logout={logout} orders={orders} setOrders={setOrders} />
         ) : (
           <div>
             {authMode === '' && (

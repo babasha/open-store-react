@@ -647,48 +647,6 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-// Маршрут для создания заказа
-// app.post('/orders', async (req, res) => {
-//   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
-
-//   try {
-//     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
-//     const user = userResult.rows[0];
-
-//     const orderResult = await pool.query(
-//       'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-//       [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address]
-//     );
-
-//     const orderId = orderResult.rows[0].id;
-
-//     const productIds = items.map(item => item.productId);
-//     const productResult = await pool.query('SELECT id, name_en FROM products WHERE id = ANY($1)', [productIds]);
-
-//     const products = productResult.rows.reduce((acc, product) => {
-//       acc[product.id] = product.name_en;
-//       return acc;
-//     }, {});
-
-//     const newOrder = {
-//       ...orderResult.rows[0],
-//       first_name: user.first_name,
-//       last_name: user.last_name,
-//       address: user.address,
-//       items: items.map(item => ({
-//         ...item,
-//         productName: products[item.productId]
-//       }))
-//     };
-
-//     io.emit('newOrder', newOrder);
-//     res.status(201).json(newOrder);
-//   } catch (error) {
-//     console.error('Ошибка при оформлении заказа:', error.message);
-//     res.status(500).json({ error: 'Ошибка сервера' });
-//   }
-// });
-
 
 // Маршрут для инициирования платежа
 app.post('/orders', async (req, res) => {
