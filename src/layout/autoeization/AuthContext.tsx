@@ -5,8 +5,8 @@ import socket from '../../socket';
 
 export interface User {
   id: number;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   address: string;
   phone: string;
@@ -29,6 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
+    
     if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -37,8 +38,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         socket.emit('login', parsedUser.id);
       } catch (error) {
         console.error('Ошибка при парсинге данных пользователя из localStorage:', error);
+        
       }
+    
     }
+    
   }, []);
 
   const login = (user: User, token: string) => {
@@ -48,6 +52,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     axios.defaults.withCredentials = true;
     socket.emit('login', user.id);
+    console.log('User data from server:', user);
+
   };
 
   const logout = () => {

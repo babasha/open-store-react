@@ -47,19 +47,21 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, orders }) => {
   const handlePhoneSave = async () => {
     if (user && newPhone) {
       try {
+        console.log('Отправляем данные на сервер:', { phone: newPhone });
         const response = await axios.put(
           `https://enddel.com/api/users/${user.id}`,
           { phone: newPhone },
           { withCredentials: true }
         );
-        updateUser({ phone: response.data.phone });
+        console.log('Ответ от сервера:', response.data);
+        // Предполагая, что сервер возвращает обновленный объект пользователя
+        updateUser(response.data);
         setIsEditingPhone(false);
       } catch (error: any) {
-        console.error('Ошибка при обновлении номера телефона:', error.message);
+        console.error('Ошибка при обновлении номера телефона:', error.response?.data || error.message);
       }
     }
   };
-
   const loadMoreOrders = (type: string) => {
     setDisplayedCount((prevState) => ({
       ...prevState,
@@ -107,8 +109,8 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, orders }) => {
     <UserDetailsContainer>
       <h2>{t('welcome')}</h2>
       <h5>
-        {user.first_name} {user.last_name}
-      </h5>
+  {user.firstName} {user.lastName}
+       </h5>
       <p>
         {t('address')}: {user.address}
         <EditButton onClick={() => setIsEditingAddress(true)}>{t('edit_address')}</EditButton>
