@@ -1,4 +1,3 @@
-// src/components/autoeization/AuthContext.ts
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -34,7 +33,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        socket.emit('login', parsedUser.id); // Подключение к сокету при восстановлении
+        socket.emit('login', parsedUser.id);
       } catch (error) {
         console.error('Ошибка при парсинге данных пользователя из localStorage:', error);
       }
@@ -46,12 +45,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    socket.emit('login', user.id); // Подключение к сокету при входе
+    axios.defaults.withCredentials = true;
+    socket.emit('login', user.id);
   };
 
   const logout = () => {
     if (user) {
-      socket.emit('logout', user.id); // Отключение от сокета при выходе
+      socket.emit('logout', user.id);
     }
     setUser(null);
     localStorage.removeItem('user');
@@ -60,11 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/auth');
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

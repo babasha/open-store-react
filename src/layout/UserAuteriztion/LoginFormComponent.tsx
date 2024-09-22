@@ -15,8 +15,6 @@ const LoginForm = styled.form`
 `;
 
 const LoginButton = styled(ButtonWithRipple)``;
-
-
 const ForgotPasswordButton = styled(EditButton)``;
 const ErrorMessage = styled.div`
   color: red;
@@ -38,7 +36,7 @@ const LoginFormComponent: React.FC<LoginFormComponentProps> = ({ setIsForgotPass
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("https://enddel.com/auth/login", {
+      const response = await fetch('https://enddel.com/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +58,7 @@ const LoginFormComponent: React.FC<LoginFormComponentProps> = ({ setIsForgotPass
         navigate('/'); // Перенаправляем других пользователей на главную страницу
       }
     } catch (error) {
-      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(t('error_login'), errorMessage);
       setError(errorMessage); // Отобразите сообщение об ошибке пользователю
     }
