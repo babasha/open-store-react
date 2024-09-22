@@ -8,7 +8,7 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
-  address: string | null;
+  address: string;
   phone: string;
   role: string;
 }
@@ -17,7 +17,6 @@ export interface AuthContextType {
   user: User | null;
   login: (user: User, token: string) => void;
   logout: () => void;
-  updateUser: (updatedFields: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,13 +28,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
-    
     if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        socket.emit('login', parsedUser.id);
+        socket.emit('login', parsedUser.id); // Подключение к сокету при восстановлении
       } catch (error) {
         console.error('Ошибка при парсинге данных пользователя из localStorage:', error);
       }
@@ -47,14 +45,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    axios.defaults.withCredentials = true;
-    socket.emit('login', user.id);
-    console.log('User data from server:', user);
+    socket.emit('login', user.id); // Подключение к сокету при входе
   };
 
   const logout = () => {
     if (user) {
-      socket.emit('logout', user.id);
+      socket.emit('logout', user.id); // Отключение от сокета при выходе
     }
     setUser(null);
     localStorage.removeItem('user');
@@ -63,26 +59,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate('/auth');
   };
 
-  const updateUser = (updatedFields: Partial<User>) => {
-    setUser((prevUser) => {
-      if (!prevUser) return prevUser;
-      const updatedUser: User = { ...prevUser };
-  
-      // Явное приведение типов для ключей
-      (Object.keys(updatedFields) as (keyof User)[]).forEach((key) => {
-        const value = updatedFields[key];
-        if (value !== null && value !== undefined) {
-          // Приведение типов значений
-          (updatedUser[key] as any) = value;
-        }
-      });
-  
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      return updatedUser;
-    });
-  };
-
-  return <AuthContext.Provider value={{ user, login, logout, updateUser }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

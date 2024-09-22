@@ -10,12 +10,12 @@ const GoogleLoginComponent: React.FC = () => {
   const handleSuccess = async (credentialResponse: CredentialResponse) => {
     const token = credentialResponse.credential;
     try {
-      const response = await fetch('https://enddel.com/auth/google/callback', {
+      const response = await fetch("https://enddel.com/auth/google/callback", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+          'Authorization': `Bearer ${token}`
+        }
       });
       const data = await response.json();
       login(data.user, data.token);
@@ -40,7 +40,11 @@ const GoogleLoginComponent: React.FC = () => {
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <GoogleLogin onSuccess={handleSuccess} onError={handleFailure} useOneTap />
+      <GoogleLogin
+        onSuccess={handleSuccess}
+        onError={handleFailure}
+        useOneTap
+      />
     </GoogleOAuthProvider>
   );
 };
