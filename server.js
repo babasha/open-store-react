@@ -310,7 +310,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 
     // Удаляем оригинальный файл
     fs.unlinkSync(req.file.path);
-    // Сохраняем только имя файла в базе данных
+    // Сохраняем только имя файла в базе данны
     imageUrl = webpFileName;
   }
 
