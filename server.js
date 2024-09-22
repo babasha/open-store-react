@@ -15,7 +15,8 @@ const passport = require('./passport-config'); // Импортируем мод�
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const sharp = require('sharp');
 
-// cерверный код 
+
+// cерверные коды 
 
 const app = express();
 const server = http.createServer(app);
