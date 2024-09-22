@@ -14,7 +14,7 @@ import PlaceholderCard from './PlaceholderCard'; // Импортируем пл�
 // Добавляем недостающие импорты
 import QuantityControl from '../../components/quantityCotrol/QuantityControl'; // Импортируем контроллер количества
 import { FlexWrapper } from '../../components/FlexWrapper'; // Импортируем обертку для Flex
-import Price from '../../components/productPrice/price'; 
+import Price from '../../components/productPrice/price';
 import ToggleButton from '../../components/button/button';  // Импортируем кнопку
 
 type CartPropsType = {
@@ -65,8 +65,8 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   }, []);
   // Определяем формат изображения
   const imageFormat = supportsWebP ? 'webp' : 'jpeg';
-  // Получаем имя файла изображения (imageUrl содержит только имя файла)
-  const imageFileName = imageUrl ? imageUrl.replace(/^\/+/, '') : 'placeholder-image.webp'; // Или укажите имя плейсхолдера
+  // Получаем имя файла изображения (извлекаем имя файла из imageUrl)
+  const imageFileName = imageUrl ? imageUrl.split('/').pop() : 'placeholder-image.webp'; // Или укажите имя плейсхолдера
   // Формируем полный URL изображения
   const fullImageUrl = `/images/${imageFileName}`;
 

@@ -84,7 +84,7 @@ const SuccessPage: React.FC = () => {
 
   return (
     <SuccessContainer>
-      <Message>Thank you for your purchase!</Message>
+      <Message>Thank you for your purchas!</Message>
       <OrderDetails>
         <OrderNumber>Order Number: {order.orderNumber}</OrderNumber>
         {order.items.map((item, index) => (

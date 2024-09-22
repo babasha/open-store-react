@@ -15,6 +15,7 @@ const passport = require('./passport-config'); // Импортируем мод�
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const sharp = require('sharp');
 
+// cерверный код 
 
 const app = express();
 const server = http.createServer(app);
@@ -290,7 +291,7 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
   }
 });
 
-/// Маршрут для добавления нового продукта
+// Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   const { nameEn, nameRu, nameGeo, price, unit, step } = req.body;
   const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
@@ -298,10 +299,8 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   let imageUrl = null;
 
   if (req.file) {
-    const imagePath = `uploads/${req.file.filename}`;
     const webpFileName = `${req.file.filename}.webp`;
     const webpImagePath = path.join('uploads', webpFileName);
-    imageUrl = webpFileName;
 
     // Конвертируем изображение в WebP
     await sharp(req.file.path)
@@ -310,7 +309,8 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 
     // Удаляем оригинальный файл
     fs.unlinkSync(req.file.path);
-    // Сохраняем только имя файла в базе данны
+
+    // Сохраняем только имя файла в базе данных
     imageUrl = webpFileName;
   }
 
@@ -336,11 +336,9 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   }
 });
 
-
-
 // Маршрут для обслуживания изображений
 app.get('/images/:filename', async (req, res) => {
-  const { filename } = req.params;
+  const filename = path.basename(req.params.filename);
   const { format = 'webp', width } = req.query;
   const imagePath = path.join(__dirname, 'uploads', filename);
 
@@ -361,7 +359,6 @@ app.get('/images/:filename', async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
-
 
 // Маршрут для удаления продукта
 app.delete('/products/:id', isAdmin, async (req, res) => {
