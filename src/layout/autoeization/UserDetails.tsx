@@ -27,21 +27,24 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, orders }) => {
   const { t } = useTranslation();
   const { updateUser } = useAuth(); // Получаем функцию updateUser из AuthContext
 
-  const handleAddressSave = async () => {
-    if (user && newAddress) {
-      try {
-        const response = await axios.put(
-          `https://enddel.com/api/users/${user.id}`,
-          { address: newAddress },
-          { withCredentials: true }
-        );
-        updateUser({ address: response.data.address });
-        setIsEditingAddress(false);
-      } catch (error: any) {
-        console.error('Ошибка при обновлении адреса:', error.message);
-      }
+const handleAddressSave = async () => {
+  if (user && newAddress) {
+    try {
+      console.log('Отправляем данные на сервер:', { address: newAddress });
+      const response = await axios.put(
+        `https://enddel.com/api/users/${user.id}`,
+        { address: newAddress },
+        { withCredentials: true }
+      );
+      console.log('Ответ от сервера:', response.data);
+      // Обновляем только поле address
+      updateUser({ address: response.data.address });
+      setIsEditingAddress(false);
+    } catch (error: any) {
+      console.error('Ошибка при обновлении адреса:', error.response?.data || error.message);
     }
-  };
+  }
+};
 
   // Функция для сохранения номера телефона
   const handlePhoneSave = async () => {
@@ -54,8 +57,8 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, logout, orders }) => {
           { withCredentials: true }
         );
         console.log('Ответ от сервера:', response.data);
-        // Предполагая, что сервер возвращает обновленный объект пользователя
-        updateUser(response.data);
+        // Обновляем только поле phone
+        updateUser({ phone: response.data.phone });
         setIsEditingPhone(false);
       } catch (error: any) {
         console.error('Ошибка при обновлении номера телефона:', error.response?.data || error.message);
