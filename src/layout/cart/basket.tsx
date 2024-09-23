@@ -41,6 +41,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const [error, setError] = useState<string | null>(null);
   const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
   const [isActive, setIsActive] = useState(false); // состояние активности кнопки
+  const [dotCount, setDotCount] = useState(0); // For animated dots
 
   const handleEditClick = useCallback(() => {
     setIsEditing((prev) => !prev);
@@ -68,13 +69,12 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     }
   }, [user, error, t]);
 
-
-
   const handlePurchase = useCallback(async () => {
     if (!user) {
       setError(t('cart.notAuthorized'));
       return;
     }
+    setIsActive(true); // Start the animation
 
     const orderData = {
       userId: user.id,
@@ -109,8 +109,23 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     } catch (error) {
       console.error('Error processing order or payment:', error);
       setError(t('cart.orderError'));
+      setIsActive(false); // Stop the animation on error
     }
   }, [user, cartItems, totalWithDelivery, selectedDelivery, t, calculateTotalPrice]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (isActive) {
+      interval = setInterval(() => {
+        setDotCount((prevDotCount) => (prevDotCount % 3) + 1); // Cycles from 1 to 3
+      }, 500);
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isActive]);
 
   const renderCartItem = useCallback(
     (item: CartItem) => {
@@ -174,9 +189,9 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             </TotalPrice>
             <FlexWrapper justify="space-between">
               <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
-              <PurchaseButton isActive={isActive} isDisabled={false} onClick={handlePurchase}>
-  {isActive ? 'Оплата инициализирована' : 'Перейти к оплате'}
-</PurchaseButton>
+              <PurchaseButton isActive={isActive} isDisabled={isActive} onClick={handlePurchase}>
+                {isActive ? `Переадресация${'.'.repeat(dotCount)}` : 'Перейти к оплате'}
+              </PurchaseButton>
             </FlexWrapper>
 
             <GooglePayButton totalPrice={totalWithDelivery} />
