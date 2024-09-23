@@ -6,7 +6,7 @@ interface StyledButtonProps {
 }
 
 const StyledButton = styled.button<StyledButtonProps>`
-  border-radius: 30px;
+  border-radius: 10px;
   cursor: pointer;
   background-color: ${props => (props.isActive ? theme.button.buttonActive : 'transparent')};
   color: ${props => (props.isActive ? 'white' : theme.button.buttonActive)};

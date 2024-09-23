@@ -97,7 +97,7 @@ const GooglePayButton = ({ totalPrice }) => {
       allowedPaymentMethods: [getBaseCardPaymentMethod()],
       merchantInfo: {
         merchantId: 'YOUR_MERCHANT_ID', // Замените на ваш merchantId
-        merchantName: 'Ваше название магазина',
+        merchantName: 'Enndel.com',
       },
       transactionInfo: getTransactionInfo(),
     };
