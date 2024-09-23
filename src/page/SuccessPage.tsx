@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useLocation } from 'react-router-dom';
 
 const SuccessContainer = styled.div`
   display: flex;
@@ -50,12 +51,6 @@ const TotalAmount = styled.div`
   margin-top: 20px;
 `;
 
-const Status = styled.div`
-  margin-top: 10px;
-  color: #007bff;
-  font-weight: bold;
-`;
-
 const ReturnButton = styled.button`
   margin-top: 30px;
   padding: 10px 20px;
@@ -72,29 +67,25 @@ const ReturnButton = styled.button`
 `;
 
 const SuccessPage: React.FC = () => {
-  const order = {
-    orderNumber: '162',
-    items: [
-      { name: 'Lightly salted salmon', quantity: 1, price: '90.00' },
-      { name: 'Soup set', quantity: 1, price: '15.00' },
-    ],
-    total: '105.00',
-    status: 'Pending Delivery',
-  };
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
+  const orderNumber = searchParams.get('orderNumber');
+  const total = searchParams.get('total');
+  const items = searchParams.get('items') ? JSON.parse(decodeURIComponent(searchParams.get('items')!)) : [];
 
   return (
     <SuccessContainer>
-      <Message>Thank you for your purchas!</Message>
+      <Message>Thank you for your purchase!</Message>
       <OrderDetails>
-        <OrderNumber>Order Number: {order.orderNumber}</OrderNumber>
-        {order.items.map((item, index) => (
+        <OrderNumber>Order Number: {orderNumber}</OrderNumber>
+        {items.map((item: any, index: number) => (
           <OrderItem key={index}>
             <span>{item.name} x{item.quantity}</span>
             <span>{item.price} ₾</span>
           </OrderItem>
         ))}
-        <TotalAmount>Total: {order.total} ₾</TotalAmount>
-        <Status>Status: {order.status}</Status>
+        <TotalAmount>Total: {total} ₾</TotalAmount>
       </OrderDetails>
       <ReturnButton onClick={() => window.location.href = '/'}>Return to Homepage</ReturnButton>
     </SuccessContainer>
