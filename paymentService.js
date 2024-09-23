@@ -184,7 +184,7 @@ async function handlePaymentCallback(event, body) {
       delete temporaryOrders[external_order_id];
 
       // Получаем URL чека из ответа банка (это предположительно находится в body объекта)
-      const receiptUrl = body._links?.details?.href;
+      const receiptUrl = body?.body?._links?.details?.href;
 
       // Возвращаем redirectUrl для успешной страницы с информацией о заказе и ссылкой на чек
       return {
