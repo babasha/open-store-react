@@ -145,8 +145,6 @@ async function handlePaymentCallback(event, body) {
   console.log('Обработка обратного вызова платежа...');
   console.log('Тип события:', event);
   console.log('Данные запроса:', JSON.stringify(body, null, 2));
-  // Логируем всю структуру данных, чтобы понять, как обращаться к receiptUrl
-
 
   if (event === 'order_payment') {
     const { external_order_id, order_status, order_id } = body;
@@ -185,13 +183,24 @@ async function handlePaymentCallback(event, body) {
       // Удаляем временные данные заказа
       delete temporaryOrders[external_order_id];
 
-      // Получаем URL чека из ответа банка (это предположительно находится в body объекта)
-      const receiptUrl = body?.body?._links?.details?.href || body?._links?.details?.href || body?._links?.details?.href || '';
+      // Получаем URL чека из ответа банка
+      const receiptUrl = body._links?.details?.href || '';
+
+      if (!receiptUrl) {
+        console.warn('receiptUrl не найден в ответе банка');
+      } else {
+        console.log('Ссылка на чек получена:', receiptUrl);
+      }
+
+      // Формируем redirectUrl с receiptUrl
+      const redirectUrl = `/payment/success?orderNumber=${encodeURIComponent(external_order_id)}&total=${encodeURIComponent(orderData.total)}&items=${encodeURIComponent(JSON.stringify(orderData.items))}&receiptUrl=${encodeURIComponent(receiptUrl)}`;
+
+      console.log('redirectUrl сформирован:', redirectUrl);
 
       // Возвращаем redirectUrl для успешной страницы с информацией о заказе и ссылкой на чек
       return {
         message: 'Заказ успешно создан',
-        redirectUrl: `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}&receiptUrl=${encodeURIComponent(receiptUrl)}`
+        redirectUrl,
       };
     } catch (error) {
       console.error('Ошибка при создании заказа:', error.message);

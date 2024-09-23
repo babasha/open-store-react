@@ -1,3 +1,5 @@
+// SuccessPage.jsx
+
 import React from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
@@ -89,23 +91,23 @@ const SuccessPage: React.FC = () => {
 
   return (
     <SuccessContainer>
-      <Message>Thank you for your purchase!</Message>
+      <Message>Спасибо за вашу покупку!</Message>
       <OrderDetails>
-        <OrderNumber>Order Number: {orderNumber}</OrderNumber>
+        <OrderNumber>Номер заказа: {orderNumber}</OrderNumber>
         {items.map((item: any, index: number) => (
           <OrderItem key={index}>
             <span>{item.description} x{item.quantity}</span>
             <span>{item.price} ₾</span>
           </OrderItem>
         ))}
-        <TotalAmount>Total: {total} ₾</TotalAmount>
+        <TotalAmount>Итого: {total} ₾</TotalAmount>
         {receiptUrl && (
           <ReceiptLink href={receiptUrl} target="_blank" rel="noopener noreferrer">
-            View your receipt
+            Скачать чек
           </ReceiptLink>
         )}
       </OrderDetails>
-      <ReturnButton onClick={() => window.location.href = '/'}>Return to Homepage</ReturnButton>
+      <ReturnButton onClick={() => window.location.href = '/'}>Вернуться на главную</ReturnButton>
     </SuccessContainer>
   );
 };

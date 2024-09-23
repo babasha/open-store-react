@@ -246,11 +246,12 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
 // Маршрут для обработки обратного вызова
 app.post('/payment/callback', async (req, res) => {
   const { event, body } = req.body;
+  const signature = req.headers['signature']; // Предполагается, что подпись приходит в заголовке
 
   console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
 
   try {
-    const result = await handlePaymentCallback(event, body);
+    const result = await handlePaymentCallback(event, body, signature);
     console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
     res.status(200).json(result);
   } catch (error) {
