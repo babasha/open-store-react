@@ -45,9 +45,12 @@ async function getAccessToken() {
  * @param {number} total - Общая сумма заказа
  * @param {Array} items - Список товаров
  * @param {string} externalOrderId - Уникальный идентификатор заказа
+ * @param {number} userId - Идентификатор пользователя
+ * @param {string} deliveryTime - Время доставки
+ * @param {string} deliveryAddress - Адрес доставки
  * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
-async function createPayment(total, items, externalOrderId) {
+async function createPayment(total, items, externalOrderId, userId, deliveryTime, deliveryAddress) {
   console.log('Начало создания платежа...');
 
   try {
@@ -93,6 +96,20 @@ async function createPayment(total, items, externalOrderId) {
     });
 
     console.log('Ответ сервера Банка Грузии:', response.data);
+
+    // Сохраняем receiptUrl в temporaryOrders для использования в обратном вызове
+    const receiptUrl = response.data._links?.details?.href || '';
+    temporaryOrders[externalOrderId] = {
+      userId: userId,
+      items,
+      total: paymentData.purchase_units.total_amount,
+      deliveryTime: deliveryTime,
+      deliveryAddress: deliveryAddress,
+      receiptUrl, // Добавляем receiptUrl
+    };
+
+    console.log(`temporaryOrders[${externalOrderId}] сохранён:`, temporaryOrders[externalOrderId]);
+
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {
@@ -139,12 +156,19 @@ function verifyCallbackSignature(data, signature) {
  * Обработка обратного вызова платежа от Банка Грузии
  * @param {string} event - Тип события
  * @param {Object} body - Тело запроса
+ * @param {string} signature - Подпись из заголовка
  * @returns {Object} - Результат обработки
  */
-async function handlePaymentCallback(event, body) {
+async function handlePaymentCallback(event, body, signature) {
   console.log('Обработка обратного вызова платежа...');
   console.log('Тип события:', event);
   console.log('Данные запроса:', JSON.stringify(body, null, 2));
+
+  // Верификация подписи
+  const isValid = verifyCallbackSignature(body, signature);
+  if (!isValid) {
+    throw new Error('Неверная подпись обратного вызова');
+  }
 
   if (event === 'order_payment') {
     const { external_order_id, order_status, order_id } = body;
@@ -165,16 +189,17 @@ async function handlePaymentCallback(event, body) {
 
       // Создаём заказ в базе данных
       const insertResult = await pool.query(
-        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id, receipt_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
         [
           orderData.userId,
-          JSON.stringify(orderData.items),
+          orderData.items,
           orderData.total,
           orderData.deliveryTime,
           orderData.deliveryAddress,
           'completed', // Статус заказа
           paymentStatus, // Статус платежа
           order_id, // Идентификатор заказа в банке
+          orderData.receiptUrl, // URL чека
         ]
       );
       const newOrderId = insertResult.rows[0].id;
@@ -183,11 +208,11 @@ async function handlePaymentCallback(event, body) {
       // Удаляем временные данные заказа
       delete temporaryOrders[external_order_id];
 
-      // Получаем URL чека из ответа банка
-      const receiptUrl = body._links?.details?.href || '';
+      // Получаем URL чека из сохранённых данных заказа
+      const receiptUrl = orderData.receiptUrl;
 
       if (!receiptUrl) {
-        console.warn('receiptUrl не найден в ответе банка');
+        console.warn('receiptUrl не найден в сохранённых данных заказа');
       } else {
         console.log('Ссылка на чек получена:', receiptUrl);
       }

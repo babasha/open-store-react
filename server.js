@@ -246,12 +246,12 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
 // Маршрут для обработки обратного вызова
 app.post('/payment/callback', async (req, res) => {
   const { event, body } = req.body;
-  const signature = req.headers['signature']; // Предполагается, что подпись приходит в заголовке
+  const signature = req.headers['signature'] || req.headers['Signature']; // Предполагается, что подпись приходит в заголовке
 
   console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
 
   try {
-    const result = await handlePaymentCallback(event, body, signature);
+    const result = await paymentService.handlePaymentCallback(event, body, signature);
     console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
     res.status(200).json(result);
   } catch (error) {
@@ -259,7 +259,6 @@ app.post('/payment/callback', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
 // Маршрут для обновления статуса курьера
 app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
   const { status } = req.body;
