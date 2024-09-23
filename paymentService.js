@@ -6,8 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
+const temporaryOrders = {};
 
-const temporaryOrders = {}; 
 /**
  * Получение access_token от API Банка Грузии
  */
@@ -92,7 +92,7 @@ async function createPayment(total, items, externalOrderId) {
       }
     });
 
-   console.log('Ответ сервера Банка Грузии:', response.data);
+    console.log('Ответ сервера Банка Грузии:', response.data);
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {
@@ -149,43 +149,48 @@ async function handlePaymentCallback(event, body) {
   if (event === 'order_payment') {
     const { external_order_id, order_status, order_id } = body;
 
-     // Проверка статуса платежа
-     const paymentStatus = order_status.key;
-     if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
-       console.warn('Платёж не завершён успешно:', paymentStatus);
-       return { message: 'Платёж не завершён успешно' };
-     }
+    // Проверка статуса платежа
+    const paymentStatus = order_status.key;
+    if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
+      console.warn('Платёж не завершён успешно:', paymentStatus);
+      return { message: 'Платёж не завершён успешно' };
+    }
 
-     try {
+    try {
       // Получаем сохранённые данные заказа
       const orderData = temporaryOrders[external_order_id];
       if (!orderData) {
         throw new Error('Данные заказа не найдены');
       }
 
-    // Создаём заказ в базе данных
-    const insertResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
-      [
-        orderData.userId,
-        JSON.stringify(orderData.items),
-        orderData.total,
-        orderData.deliveryTime,
-        orderData.deliveryAddress,
-        'completed', // Статус заказа
-        paymentStatus, // Статус платежа
-        order_id, // Идентификатор заказа в банке
-      ]
-    );
-    const newOrderId = insertResult.rows[0].id;
-    console.log('Заказ успешно создан с ID:', newOrderId);
+      // Создаём заказ в базе данных
+      const insertResult = await pool.query(
+        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+        [
+          orderData.userId,
+          JSON.stringify(orderData.items),
+          orderData.total,
+          orderData.deliveryTime,
+          orderData.deliveryAddress,
+          'completed', // Статус заказа
+          paymentStatus, // Статус платежа
+          order_id, // Идентификатор заказа в банке
+        ]
+      );
+      const newOrderId = insertResult.rows[0].id;
+      console.log('Заказ успешно создан с ID:', newOrderId);
 
       // Удаляем временные данные заказа
       delete temporaryOrders[external_order_id];
 
+      // Получаем URL чека из ответа банка (это предположительно находится в body объекта)
+      const receiptUrl = body._links?.details?.href;
 
-// Возвращаем redirectUrl для успешной страницы
-return { message: 'Заказ успешно создан', redirectUrl: `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}` }
+      // Возвращаем redirectUrl для успешной страницы с информацией о заказе и ссылкой на чек
+      return {
+        message: 'Заказ успешно создан',
+        redirectUrl: `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}&receiptUrl=${encodeURIComponent(receiptUrl)}`
+      };
     } catch (error) {
       console.error('Ошибка при создании заказа:', error.message);
       throw new Error('Ошибка создания заказа после оплаты');

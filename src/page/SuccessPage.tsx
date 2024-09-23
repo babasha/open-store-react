@@ -51,6 +51,18 @@ const TotalAmount = styled.div`
   margin-top: 20px;
 `;
 
+const ReceiptLink = styled.a`
+  margin-top: 20px;
+  font-size: 1.1rem;
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const ReturnButton = styled.button`
   margin-top: 30px;
   padding: 10px 20px;
@@ -73,6 +85,7 @@ const SuccessPage: React.FC = () => {
   const orderNumber = searchParams.get('orderNumber');
   const total = searchParams.get('total');
   const items = searchParams.get('items') ? JSON.parse(decodeURIComponent(searchParams.get('items')!)) : [];
+  const receiptUrl = searchParams.get('receiptUrl'); // Получаем ссылку на чек
 
   return (
     <SuccessContainer>
@@ -81,11 +94,16 @@ const SuccessPage: React.FC = () => {
         <OrderNumber>Order Number: {orderNumber}</OrderNumber>
         {items.map((item: any, index: number) => (
           <OrderItem key={index}>
-            <span>{item.name} x{item.quantity}</span>
+            <span>{item.description} x{item.quantity}</span>
             <span>{item.price} ₾</span>
           </OrderItem>
         ))}
         <TotalAmount>Total: {total} ₾</TotalAmount>
+        {receiptUrl && (
+          <ReceiptLink href={receiptUrl} target="_blank" rel="noopener noreferrer">
+            View your receipt
+          </ReceiptLink>
+        )}
       </OrderDetails>
       <ReturnButton onClick={() => window.location.href = '/'}>Return to Homepage</ReturnButton>
     </SuccessContainer>
