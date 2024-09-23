@@ -68,10 +68,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     }
   }, [user, error, t]);
 
-  const handleAddToCart = useCallback(() => {
-    // Логика добавления товара в корзину
-    setIsActive(true); // После добавления товара в корзину делаем кнопку активной
-  }, []);
+
 
   const handlePurchase = useCallback(async () => {
     if (!user) {
@@ -177,9 +174,9 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             </TotalPrice>
             <FlexWrapper justify="space-between">
               <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
-              <PurchaseButton isActive={isActive} isDisabled={isActive} onClick={handleAddToCart}>
-                {isActive ? 'Добавлено' : 'Добавить в корзину'}
-              </PurchaseButton>
+              <PurchaseButton isActive={isActive} isDisabled={false} onClick={handlePurchase}>
+  {isActive ? 'Оплата инициализирована' : 'Перейти к оплате'}
+</PurchaseButton>
             </FlexWrapper>
 
             <GooglePayButton totalPrice={totalWithDelivery} />
