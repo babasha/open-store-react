@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { theme } from '../../styles/Theme';
+import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 
 export const CartdiInner = styled.div`
   background-color: ${theme.colors.mainBg};
@@ -48,16 +49,23 @@ export const DeleteButton = styled.button<{ isEditing: boolean }>`
   }
 `;
 
-export const PurchaseButton = styled.button`
+export const PurchaseButton = styled(ButtonWithRipple)`
+  border-radius: 30px;
   padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #5cb85c;
-  color: white;
-  cursor: pointer;
+  background-color: ${({ isActive }) => (isActive ? theme.button.buttonActive : 'transparent')};
+  color: ${({ isActive }) => (isActive ? 'white' : theme.button.buttonActive)};
+  border: ${({ isActive }) => (isActive ? `1px solid ${theme.button.buttonActive}` : '1px solid #0098EA')};
+  cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
+  transition: background-color 0.2s;
 
   &:hover {
-    background-color: #4cae4c;
+    background-color: ${({ isActive }) => (isActive ? theme.button.buttonActive : 'lightblue')};
+  }
+
+  &:disabled {
+    background-color: grey;
+    border-color: grey;
+    cursor: not-allowed;
   }
 `;
 

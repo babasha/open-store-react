@@ -39,9 +39,8 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(
-    null
-  );
+  const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
+  const [isActive, setIsActive] = useState(false); // состояние активности кнопки
 
   const handleEditClick = useCallback(() => {
     setIsEditing((prev) => !prev);
@@ -56,10 +55,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce((sum, item) => {
-      return (
-        sum +
-        calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1)
-      );
+      return sum + calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1);
     }, 0);
   }, [cartItems, calculateTotalPrice]);
 
@@ -71,6 +67,11 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       setError(null);
     }
   }, [user, error, t]);
+
+  const handleAddToCart = useCallback(() => {
+    // Логика добавления товара в корзину
+    setIsActive(true); // После добавления товара в корзину делаем кнопку активной
+  }, []);
 
   const handlePurchase = useCallback(async () => {
     if (!user) {
@@ -87,9 +88,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         price: calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1),
       })),
       total: totalWithDelivery,
-      deliveryTime: selectedDelivery
-        ? `${selectedDelivery.day}, ${selectedDelivery.time}`
-        : null,
+      deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
       deliveryAddress: user.address,
     };
 
@@ -114,23 +113,11 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       console.error('Error processing order or payment:', error);
       setError(t('cart.orderError'));
     }
-  }, [
-    user,
-    cartItems,
-    totalWithDelivery,
-    selectedDelivery,
-    t,
-    calculateTotalPrice,
-  ]);
+  }, [user, cartItems, totalWithDelivery, selectedDelivery, t, calculateTotalPrice]);
 
   const renderCartItem = useCallback(
     (item: CartItem) => {
-      const itemTotalPrice = calculateTotalPrice(
-        item.price,
-        item.quantity,
-        item.unit,
-        item.step || 1
-      );
+      const itemTotalPrice = calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1);
 
       return (
         <CartItemWrapper key={item.id}>
@@ -142,10 +129,10 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             <ItemContext>{itemTotalPrice} ₾</ItemContext>
           </ItemDetails>
           {isEditing && (
-  <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
-    {t('cart.remove')}
-  </DeleteButton>
-)}
+            <DeleteButton isEditing={isEditing} onClick={() => removeItemFromCart(item.id)}>
+              {t('cart.remove')}
+            </DeleteButton>
+          )}
         </CartItemWrapper>
       );
     },
@@ -189,17 +176,16 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
               {t('cart.total')}: {totalWithDelivery} ₾
             </TotalPrice>
             <FlexWrapper justify="space-between">
-              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton> 
-              <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
-              
+              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
+              <PurchaseButton isActive={isActive} isDisabled={isActive} onClick={handleAddToCart}>
+                {isActive ? 'Добавлено' : 'Добавить в корзину'}
+              </PurchaseButton>
             </FlexWrapper>
-          
+
             <GooglePayButton totalPrice={totalWithDelivery} />
 
             {error && <ErrorText>{error}</ErrorText>}
-          
           </>
-          
         )}
       </CartdiInner>
     </Container>
