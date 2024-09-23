@@ -4,6 +4,7 @@ import { useCart } from './CartContext';
 import { useAuth } from '../autoeization/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { FlexWrapper } from '../../components/FlexWrapper';
+import GooglePayButton from './GooglePayButton';
 import DataSwitch from '../../components/dateSlider/dataSwith';
 import { EditButton } from '../../styles/btns/secondBtns';
 import {
@@ -188,11 +189,17 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
               {t('cart.total')}: {totalWithDelivery} ₾
             </TotalPrice>
             <FlexWrapper justify="space-between">
-              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
+              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton> 
               <PurchaseButton onClick={handlePurchase}>{t('cart.purchase')}</PurchaseButton>
+              
             </FlexWrapper>
+          
+            <GooglePayButton totalPrice={totalWithDelivery} />
+
             {error && <ErrorText>{error}</ErrorText>}
+          
           </>
+          
         )}
       </CartdiInner>
     </Container>
