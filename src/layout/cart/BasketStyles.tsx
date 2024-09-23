@@ -50,8 +50,10 @@ export const DeleteButton = styled.button<{ isEditing: boolean }>`
 `;
 
 export const PurchaseButton = styled(ButtonWithRipple)`
-  border-radius: 30px;
-  padding: 10px 20px;
+  /* margin-left: -2%; */
+  width: 103%;
+  border-radius: 10px;
+  padding: 10px 0px;
   background-color: ${({ isActive }) => (isActive ? theme.button.buttonActive : 'transparent')};
   color: ${({ isActive }) => (isActive ? 'white' : theme.button.buttonActive)};
   border: ${({ isActive }) => (isActive ? `1px solid ${theme.button.buttonActive}` : '1px solid #0098EA')};
@@ -70,7 +72,7 @@ export const PurchaseButton = styled(ButtonWithRipple)`
 `;
 
 export const TotalPrice = styled.div`
-  margin-top: 10px;
+  /* margin-top: 10px; */
   font-weight: bold;
   font-size: 20px;
 `;

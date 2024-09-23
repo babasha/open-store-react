@@ -1,7 +1,9 @@
+// LoginFormComponent.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../autoeization/AuthContext';
 import TextInput from '../../components/textinputs/TextInput';
+import PasswordInput from './PasswordInput';
 import styled from 'styled-components';
 import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +14,7 @@ const LoginForm = styled.form`
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
+  width: 100%;
 `;
 
 const LoginButton = styled(ButtonWithRipple)``;
@@ -72,9 +75,8 @@ const LoginFormComponent: React.FC<LoginFormComponentProps> = ({ setIsForgotPass
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
-      <TextInput
+      <PasswordInput
         label={t('password')}
-        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
