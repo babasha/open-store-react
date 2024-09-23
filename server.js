@@ -246,12 +246,11 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
 // Маршрут для обработки обратного вызова
 app.post('/payment/callback', async (req, res) => {
   const { event, body } = req.body;
-  const signature = req.headers['signature'] || req.headers['Signature']; // Предполагается, что подпись приходит в заголовке
 
   console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
 
   try {
-    const result = await paymentService.handlePaymentCallback(event, body, signature);
+    const result = await handlePaymentCallback(event, body);
     console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
     res.status(200).json(result);
   } catch (error) {
@@ -259,6 +258,7 @@ app.post('/payment/callback', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 // Маршрут для обновления статуса курьера
 app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
   const { status } = req.body;
@@ -646,6 +646,48 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
+// Маршрут для создания заказа
+// app.post('/orders', async (req, res) => {
+//   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
+
+//   try {
+//     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
+//     const user = userResult.rows[0];
+
+//     const orderResult = await pool.query(
+//       'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+//       [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address]
+//     );
+
+//     const orderId = orderResult.rows[0].id;
+
+//     const productIds = items.map(item => item.productId);
+//     const productResult = await pool.query('SELECT id, name_en FROM products WHERE id = ANY($1)', [productIds]);
+
+//     const products = productResult.rows.reduce((acc, product) => {
+//       acc[product.id] = product.name_en;
+//       return acc;
+//     }, {});
+
+//     const newOrder = {
+//       ...orderResult.rows[0],
+//       first_name: user.first_name,
+//       last_name: user.last_name,
+//       address: user.address,
+//       items: items.map(item => ({
+//         ...item,
+//         productName: products[item.productId]
+//       }))
+//     };
+
+//     io.emit('newOrder', newOrder);
+//     res.status(201).json(newOrder);
+//   } catch (error) {
+//     console.error('Ошибка при оформлении заказа:', error.message);
+//     res.status(500).json({ error: 'Ошибка сервера' });
+//   }
+// });
 
 
 // Маршрут для инициирования платежа
