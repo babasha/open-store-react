@@ -145,6 +145,8 @@ async function handlePaymentCallback(event, body) {
   console.log('Обработка обратного вызова платежа...');
   console.log('Тип события:', event);
   console.log('Данные запроса:', JSON.stringify(body, null, 2));
+  // Логируем всю структуру данных, чтобы понять, как обращаться к receiptUrl
+
 
   if (event === 'order_payment') {
     const { external_order_id, order_status, order_id } = body;
@@ -184,7 +186,7 @@ async function handlePaymentCallback(event, body) {
       delete temporaryOrders[external_order_id];
 
       // Получаем URL чека из ответа банка (это предположительно находится в body объекта)
-      const receiptUrl = body?.body?._links?.details?.href;
+      const receiptUrl = body?.body?._links?.details?.href || body?._links?.details?.href || body?._links?.details?.href || '';
 
       // Возвращаем redirectUrl для успешной страницы с информацией о заказе и ссылкой на чек
       return {
