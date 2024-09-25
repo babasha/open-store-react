@@ -97,5 +97,27 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
       font-size: 12px;
     }
   }
-`;
 
+  /* Убираем стандартную подсветку при фокусе */
+  input:focus, 
+  textarea:focus, 
+  select:focus, 
+  button:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* При необходимости добавляем кастомную подсветку при фокусе */
+  input:focus, 
+  textarea:focus, 
+  select:focus, 
+  button:focus {
+    outline: none;
+  }
+
+  /* Убираем подсветку ссылок при клике */
+  a:focus {
+    outline: none;
+    box-shadow: none;
+  }
+`;
