@@ -17,8 +17,9 @@ const Container = styled.div`
   align-items: center;
 `;
 
-const LoginTitle = styled.h3`
-  margin: 10px 0;
+const LoginTitle = styled.h3` 
+ margin: 15px 0px 25px 0px;
+ font-size: 22px;
 `;
 
 const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange }) => {

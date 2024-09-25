@@ -86,4 +86,7 @@ const LinkParagraph = styled.p`
   @media (max-width: 1024px) {
     font-size: 12px;
   }
+  @media (max-width: 421px) {
+    font-size: 10px;
+  }
 `;
