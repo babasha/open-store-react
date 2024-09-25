@@ -60,7 +60,7 @@ const FooterContent = styled.div`
 const FooterLinks = styled.div`
   margin-bottom: 10px;
   display: flex;
-  gap: 30px;
+  gap: 10px;
   
   @media (max-width: 1024px) {
     font-size: 10px;

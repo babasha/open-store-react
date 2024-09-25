@@ -7,7 +7,8 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 
 const LoginTitle = styled.h3`
-  margin: 10px 0px;
+  margin: 15px 0px 25px 5px;
+  font-size: 22px;
 `;
 
 const LoginComponent: React.FC = () => {

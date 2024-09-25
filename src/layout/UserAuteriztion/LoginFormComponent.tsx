@@ -15,9 +15,12 @@ const LoginForm = styled.form`
   align-items: center;
   gap: 1.5rem;
   width: 100%;
+  margin-bottom: 20px;
 `;
 
-const LoginButton = styled(ButtonWithRipple)``;
+const LoginButton = styled(ButtonWithRipple)`
+
+`;
 const ForgotPasswordButton = styled(EditButton)``;
 const ErrorMessage = styled.div`
   color: red;
