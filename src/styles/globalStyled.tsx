@@ -113,11 +113,17 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
   select:focus, 
   button:focus {
     outline: none;
+    border: none; /* Можно настроить свою рамку */
   }
 
   /* Убираем подсветку ссылок при клике */
   a:focus {
     outline: none;
     box-shadow: none;
+  }
+
+  /* Убираем синий цвет при клике на мобильных устройствах */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
   }
 `;
