@@ -98,29 +98,6 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
     }
   }
 
-  /* Убираем стандартную подсветку при фокусе */
-  input:focus, 
-  textarea:focus, 
-  select:focus, 
-  button:focus {
-    outline: none;
-    box-shadow: none;
-  }
-
-  /* При необходимости добавляем кастомную подсветку при фокусе */
-  input:focus, 
-  textarea:focus, 
-  select:focus, 
-  button:focus {
-    outline: none;
-    border: none; /* Можно настроить свою рамку */
-  }
-
-  /* Убираем подсветку ссылок при клике */
-  a:focus {
-    outline: none;
-    box-shadow: none;
-  }
 
   /* Убираем синий цвет при клике на мобильных устройствах */
   * {
