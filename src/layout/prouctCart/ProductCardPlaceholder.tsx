@@ -19,7 +19,7 @@ const LoadWrapper = styled.div`
   width: 100%;
   background-color: rgb(211, 211, 211);
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: 20px;
 `;
 
 const Activity = styled.div`
@@ -43,16 +43,16 @@ const PlaceholderCard = styled.div`
   width: 250px;
   min-height: 300px;
   margin: 10px;
-  border-radius: 30px;
+  border-radius: 20px;
   padding: 10px;
 `;
 
 const PlaceholderImage = styled.div`
   height: 65%;
-  border-radius: 30px;
+  border-radius: 20px;
   margin-bottom: 10px;
   ${LoadWrapper} {
-    border-radius: 30px;
+    border-radius: 20px;
   }
 `;
 
@@ -60,7 +60,7 @@ const PlaceholderText = styled.div`
   height: 20px;
   margin: 10px 0;
   ${LoadWrapper} {
-    border-radius: 5px;
+    border-radius: 20px;
   }
 `;
 

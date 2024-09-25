@@ -17,7 +17,7 @@ export const LoadWrapper = styled.div`
   width: 100%;
   background-color: rgb(211, 211, 211);
   overflow: hidden;
-  border-radius: 30px; /* Соответствует карточке */
+  border-radius: 20px; /* Соответствует карточке */
 `;
 
 export const Activity = styled.div`

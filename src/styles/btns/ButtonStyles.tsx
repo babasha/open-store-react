@@ -15,7 +15,7 @@ interface Ripple {
 }
 
 const StyledButton = styled(motion.button)<ButtonProps>`
-  border-radius: 30px;
+  border-radius: 10px;
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
   background-color: ${({ isActive }) => (isActive ? theme.button.buttonActive : 'transparent')};
   color: ${({ isActive }) => (isActive ? 'white' : theme.button.buttonActive)};
@@ -36,22 +36,22 @@ const StyledButton = styled(motion.button)<ButtonProps>`
   }
 
   @media (max-width: 1024px) {
-    font-size: 14px;
+    font-size: 16px;
     padding: 8px 15px;
   }
   @media (max-width: 820px) {
-    font-size: 14px;
+    font-size: 16px;
     padding: 5px 12px;
   }
-  @media (max-width: 768px) {
-    font-size: 14px;
+  /* @media (max-width: 768px) {
+    font-size: 16px;
     padding: 5px 12px;
   }
   @media (max-width: 540px) {
-    font-size: 14px;
+    font-size: 16px;
     padding: 5px 12px;
-  }
-  @media (max-width: 430px) {
+  } */
+  /* @media (max-width: 430px) {
     font-size: 14px;
     padding: 3px 10px;
   }
@@ -64,22 +64,22 @@ const StyledButton = styled(motion.button)<ButtonProps>`
     padding: 3px 10px;
   }
   @media (max-width: 375px) {
-    font-size: 12px;
+    font-size: 14px;
     padding: 3px 10px;
   }
   @media (max-width: 360px) {
-    font-size: 12px;
+    font-size: 14px;
     padding: 3px 10px;
   }
   @media (max-width: 344px) {
-    font-size: 12px;
+    font-size: 14px;
     padding: 3px 10px;
-  }
+  } */
 `;
 
 const Ripple = styled(motion.span)`
   position: absolute;
-  border-radius: 50%;
+  border-radius: 20px;
   background-color: rgba(255, 255, 255, 0.7);
   pointer-events: none;
 `;

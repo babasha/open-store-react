@@ -62,7 +62,7 @@ const ProductImage = styled.img<{ isLoaded: boolean }>`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 30px;
+  border-radius: 20px;
   opacity: ${({ isLoaded }) => (isLoaded ? 1 : 0)};
   transition: opacity 0.3s ease-in-out;
 `;
@@ -74,7 +74,7 @@ const Placeholder = styled.div<{ isLoaded: boolean }>`
   width: 100%;
   height: 100%;
   background-color: #f0f0f0;
-  border-radius: 30px;
+  border-radius: 20px;
   opacity: ${({ isLoaded }) => (isLoaded ? 0 : 1)};
   transition: opacity 0.3s ease-in-out;
   z-index: 1;

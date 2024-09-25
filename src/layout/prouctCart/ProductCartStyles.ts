@@ -17,7 +17,7 @@ export const Cart = styled.div`
   min-height: 300px;
   height: max-content;
   margin: 10px;
-  border-radius: 30px;
+  border-radius: 20px;
   padding: 10px;
 `;
 
@@ -34,7 +34,7 @@ export const ProductImage = styled.img<{ isLoaded: boolean }>`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 30px;
+  border-radius: 20px;
   opacity: ${({ isLoaded }) => (isLoaded ? 1 : 0)};
   transition: opacity 0.3s ease-in-out;
   display: block;
@@ -47,7 +47,7 @@ export const Placeholder = styled.div<{ isLoaded: boolean }>`
   width: 100%;
   height: 100%;
   background-color: ${theme.colors.mainBg || '#f0f0f0'};
-  border-radius: 30px;
+  border-radius: 20px;
   opacity: ${({ isLoaded }) => (isLoaded ? 0 : 1)};
   transition: opacity 0.3s ease-in-out;
   z-index: 1;
@@ -65,7 +65,7 @@ export const PlaceholderCart = styled.div`
   width: 250px;
   min-height: 300px;
   margin: 10px;
-  border-radius: 30px;
+  border-radius: 20px;
   padding: 10px;
 `;
 
@@ -79,7 +79,7 @@ export const PlaceholderImage = styled.div`
 `;
 
 export const PlaceholderContent = styled.div`
-  height: 20px;
+  height: 10px;
   margin-bottom: 20px;
   position: relative;
 `;
@@ -95,7 +95,7 @@ export const LoadWrapper = styled.div`
   width: 100%;
   background-color: rgb(211, 211, 211);
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: 20px;
 `;
 
 export const Activity = styled.div`

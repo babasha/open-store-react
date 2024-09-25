@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../styles/Theme';
+import { FlexWrapper } from '../../components/FlexWrapper';
 
 const Footer: React.FC = () => {
   const { t } = useTranslation(); // Инициализация функции перевода
@@ -28,7 +29,12 @@ const Footer: React.FC = () => {
             {t('data_processing_information')} {/* Перевод "Информация об обработке персональных данных" */}
           </LinkParagraph>
         </FooterLinks>
-        <FooterText>© {new Date().getFullYear()} enddel.com</FooterText>
+        <FlexWrapper >
+        <FooterText> made in georgia </FooterText>
+        <FooterText>   © {new Date().getFullYear()}enddel.com</FooterText>
+
+        </FlexWrapper>
+        
       </FooterContent>
     </FooterContainer>
   );
@@ -38,7 +44,7 @@ export default Footer;
 
 const FooterContainer = styled.footer`
   background-color: #f8f9fa;
-  padding: 20px 0;
+  padding: 20px 10px;
   margin-top: 15px;
   border-radius: 20px;
   text-align: center;
@@ -55,12 +61,19 @@ const FooterLinks = styled.div`
   margin-bottom: 10px;
   display: flex;
   gap: 30px;
+  
+  @media (max-width: 1024px) {
+    font-size: 10px;
+  }
 `;
 
 const FooterText = styled.p`
   color: #6c757d;
   font-size: 14px;
   margin: 0;
+  @media (max-width: 1024px) {
+    font-size: 12px;
+  }
 `;
 
 const LinkParagraph = styled.p`
@@ -68,5 +81,9 @@ const LinkParagraph = styled.p`
   color: ${theme.colors.font};
   &:hover {
     color: #000000;
+  }
+  
+  @media (max-width: 1024px) {
+    font-size: 12px;
   }
 `;

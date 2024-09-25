@@ -29,30 +29,30 @@ const Amount = styled.span`
   font-weight: bold;
   color: black;
   margin-left: 10px;
-  @media (max-width: 1024px) {
+  /* @media (max-width: 1024px) {
     font-size: 16px;
-  }
-  @media (max-width: 820px) {
+  } */
+  /* @media (max-width: 820px) {
     font-size: 16px;
   }
   @media (max-width: 540px) {
-    font-size: 14px;
+    font-size: 16px;
   }
   @media (max-width: 430px) {
-    font-size: 14px;
+    font-size: 16px;
   }
   @media (max-width: 390px) {
-    font-size: 12px;
+    font-size: 16px;
   }
   @media (max-width: 375px) {
-    font-size: 12px;
+    font-size: 16px;
   }
   @media (max-width: 360px) {
-    font-size: 12px;
+    font-size: 16px;
   }
   @media (max-width: 344px) {
-    font-size: 12px;
-  }
+    font-size: 16px;
+  } */
   
 `;
 

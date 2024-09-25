@@ -175,7 +175,7 @@ const NavButton = styled.button<{ active?: boolean }>`
 
 const AboutButton = styled.button<{ active?: boolean }>`
   padding: 10px 20px;
-  font-size: 16px;
+  font-size: 14px;
   border: none;
   border-radius: 5px;
   background-color: ${props => (props.active ? '#007bff' : 'transparent')};
