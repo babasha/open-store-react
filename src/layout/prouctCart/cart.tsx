@@ -8,14 +8,12 @@ import {
   ProductImage,
   Placeholder,
   Title,
-} from './ProductCartStyles'; // Импортируем стили из нового файла
-import PlaceholderCard from './PlaceholderCard'; // Импортируем плейсхолдер
-
-// Добавляем недостающие импорты
-import QuantityControl from '../../components/quantityCotrol/QuantityControl'; // Импортируем контроллер количества
-import { FlexWrapper } from '../../components/FlexWrapper'; // Импортируем обертку для Flex
+} from './ProductCartStyles';
+import PlaceholderCard from './PlaceholderCard';
+import QuantityControl from '../../components/quantityCotrol/QuantityControl';
+import { FlexWrapper } from '../../components/FlexWrapper';
 import Price from '../../components/productPrice/price';
-import ToggleButton from '../../components/button/button';  // Импортируем кнопку
+import ToggleButton from '../../components/button/button';
 
 type CartPropsType = {
   id: number;
@@ -46,60 +44,22 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   const [state, setState] = useState({
     quantity: cartItem ? cartItem.quantity : step,
     isActive: !!cartItem,
-    isImageLoaded: false,
-    isContentLoaded: !!imageUrl ? false : true,
+    isImageLoaded: false, // Используем одно состояние для загрузки изображения
   });
 
   const { ref, inView } = useInView({
     triggerOnce: true,
-    rootMargin: '100px', // Начинаем загружать за 100px до видимости
+    rootMargin: '100px',
   });
 
-  // Функция для проверки поддержки WebP
-  const supportsWebP = useMemo(() => {
-    const elem = document.createElement('canvas');
-    if (!!(elem.getContext && elem.getContext('2d'))) {
-      return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-    }
-    return false;
-  }, []);
-  // Определяем формат изображения
-  const imageFormat = supportsWebP ? 'webp' : 'jpeg';
-  // Получаем имя файла изображения (извлекаем имя файла из imageUrl)
-  const imageFileName = imageUrl ? imageUrl.split('/').pop() : 'placeholder-image.webp'; // Или укажите имя плейсхолдера
-  // Формируем полный URL изображения
-  const fullImageUrl = `/images/${imageFileName}`;
+  const localizedTitle = useMemo(() => {
+    return titles[i18n.language as keyof typeof titles] || titles.en;
+  }, [titles, i18n.language]);
 
-  useEffect(() => {
-    if (cartItem) {
-      setState(prev => ({ ...prev, quantity: cartItem.quantity, isActive: true }));
-    } else {
-      setState(prev => ({ ...prev, quantity: step, isActive: false }));
-    }
-  }, [cartItem, step]);
-
-  useEffect(() => {
-    if (!imageUrl) {
-      setState(prev => ({ ...prev, isContentLoaded: true }));
-    }
-  }, [imageUrl]);
-
-  useEffect(() => {
-    if (imageUrl && !state.isContentLoaded) {
-      const timeout = setTimeout(() => {
-        setState(prev => ({ ...prev, isContentLoaded: true }));
-      }, 5000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [imageUrl, state.isContentLoaded]);
+  const totalPrice = useMemo(() => calculateTotalPrice(price, state.quantity, unit, step), [price, state.quantity, unit, step]);
 
   const handleImageLoad = useCallback(() => {
-    setState(prev => ({ ...prev, isImageLoaded: true, isContentLoaded: true }));
-  }, []);
-
-  const handleImageError = useCallback(() => {
-    setState(prev => ({ ...prev, isContentLoaded: true }));
+    setState(prev => ({ ...prev, isImageLoaded: true }));
   }, []);
 
   const handleQuantityChange = useCallback((newQuantity: number) => {
@@ -117,36 +77,21 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
     }
   }, [state.isActive, addItemToCart, id, price, titles, unit, step, i18n.language, state.quantity]);
 
-  const localizedTitle = useMemo(() => {
-    return titles[i18n.language as keyof typeof titles] || titles.en;
-  }, [titles, i18n.language]);
-
-  const totalPrice = useMemo(() => calculateTotalPrice(price, state.quantity, unit, step), [price, state.quantity, unit, step]);
-
-  if (!state.isContentLoaded) {
-    return <PlaceholderCard />;
-  }
-
   return (
     <Cart ref={ref}>
       <ImageWrapper>
         {inView && (
-          <>
-            <ProductImage
-              src={`${fullImageUrl}?format=${imageFormat}&width=800`}
-              srcSet={`
-                ${fullImageUrl}?format=${imageFormat}&width=320 320w,
-                ${fullImageUrl}?format=${imageFormat}&width=480 480w,
-                ${fullImageUrl}?format=${imageFormat}&width=800 800w
-              `}
-              sizes="(max-width: 600px) 320px, (max-width: 900px) 480px, 800px"
+          <picture>
+            <source
+              srcSet={`${imageUrl}?format=webp&width=800`}
+              type="image/webp"
+            />
+            <img
+              src={`${imageUrl}?format=jpeg&width=800`}
               alt={localizedTitle}
               onLoad={handleImageLoad}
-              onError={handleImageError}
-              isLoaded={state.isImageLoaded}
             />
-            {!state.isImageLoaded && <Placeholder isLoaded={state.isImageLoaded} />}
-          </>
+          </picture>
         )}
         {!inView && <Placeholder isLoaded={false} />}
       </ImageWrapper>
