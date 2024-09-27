@@ -300,7 +300,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   let imageUrl = null;
 
   if (req.file) {
-    const webpFileName = `${path.parse(req.file.filename).name}.webp`;
+    const webpFileName = `${req.file.filename}.webp`;
     const webpImagePath = path.join('uploads', webpFileName);
 
     // Конвертируем изображение в WebP
@@ -342,13 +342,6 @@ app.get('/images/:filename', async (req, res) => {
   const filename = path.basename(req.params.filename);
   const { format = 'webp', width } = req.query;
   const imagePath = path.join(__dirname, 'uploads', filename);
-  console.log(`Запрос на изображение: ${filename}, формат: ${format}, ширина: ${width}`);
-
-    // Проверка существования файла
-    if (!fs.existsSync(imagePath)) {
-      console.error(`Файл не найден: ${imagePath}`);
-      return res.status(404).send('Изображение не найдено');
-    }
 
   try {
     let transformer = sharp(imagePath);

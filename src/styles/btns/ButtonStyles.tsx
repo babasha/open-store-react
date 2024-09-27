@@ -35,46 +35,34 @@ const StyledButton = styled(motion.button)<ButtonProps>`
     background-color: ${theme.button.buttonActive};
   }
 
-  @media (max-width: 1024px) {
+  /* @media (max-width: 1024px) {
     font-size: 16px;
     padding: 8px 15px;
   }
   @media (max-width: 820px) {
     font-size: 16px;
     padding: 5px 12px;
-  }
-  /* @media (max-width: 768px) {
-    font-size: 16px;
-    padding: 5px 12px;
-  }
-  @media (max-width: 540px) {
-    font-size: 16px;
-    padding: 5px 12px;
   } */
-  /* @media (max-width: 430px) {
-    font-size: 14px;
-    padding: 3px 10px;
+    @media (max-width: 480px) {
+      font-size: 14px;
+      padding: 5px 5px;
+
   }
-  @media (max-width: 414px) {
+
+  @media (min-width: 481px) and (max-width: 768px) {
     font-size: 14px;
-    padding: 3px 10px;
+    padding: 5px 7px;
+
   }
-  @media (max-width: 390px) {
+
+  @media (min-width: 769px) and (max-width: 1024px) {
     font-size: 14px;
-    padding: 3px 10px;
+
   }
-  @media (max-width: 375px) {
-    font-size: 14px;
-    padding: 3px 10px;
+
+  @media (min-width: 1025px) {
+    font-size: 16px;
   }
-  @media (max-width: 360px) {
-    font-size: 14px;
-    padding: 3px 10px;
-  }
-  @media (max-width: 344px) {
-    font-size: 14px;
-    padding: 3px 10px;
-  } */
 `;
 
 const Ripple = styled(motion.span)`

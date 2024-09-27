@@ -19,7 +19,29 @@ export const Cart = styled.div`
   margin: 10px;
   border-radius: 20px;
   padding: 10px;
+
+  @media (max-width: 480px) {
+    width: calc(50% - 20px); // 50% ширины экрана с учетом отступов для мобильных экранов
+    /* margin: 10px; */
+  }
+
+  @media (min-width: 481px) and (max-width: 768px) {
+    width: calc(33.33% - 20px); // 3 карточки в ряду на экранах планшетов
+    /* margin: 10px; */
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    width: calc(33.33% - 20px); // Также 3 карточки для больших планшетов
+    /* margin: 10px; */
+  }
+
+  @media (min-width: 1025px) {
+    width: calc(25% - 20px); // 4 карточки в ряду на экранах десктопов
+    /* margin: 10px; */
+  }
 `;
+
+
 
 export const ImageWrapper = styled.div`
   position: relative;
@@ -58,6 +80,7 @@ export const Title = styled.p`
   margin-top: 10px;
   font-size: 1.2rem;
   color: ${theme.colors.font || '#333'};
+  
 `;
 
 export const PlaceholderCart = styled.div`
@@ -67,6 +90,25 @@ export const PlaceholderCart = styled.div`
   margin: 10px;
   border-radius: 20px;
   padding: 10px;
+  @media (max-width: 480px) {
+    width: calc(50% - 20px); // 50% ширины экрана с учетом отступов для мобильных экранов
+    /* margin: 10px; */
+  }
+
+  @media (min-width: 481px) and (max-width: 768px) {
+    width: calc(33.33% - 20px); // 3 карточки в ряду на экранах планшетов
+    /* margin: 10px; */
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    width: calc(33.33% - 20px); // Также 3 карточки для больших планшетов
+    /* margin: 10px; */
+  }
+
+  @media (min-width: 1025px) {
+    width: calc(25% - 20px); // 4 карточки в ряду на экранах десктопов
+    /* margin: 10px; */
+  }
 `;
 
 export const PlaceholderImage = styled.div`

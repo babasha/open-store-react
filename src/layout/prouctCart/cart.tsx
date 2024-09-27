@@ -67,7 +67,6 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   const imageFormat = supportsWebP ? 'webp' : 'jpeg';
   // Получаем имя файла изображения (извлекаем имя файла из imageUrl)
   const imageFileName = imageUrl ? imageUrl.split('/').pop() : 'placeholder-image.webp'; // Или укажите имя плейсхолдера
-
   // Формируем полный URL изображения
   const fullImageUrl = `/images/${imageFileName}`;
 
@@ -133,19 +132,19 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
       <ImageWrapper>
         {inView && (
           <>
-         <ProductImage
-  src={`${fullImageUrl}?format=${imageFormat}&width=800`}
-  srcSet={[
-    `${fullImageUrl}?format=${imageFormat}&width=320 320w`,
-    `${fullImageUrl}?format=${imageFormat}&width=480 480w`,
-    `${fullImageUrl}?format=${imageFormat}&width=800 800w`
-  ].join(', ')}
-  sizes="(max-width: 600px) 320px, (max-width: 900px) 480px, 800px"
-  alt={localizedTitle}
-  onLoad={handleImageLoad}
-  onError={handleImageError}
-  isLoaded={state.isImageLoaded}
-/>
+            <ProductImage
+              src={`${fullImageUrl}?format=${imageFormat}&width=800`}
+              srcSet={`
+                ${fullImageUrl}?format=${imageFormat}&width=320 320w,
+                ${fullImageUrl}?format=${imageFormat}&width=480 480w,
+                ${fullImageUrl}?format=${imageFormat}&width=800 800w
+              `}
+              sizes="(max-width: 600px) 320px, (max-width: 900px) 480px, 800px"
+              alt={localizedTitle}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              isLoaded={state.isImageLoaded}
+            />
             {!state.isImageLoaded && <Placeholder isLoaded={state.isImageLoaded} />}
           </>
         )}

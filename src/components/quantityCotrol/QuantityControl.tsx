@@ -60,10 +60,31 @@ const Button = styled(motion.button)`
   &:active {
     background-color: #cbd5e0;
   }
+
+  @media (max-width: 480px) {
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  @media (min-width: 481px) and (max-width: 768px) {
+    padding: 3px 15px;
+    border-radius: 5px;
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    padding: 3px 15px;
+    border-radius: 6px;
+  }
+
+  @media (min-width: 1025px) {
+    padding: 3px 20px;
+    border-radius: 6px;
+  }
 `;
 
 const Quantity = styled.div`
   font-size: 18px;
+  
 `;
 
 export default QuantityControl;
