@@ -303,31 +303,22 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     const webpFileName = `${req.file.filename}.webp`;
     const webpImagePath = path.join('uploads', webpFileName);
 
-    try {
-      // Конвертируем изображение в WebP
-      await sharp(req.file.path)
-        .webp({ quality: 80 })
-        .toFile(webpImagePath);
+    // Конвертируем изображение в WebP
+    await sharp(req.file.path)
+      .webp({ quality: 80 })
+      .toFile(webpImagePath);
 
-      // Удаляем оригинальный файл асинхронно
-      fs.unlink(req.file.path, (err) => {
-        if (err) {
-          console.error('Ошибка удаления оригинального файла:', err.message);
-        }
-      });
+    // Удаляем оригинальный файл
+    fs.unlinkSync(req.file.path);
 
-      // Сохраняем только имя файла в базе данных
-      imageUrl = webpFileName;
-    } catch (err) {
-      console.error('Ошибка обработки изображения:', err.message);
-      return res.status(500).send('Ошибка при загрузке изображения');
-    }
+    // Сохраняем только имя файла в базе данных
+    imageUrl = webpFileName;
   }
 
   try {
     const newProductResult = await pool.query(
       'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : step || 1, discounts]
+      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : null, discounts]
     );
     const newProduct = newProductResult.rows[0];
 
@@ -352,17 +343,14 @@ app.get('/images/:filename', async (req, res) => {
   const { format = 'webp', width } = req.query;
   const imagePath = path.join(__dirname, 'uploads', filename);
 
-  // Проверяем существование файла
-  if (!fs.existsSync(imagePath)) {
-    return res.status(404).send('Файл не найден');
-  }
-
   try {
     let transformer = sharp(imagePath);
     if (width) {
       transformer = transformer.resize(parseInt(width));
     }
-    transformer = transformer.toFormat(format);
+    if (format) {
+      transformer = transformer.toFormat(format);
+    }
 
     res.set('Cache-Control', 'public, max-age=31536000');
     res.type(`image/${format}`);
