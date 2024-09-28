@@ -4,6 +4,7 @@ const http = require('http');
 const pool = require('./db');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const { Server } = require('socket.io');
@@ -14,7 +15,6 @@ const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const sharp = require('sharp');
-const fs = require('fs');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
