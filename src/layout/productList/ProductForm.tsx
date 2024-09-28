@@ -73,6 +73,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         value={nameEn}
         onChange={(e) => setNameEn(e.target.value)}
         placeholder="Название продукта (английский)"
+        required
       />
       {errors.nameEn && <p>{errors.nameEn}</p>}
 
@@ -81,6 +82,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         value={nameRu}
         onChange={(e) => setNameRu(e.target.value)}
         placeholder="Название продукта (русский)"
+        required
       />
       {errors.nameRu && <p>{errors.nameRu}</p>}
 
@@ -89,14 +91,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
         value={nameGeo}
         onChange={(e) => setNameGeo(e.target.value)}
         placeholder="Название продукта (грузинский)"
+        required
       />
       {errors.nameGeo && <p>{errors.nameGeo}</p>}
 
       <Input
-        type="text"
+        type="number"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
         placeholder="Цена продукта"
+        required
       />
       {errors.price && <p>{errors.price}</p>}
 

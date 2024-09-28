@@ -42,7 +42,7 @@ const ProductList: React.FC = () => {
     setLoading(true);
     try {
       const sendData = new FormData();
-  
+
       // Добавляем остальные поля
       sendData.append('nameEn', formData.nameEn);
       sendData.append('nameRu', formData.nameRu);
@@ -50,12 +50,12 @@ const ProductList: React.FC = () => {
       sendData.append('price', formData.price);
       sendData.append('unit', formData.unit);
       sendData.append('step', formData.step);
-  
+
       // Добавляем файл изображения с именем поля 'image'
       if (formData.image) {
         sendData.append('image', formData.image); // Имя поля должно быть 'image'
       }
-  
+
       const token = localStorage.getItem('token');
       const response = await fetch('/products', {
         method: 'POST',
@@ -67,6 +67,8 @@ const ProductList: React.FC = () => {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Ошибка при добавлении продукта:', errorText);
         throw new Error('Failed to add product');
       }
 
@@ -125,11 +127,18 @@ const ProductList: React.FC = () => {
     try {
       const sendData = new FormData();
 
-      Object.keys(formData).forEach((key) => {
-        if (formData[key]) {
-          sendData.append(key, formData[key]);
-        }
-      });
+      // Добавляем остальные поля
+      sendData.append('nameEn', formData.nameEn);
+      sendData.append('nameRu', formData.nameRu);
+      sendData.append('nameGeo', formData.nameGeo);
+      sendData.append('price', formData.price);
+      sendData.append('unit', formData.unit);
+      sendData.append('step', formData.step);
+
+      // Добавляем файл изображения, если он выбран
+      if (formData.image) {
+        sendData.append('image', formData.image);
+      }
 
       const token = localStorage.getItem('token');
       const response = await fetch(`/products/${editProductId}`, {
@@ -142,6 +151,8 @@ const ProductList: React.FC = () => {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Ошибка при обновлении продукта:', errorText);
         throw new Error('Failed to update product');
       }
 

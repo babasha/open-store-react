@@ -72,9 +72,11 @@ app.use(passport.initialize());
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Указываем абсолютный путь к директории uploads
     cb(null, path.join(__dirname, 'uploads'));
   },
   filename: (req, file, cb) => {
+    // Генерируем уникальное имя файла
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
@@ -298,37 +300,37 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 // Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   console.log('Информация о загруженном файле:', req.file);
+  console.log('Данные запроса:', req.body);
+
   const { nameEn, nameRu, nameGeo, price, unit, step } = req.body;
-  const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
 
   let imageUrl = null;
 
   if (req.file) {
     try {
-      const webpFileName = `${req.file.filename}.webp`;
-      const webpImagePath = path.join('uploads', webpFileName);
-  
+      const webpFileName = `${Date.now()}-${req.file.originalname}.webp`;
+      const webpImagePath = path.join(__dirname, 'uploads', webpFileName);
+
       // Конвертируем изображение в WebP
       await sharp(req.file.path)
         .webp({ quality: 80 })
         .toFile(webpImagePath);
-  
+
       // Удаляем оригинальный файл
       fs.unlinkSync(req.file.path);
-  
+
       // Сохраняем только имя файла в базе данных
       imageUrl = webpFileName;
     } catch (err) {
       console.error('Ошибка при конвертации изображения в WebP:', err);
-      // Вы можете вернуть ошибку или продолжить без изображения
       return res.status(500).send('Ошибка при обработке изображения');
     }
   }
 
   try {
     const newProductResult = await pool.query(
-      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : null, discounts]
+      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : null]
     );
     const newProduct = newProductResult.rows[0];
 
@@ -346,6 +348,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
+
 
 // Маршрут для обслуживания изображений
 app.get('/images/:filename', async (req, res) => {
@@ -368,6 +371,7 @@ app.get('/images/:filename', async (req, res) => {
   } catch (err) {
     console.error('Ошибка при обработке изображения:', {
       message: err.message,
+      stack: err.stack,
       filename,
       format,
       width,
@@ -527,41 +531,47 @@ app.put('/orders/:id/assign-courier', isAuthenticated, async (req, res) => {
 
 // Маршрут для обновления продукта
 app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
-  const { id } = req.params;
-  const { nameEn, nameRu, nameGeo, price, unit, step } = req.body; // Добавили unit и step
-  const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-  const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
+  console.log('Информация о загруженном файле:', req.file);
+  console.log('Данные запроса:', req.body);
 
+  const { id } = req.params;
+  const { nameEn, nameRu, nameGeo, price, unit, step } = req.body;
+
+  let imageUrl = null;
+
+  if (req.file) {
+    try {
+      const webpFileName = `${Date.now()}-${req.file.originalname}.webp`;
+      const webpImagePath = path.join(__dirname, 'uploads', webpFileName);
+
+      // Конвертируем изображение в WebP
+      await sharp(req.file.path)
+        .webp({ quality: 80 })
+        .toFile(webpImagePath);
+
+      // Удаляем оригинальный файл
+      fs.unlinkSync(req.file.path);
+
+      // Сохраняем только имя файла в базе данных
+      imageUrl = webpFileName;
+    } catch (err) {
+      console.error('Ошибка при конвертации изображения в WebP:', err);
+      return res.status(500).send('Ошибка при обработке изображения');
+    }
+  }
 
   try {
-    // Получаем текущие данные продукта
-    const currentProductResult = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+    const updateQuery = `
+      UPDATE products
+      SET name_en = $1, name_ru = $2, name_geo = $3, price = $4, unit = $5, step = $6 ${imageUrl ? ', image_url = $7' : ''}
+      WHERE id = $${imageUrl ? '8' : '7'}
+      RETURNING *
+    `;
+    const values = imageUrl
+      ? [nameEn, nameRu, nameGeo, price, unit, unit === 'g' ? step : null, imageUrl, id]
+      : [nameEn, nameRu, nameGeo, price, unit, unit === 'g' ? step : null, id];
 
-    if (currentProductResult.rows.length === 0) {
-      return res.status(404).send('Продукт не найден');
-    }
-
-    const currentProduct = currentProductResult.rows[0];
-
-    // Используем старое изображение, если новое не загружено
-    const finalImageUrl = imageUrl || currentProduct.image_url;
-
-    // Обновляем продукт
-    const updatedProductResult = await pool.query(
-      'UPDATE products SET name_en = $1, name_ru = $2, name_geo = $3, price = $4, image_url = $5, unit = $6, step = $7, discounts = $8 WHERE id = $9 RETURNING *',
-      [
-        nameEn,
-        nameRu,
-        nameGeo,
-        price,
-        finalImageUrl,
-        unit,
-        unit === 'g' ? step : null,
-        discounts,
-        id,
-      ]
-    );
-
+    const updatedProductResult = await pool.query(updateQuery, values);
     const updatedProduct = updatedProductResult.rows[0];
 
     const product = {
@@ -578,6 +588,7 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
+
 
 // Маршрут для регистрации пользователя
 app.post('/auth/register', async (req, res) => {
