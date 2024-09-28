@@ -341,8 +341,17 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 // Маршрут для обслуживания изображений
 app.get('/images/:filename', async (req, res) => {
   const filename = path.basename(req.params.filename);
-  const { format = 'webp', width } = req.query;
-  const imagePath = path.join(__dirname, 'uploads', filename);
+  const { width } = req.query;
+  const accept = req.headers.accept || '';
+
+  // Определяем, поддерживает ли клиент WebP
+  let format = 'jpeg'; // Формат по умолчанию
+  if (accept.includes('image/webp')) {
+    format = 'webp';
+  }
+
+  // Путь к файлу изображения (используем WebP файл)
+  const imagePath = path.join(__dirname, 'uploads', `${filename}`);
 
   // Проверяем, существует ли файл
   if (!fs.existsSync(imagePath)) {
@@ -352,12 +361,12 @@ app.get('/images/:filename', async (req, res) => {
 
   try {
     let transformer = sharp(imagePath);
+
     if (width) {
       transformer = transformer.resize(parseInt(width));
     }
-    if (format) {
-      transformer = transformer.toFormat(format);
-    }
+
+    transformer = transformer.toFormat(format);
 
     res.set('Cache-Control', 'public, max-age=31536000');
     res.type(`image/${format}`);
