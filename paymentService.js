@@ -2,7 +2,6 @@ require('dotenv').config();
 const axios = require('axios');
 const pool = require('./db'); // Подключаем пул для взаимодействия с базой данных
 const crypto = require('crypto');
-const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
