@@ -1,3 +1,5 @@
+// ProductList.tsx
+
 import React, { useState } from 'react';
 import {
   Section,
@@ -24,12 +26,11 @@ interface Product {
 }
 
 const ProductList: React.FC = () => {
-  // Деструктурируем setLoading из хука useProducts
   const {
     products,
     setProducts,
     loading,
-    setLoading, // Добавляем setLoading здесь
+    setLoading,
     globalError,
     fetchProducts,
     setGlobalError
@@ -41,18 +42,27 @@ const ProductList: React.FC = () => {
     setLoading(true);
     try {
       const sendData = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (formData[key]) {
-          sendData.append(key, formData[key]);
-        }
-      });
-
+  
+      // Добавляем остальные поля
+      sendData.append('nameEn', formData.nameEn);
+      sendData.append('nameRu', formData.nameRu);
+      sendData.append('nameGeo', formData.nameGeo);
+      sendData.append('price', formData.price);
+      sendData.append('unit', formData.unit);
+      sendData.append('step', formData.step);
+  
+      // Добавляем файл изображения с именем поля 'image'
+      if (formData.image) {
+        sendData.append('image', formData.image); // Имя поля должно быть 'image'
+      }
+  
       const token = localStorage.getItem('token');
       const response = await fetch('/products', {
         method: 'POST',
         body: sendData,
         headers: {
           Authorization: `Bearer ${token}`,
+          // Не устанавливайте Content-Type, он будет установлен автоматически
         },
       });
 
@@ -114,6 +124,7 @@ const ProductList: React.FC = () => {
     setLoading(true);
     try {
       const sendData = new FormData();
+
       Object.keys(formData).forEach((key) => {
         if (formData[key]) {
           sendData.append(key, formData[key]);
@@ -126,6 +137,7 @@ const ProductList: React.FC = () => {
         body: sendData,
         headers: {
           Authorization: `Bearer ${token}`,
+          // Не устанавливайте Content-Type, браузер установит его автоматически
         },
       });
 
@@ -193,6 +205,7 @@ const ProductList: React.FC = () => {
                     price: product.price.toString(),
                     unit: product.unit,
                     step: product.step?.toString(),
+                    // При редактировании можно оставить поле image пустым
                   }}
                   onCancel={() => setEditProductId(null)}
                 />

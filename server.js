@@ -72,7 +72,7 @@ app.use(passport.initialize());
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, path.join(__dirname, 'uploads'));
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + file.originalname);
@@ -297,6 +297,7 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 
 // Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
+  console.log('Информация о загруженном файле:', req.file);
   const { nameEn, nameRu, nameGeo, price, unit, step } = req.body;
   const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
 
