@@ -16,6 +16,9 @@ const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporary
 const sharp = require('sharp');
 
 
+console.log('Поддерживаемые форматы изображений:', sharp.format);
+
+
 // cерверные коды 
 
 const app = express();
@@ -300,19 +303,25 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   let imageUrl = null;
 
   if (req.file) {
-    const webpFileName = `${req.file.filename}.webp`;
-    const webpImagePath = path.join('uploads', webpFileName);
-
-    // Конвертируем изображение в WebP
-    await sharp(req.file.path)
-      .webp({ quality: 80 })
-      .toFile(webpImagePath);
-
-    // Удаляем оригинальный файл
-    fs.unlinkSync(req.file.path);
-
-    // Сохраняем только имя файла в базе данных
-    imageUrl = webpFileName;
+    try {
+      const webpFileName = `${req.file.filename}.webp`;
+      const webpImagePath = path.join('uploads', webpFileName);
+  
+      // Конвертируем изображение в WebP
+      await sharp(req.file.path)
+        .webp({ quality: 80 })
+        .toFile(webpImagePath);
+  
+      // Удаляем оригинальный файл
+      fs.unlinkSync(req.file.path);
+  
+      // Сохраняем только имя файла в базе данных
+      imageUrl = webpFileName;
+    } catch (err) {
+      console.error('Ошибка при конвертации изображения в WebP:', err);
+      // Вы можете вернуть ошибку или продолжить без изображения
+      return res.status(500).send('Ошибка при обработке изображения');
+    }
   }
 
   try {

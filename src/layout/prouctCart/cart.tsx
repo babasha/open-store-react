@@ -56,16 +56,16 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   });
 
   // Функция для проверки поддержки WebP
-  const supportsWebP = useMemo(() => {
-    try {
-      return document
-        .createElement('canvas')
-        .toDataURL('image/webp')
-        .indexOf('data:image/webp') === 0;
-    } catch (e) {
-      return false;
-    }
-  }, []);
+ const supportsWebP = useMemo(() => {
+  try {
+    return document
+      .createElement('canvas')
+      .toDataURL('image/webp')
+      .indexOf('data:image/webp') === 0;
+  } catch (e) {
+    return false;
+  }
+}, []);
   // Определяем формат изображения
   const imageFormat = supportsWebP ? 'webp' : 'jpeg';
   // Получаем имя файла изображения (извлекаем имя файла из imageUrl)
@@ -136,12 +136,12 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
         {inView && (
           <>
             <ProductImage
-              src={`${fullImageUrl}?format=${imageFormat}&width=800`}
-              srcSet={`
-                ${fullImageUrl}?format=${imageFormat}&width=320 320w,
-                ${fullImageUrl}?format=${imageFormat}&width=480 480w,
-                ${fullImageUrl}?format=${imageFormat}&width=800 800w
-              `}
+                src={`${fullImageUrl}?format=${imageFormat}&width=800`}
+                srcSet={`
+                  ${fullImageUrl}?format=${imageFormat}&width=320 320w,
+                  ${fullImageUrl}?format=${imageFormat}&width=480 480w,
+                  ${fullImageUrl}?format=${imageFormat}&width=800 800w
+                `}
               sizes="(max-width: 600px) 320px, (max-width: 900px) 480px, 800px"
               alt={localizedTitle}
               onLoad={handleImageLoad}
