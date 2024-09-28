@@ -338,9 +338,32 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   }
 
   try {
-    // Здесь код для сохранения продукта в базу данных
     console.log('Сохранение продукта в базе данных...');
-    res.status(200).send('Продукт успешно добавлен.');
+    const result = await pool.query(
+      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [
+        nameEn,
+        nameRu,
+        nameGeo,
+        price,
+        imageUrl ? `/uploads/${imageUrl}` : null,
+        unit,
+        unit === 'g' ? step : null,
+        discounts,
+      ]
+    );
+  
+    const newProduct = result.rows[0];
+    const product = {
+      ...newProduct,
+      name: {
+        en: newProduct.name_en,
+        ru: newProduct.name_ru,
+        geo: newProduct.name_geo,
+      },
+    };
+  
+    res.status(200).json(product);
   } catch (err) {
     console.error('Ошибка добавления продукта:', err.message);
     res.status(500).send('Ошибка сервера');
