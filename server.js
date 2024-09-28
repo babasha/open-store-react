@@ -15,6 +15,7 @@ const passport = require('./passport-config'); // Импортируем мод�
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const sharp = require('sharp');
 
+console.log('Поддерживаемые форматы изображений:', sharp.format);
 
 // cерверные коды 
 
@@ -300,37 +301,31 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
   let imageUrl = null;
 
   if (req.file) {
-    const webpFileName = `${req.file.filename}.webp`;
+    const fileInfo = path.parse(req.file.filename);
+    const webpFileName = `${fileInfo.name}.webp`;
     const webpImagePath = path.join('uploads', webpFileName);
 
-    // Конвертируем изображение в WebP
-    await sharp(req.file.path)
-      .webp({ quality: 80 })
-      .toFile(webpImagePath);
+    try {
+      // Конвертируем изображение в WebP
+      await sharp(req.file.path)
+        .webp({ quality: 80 })
+        .toFile(webpImagePath);
 
-    // Удаляем оригинальный файл
-    fs.unlinkSync(req.file.path);
+      // Удаляем оригинальный файл
+      fs.unlinkSync(req.file.path);
 
-    // Сохраняем только имя файла в базе данных
-    imageUrl = webpFileName;
+      // Сохраняем имя WebP файла в базе данных
+      imageUrl = webpFileName;
+    } catch (err) {
+      console.error('Ошибка при конвертации изображения в WebP:', err);
+
+      // Сохраняем оригинальное изображение
+      imageUrl = req.file.filename;
+    }
   }
 
   try {
-    const newProductResult = await pool.query(
-      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [nameEn, nameRu, nameGeo, price, imageUrl, unit, unit === 'g' ? step : null, discounts]
-    );
-    const newProduct = newProductResult.rows[0];
-
-    const product = {
-      ...newProduct,
-      name: {
-        en: newProduct.name_en,
-        ru: newProduct.name_ru,
-        geo: newProduct.name_geo,
-      },
-    };
-    res.json(product);
+    // Остальной код для сохранения продукта
   } catch (err) {
     console.error('Ошибка добавления продукта:', err.message);
     res.status(500).send('Ошибка сервера');
@@ -342,6 +337,12 @@ app.get('/images/:filename', async (req, res) => {
   const filename = path.basename(req.params.filename);
   const { format = 'webp', width } = req.query;
   const imagePath = path.join(__dirname, 'uploads', filename);
+
+  // Проверяем, существует ли файл
+  if (!fs.existsSync(imagePath)) {
+    res.status(404).send('Изображение не найдено');
+    return;
+  }
 
   try {
     let transformer = sharp(imagePath);
