@@ -340,21 +340,30 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 
 // Маршрут для обслуживания изображений
 app.get('/images/:filename', async (req, res) => {
-  const filename = path.basename(req.params.filename);
+  const filename = path.basename(req.params.filename, path.extname(req.params.filename));
   const { width } = req.query;
   const accept = req.headers.accept || '';
 
-  // Определяем, поддерживает ли клиент WebP
+  // Определяем поддерживаемый формат
   let format = 'jpeg'; // Формат по умолчанию
   if (accept.includes('image/webp')) {
     format = 'webp';
+  } else if (accept.includes('image/png')) {
+    format = 'png';
   }
 
-  // Путь к файлу изображения (используем WebP файл)
-  const imagePath = path.join(__dirname, 'uploads', `${filename}`);
+  // Поиск файла с любым известным расширением
+  const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+  let imagePath;
+  for (const ext of extensions) {
+    const possiblePath = path.join(__dirname, 'uploads', `${filename}${ext}`);
+    if (fs.existsSync(possiblePath)) {
+      imagePath = possiblePath;
+      break;
+    }
+  }
 
-  // Проверяем, существует ли файл
-  if (!fs.existsSync(imagePath)) {
+  if (!imagePath) {
     res.status(404).send('Изображение не найдено');
     return;
   }
