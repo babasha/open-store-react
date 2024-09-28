@@ -4,8 +4,9 @@ const http = require('http');
 const pool = require('./db');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
-const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+
 const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
@@ -15,6 +16,7 @@ const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const sharp = require('sharp');
+const fs = require('fs');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -73,12 +75,16 @@ app.use(passport.initialize());
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    console.log('Загрузка файла, оригинальное имя:', file.originalname);
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    const generatedFilename = Date.now() + '-' + file.originalname;
+    console.log('Сгенерированное имя файла:', generatedFilename);
+    cb(null, generatedFilename);
   }
 });
+
 const upload = multer({ storage: storage });
 
 // Middleware для проверки, является ли пользователь администратором
@@ -299,39 +305,44 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 
 // Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
+  console.log('POST /products - Начало обработки запроса');
   const { nameEn, nameRu, nameGeo, price, unit, step } = req.body;
+  console.log('Полученные данные:', { nameEn, nameRu, nameGeo, price, unit, step });
+
   const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
+  console.log('Скидки:', discounts);
 
   let imageUrl = null;
 
   if (req.file) {
+    console.log('Файл получен:', req.file);
     const fileInfo = path.parse(req.file.filename);
     const webpFileName = `${fileInfo.name}.webp`;
     const webpImagePath = path.join('uploads', webpFileName);
 
     try {
-      // Конвертируем изображение в WebP
+      console.log('Преобразование изображения в WebP...');
       await sharp(req.file.path)
         .webp({ quality: 80 })
         .toFile(webpImagePath);
 
       // Удаляем оригинальный файл
       fs.unlinkSync(req.file.path);
+      console.log(`Изображение успешно преобразовано и сохранено как ${webpFileName}. Оригинал удалён.`);
 
-      console.log(`Изображение успешно преобразовано в WebP: ${webpFileName}`);
-
-      // Сохраняем имя WebP файла в базе данных
       imageUrl = webpFileName;
     } catch (err) {
       console.error('Ошибка при конвертации изображения в WebP:', err);
-
-      // Сохраняем оригинальное изображение
       imageUrl = req.file.filename;
     }
+  } else {
+    console.log('Файл изображения не был загружен.');
   }
 
   try {
-    // Остальной код для сохранения продукта
+    // Здесь код для сохранения продукта в базу данных
+    console.log('Сохранение продукта в базе данных...');
+    res.status(200).send('Продукт успешно добавлен.');
   } catch (err) {
     console.error('Ошибка добавления продукта:', err.message);
     res.status(500).send('Ошибка сервера');
@@ -340,46 +351,41 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 
 // Маршрут для обслуживания изображений
 app.get('/images/:filename', async (req, res) => {
-  const filename = path.basename(req.params.filename, path.extname(req.params.filename));
+  console.log('GET /images - Запрос изображения:', req.params.filename);
+  const filename = path.basename(req.params.filename);
   const { width } = req.query;
   const accept = req.headers.accept || '';
+  console.log('Запрос ширины изображения:', width);
+  console.log('Accept заголовок:', accept);
 
-  // Определяем поддерживаемый формат
+  // Определяем, поддерживает ли клиент WebP
   let format = 'jpeg'; // Формат по умолчанию
   if (accept.includes('image/webp')) {
     format = 'webp';
-  } else if (accept.includes('image/png')) {
-    format = 'png';
   }
+  console.log('Выбранный формат изображения:', format);
 
-  // Поиск файла с любым известным расширением
-  const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
-  let imagePath;
-  for (const ext of extensions) {
-    const possiblePath = path.join(__dirname, 'uploads', `${filename}${ext}`);
-    if (fs.existsSync(possiblePath)) {
-      imagePath = possiblePath;
-      break;
-    }
-  }
-
-  if (!imagePath) {
+  const imagePath = path.join(__dirname, 'uploads', `${filename}`);
+  if (!fs.existsSync(imagePath)) {
+    console.error('Изображение не найдено:', imagePath);
     res.status(404).send('Изображение не найдено');
     return;
   }
 
   try {
+    console.log('Начало обработки изображения...');
     let transformer = sharp(imagePath);
 
     if (width) {
+      console.log('Изменение размера изображения до ширины:', width);
       transformer = transformer.resize(parseInt(width));
     }
 
     transformer = transformer.toFormat(format);
-
     res.set('Cache-Control', 'public, max-age=31536000');
     res.type(`image/${format}`);
     transformer.pipe(res);
+    console.log('Изображение успешно отправлено.');
   } catch (err) {
     console.error('Ошибка при обработке изображения:', err.message);
     res.status(500).send('Ошибка сервера');
