@@ -14,6 +14,8 @@ const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const sharp = require('sharp');
+const fs = require('fs');
+
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
 
