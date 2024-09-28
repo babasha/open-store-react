@@ -1,5 +1,3 @@
-// ProductForm.tsx
-
 import React, { useState } from 'react';
 import { Form, Input, Button } from '../../styles/AdminPanelStyles';
 import { validateProductForm } from '../../components/utils/validation';
@@ -13,7 +11,6 @@ interface ProductFormProps {
     price?: string;
     unit?: string;
     step?: string;
-    image?: File | null;
   };
   onCancel?: () => void;
 }
@@ -27,14 +24,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [nameRu, setNameRu] = useState(initialData.nameRu || '');
   const [nameGeo, setNameGeo] = useState(initialData.nameGeo || '');
   const [price, setPrice] = useState(initialData.price || '');
-  const [image, setImage] = useState<File | null>(initialData.image || null);
+  const [image, setImage] = useState<File | null>(null);
   const [unit, setUnit] = useState(initialData.unit || 'kg');
   const [step, setStep] = useState(initialData.step || '1');
   const [errors, setErrors] = useState<any>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = () => {
     const formData = {
       nameEn,
       nameRu,
@@ -52,65 +47,52 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     onSubmit(formData);
-
-    // Сброс формы после отправки, если это не форма редактирования
-    if (!initialData || Object.keys(initialData).length === 0) {
-      setNameEn('');
-      setNameRu('');
-      setNameGeo('');
-      setPrice('');
-      setImage(null);
-      setUnit('kg');
-      setStep('1');
-      setErrors({});
-    }
+    // Сброс формы после отправки
+    setNameEn('');
+    setNameRu('');
+    setNameGeo('');
+    setPrice('');
+    setImage(null);
+    setUnit('kg');
+    setStep('1');
+    setErrors({});
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form>
       <Input
         type="text"
         value={nameEn}
         onChange={(e) => setNameEn(e.target.value)}
         placeholder="Название продукта (английский)"
-        required
       />
       {errors.nameEn && <p>{errors.nameEn}</p>}
-
       <Input
         type="text"
         value={nameRu}
         onChange={(e) => setNameRu(e.target.value)}
         placeholder="Название продукта (русский)"
-        required
       />
       {errors.nameRu && <p>{errors.nameRu}</p>}
-
       <Input
         type="text"
         value={nameGeo}
         onChange={(e) => setNameGeo(e.target.value)}
         placeholder="Название продукта (грузинский)"
-        required
       />
       {errors.nameGeo && <p>{errors.nameGeo}</p>}
-
       <Input
-        type="number"
+        type="text"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
         placeholder="Цена продукта"
-        required
       />
       {errors.price && <p>{errors.price}</p>}
-
       <Input
         type="file"
         onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-        accept="image/*"
       />
       {errors.image && <p>{errors.image}</p>}
-
       <label>
         Единица измерения:
         <select value={unit} onChange={(e) => setUnit(e.target.value)}>
@@ -119,7 +101,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <option value="g">Граммы</option>
         </select>
       </label>
-
       {unit === 'g' && (
         <label>
           Шаг (граммы):
@@ -130,8 +111,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </select>
         </label>
       )}
-
-      <Button type="submit">Сохранить</Button>
+      <Button type="button" onClick={handleSubmit}>
+        Сохранить
+      </Button>
       {onCancel && (
         <Button type="button" onClick={onCancel}>
           Отмена

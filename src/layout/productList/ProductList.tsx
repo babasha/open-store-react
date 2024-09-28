@@ -1,5 +1,3 @@
-// ProductList.tsx
-
 import React, { useState } from 'react';
 import {
   Section,
@@ -26,11 +24,12 @@ interface Product {
 }
 
 const ProductList: React.FC = () => {
+  // Деструктурируем setLoading из хука useProducts
   const {
     products,
     setProducts,
     loading,
-    setLoading,
+    setLoading, // Добавляем setLoading здесь
     globalError,
     fetchProducts,
     setGlobalError
@@ -42,19 +41,11 @@ const ProductList: React.FC = () => {
     setLoading(true);
     try {
       const sendData = new FormData();
-
-      // Добавляем остальные поля
-      sendData.append('nameEn', formData.nameEn);
-      sendData.append('nameRu', formData.nameRu);
-      sendData.append('nameGeo', formData.nameGeo);
-      sendData.append('price', formData.price);
-      sendData.append('unit', formData.unit);
-      sendData.append('step', formData.step);
-
-      // Добавляем файл изображения с именем поля 'image'
-      if (formData.image) {
-        sendData.append('image', formData.image); // Имя поля должно быть 'image'
-      }
+      Object.keys(formData).forEach((key) => {
+        if (formData[key]) {
+          sendData.append(key, formData[key]);
+        }
+      });
 
       const token = localStorage.getItem('token');
       const response = await fetch('/products', {
@@ -62,13 +53,10 @@ const ProductList: React.FC = () => {
         body: sendData,
         headers: {
           Authorization: `Bearer ${token}`,
-          // Не устанавливайте Content-Type, он будет установлен автоматически
         },
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Ошибка при добавлении продукта:', errorText);
         throw new Error('Failed to add product');
       }
 
@@ -126,19 +114,11 @@ const ProductList: React.FC = () => {
     setLoading(true);
     try {
       const sendData = new FormData();
-
-      // Добавляем остальные поля
-      sendData.append('nameEn', formData.nameEn);
-      sendData.append('nameRu', formData.nameRu);
-      sendData.append('nameGeo', formData.nameGeo);
-      sendData.append('price', formData.price);
-      sendData.append('unit', formData.unit);
-      sendData.append('step', formData.step);
-
-      // Добавляем файл изображения, если он выбран
-      if (formData.image) {
-        sendData.append('image', formData.image);
-      }
+      Object.keys(formData).forEach((key) => {
+        if (formData[key]) {
+          sendData.append(key, formData[key]);
+        }
+      });
 
       const token = localStorage.getItem('token');
       const response = await fetch(`/products/${editProductId}`, {
@@ -146,13 +126,10 @@ const ProductList: React.FC = () => {
         body: sendData,
         headers: {
           Authorization: `Bearer ${token}`,
-          // Не устанавливайте Content-Type, браузер установит его автоматически
         },
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Ошибка при обновлении продукта:', errorText);
         throw new Error('Failed to update product');
       }
 
@@ -216,7 +193,6 @@ const ProductList: React.FC = () => {
                     price: product.price.toString(),
                     unit: product.unit,
                     step: product.step?.toString(),
-                    // При редактировании можно оставить поле image пустым
                   }}
                   onCancel={() => setEditProductId(null)}
                 />
