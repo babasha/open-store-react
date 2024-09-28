@@ -57,11 +57,14 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
 
   // Функция для проверки поддержки WebP
   const supportsWebP = useMemo(() => {
-    const elem = document.createElement('canvas');
-    if (!!(elem.getContext && elem.getContext('2d'))) {
-      return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    try {
+      return document
+        .createElement('canvas')
+        .toDataURL('image/webp')
+        .indexOf('data:image/webp') === 0;
+    } catch (e) {
+      return false;
     }
-    return false;
   }, []);
   // Определяем формат изображения
   const imageFormat = supportsWebP ? 'webp' : 'jpeg';

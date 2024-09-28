@@ -356,7 +356,13 @@ app.get('/images/:filename', async (req, res) => {
     res.type(`image/${format}`);
     transformer.pipe(res);
   } catch (err) {
-    console.error('Ошибка при обработке изображения:', err.message);
+    console.error('Ошибка при обработке изображения:', {
+      message: err.message,
+      filename,
+      format,
+      width,
+      imagePath,
+    });
     res.status(500).send('Ошибка сервера');
   }
 });
