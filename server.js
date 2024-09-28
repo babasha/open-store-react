@@ -17,6 +17,7 @@ const sharp = require('sharp');
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
 
+
 // cерверные коды 
 
 const app = express();
@@ -147,6 +148,7 @@ app.post('/auth/request-reset-password', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // Маршрут для сброса пароля
 app.post('/auth/reset-password/:token', async (req, res) => {
@@ -313,6 +315,8 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
 
       // Удаляем оригинальный файл
       fs.unlinkSync(req.file.path);
+
+      console.log(`Изображение успешно преобразовано в WebP: ${webpFileName}`);
 
       // Сохраняем имя WebP файла в базе данных
       imageUrl = webpFileName;
