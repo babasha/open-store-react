@@ -303,70 +303,83 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 
 // Маршрут для добавления нового продукта
 app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
-  console.log('POST /products - Начало обработки запроса');
-  const { nameEn, nameRu, nameGeo, price, unit, step } = req.body;
-  console.log('Полученные данные:', { nameEn, nameRu, nameGeo, price, unit, step });
-
-  const discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
-  console.log('Скидки:', discounts);
-
-  let imageUrl = null;
-
-  if (req.file) {
-    console.log('Файл получен:', req.file);
-    const fileInfo = path.parse(req.file.filename);
-    const webpFileName = `${fileInfo.name}.webp`;
-    const webpImagePath = path.join('uploads', webpFileName);
-
-    try {
-      console.log('Преобразование изображения в WebP...');
-      await sharp(req.file.path)
-        .webp({ quality: 80 })
-        .toFile(webpImagePath);
-
-      // Удаляем оригинальный файл
-      fs.unlinkSync(req.file.path);
-      console.log(`Изображение успешно преобразовано и сохранено как ${webpFileName}. Оригинал удалён.`);
-
-      imageUrl = webpFileName;
-    } catch (err) {
-      console.error('Ошибка при конвертации изображения в WebP:', err);
-      imageUrl = req.file.filename;
-    }
-  } else {
-    console.log('Файл изображения не был загружен.');
-  }
-
   try {
+    console.log('POST /products - Начало обработки запроса');
+    const { nameEn, nameRu, nameGeo, unit } = req.body;
+    let { price, step } = req.body;
+
+    console.log('Полученные данные:', { nameEn, nameRu, nameGeo, price, unit, step });
+
+    // Преобразование price и step в числа
+    price = parseFloat(price);
+    step = parseFloat(step);
+
+    // Обработка discounts
+    let discounts = [];
+    try {
+      discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
+    } catch (err) {
+      console.error('Ошибка при разборе discounts:', err.message);
+      discounts = [];
+    }
+    console.log('Скидки:', discounts);
+
+    let imageUrl = null;
+
+    if (req.file) {
+      console.log('Файл получен:', req.file);
+      const fileInfo = path.parse(req.file.filename);
+      const webpFileName = `${fileInfo.name}.webp`;
+      const webpImagePath = path.join('uploads', webpFileName);
+
+      try {
+        console.log('Преобразование изображения в WebP...');
+        await sharp(req.file.path)
+          .webp({ quality: 80 })
+          .toFile(webpImagePath);
+
+        // Удаляем оригинальный файл
+        fs.unlinkSync(req.file.path);
+        console.log(`Изображение успешно преобразовано и сохранено как ${webpFileName}. Оригинал удалён.`);
+
+        imageUrl = webpFileName;
+      } catch (err) {
+        console.error('Ошибка при конвертации изображения в WebP:', err.message);
+        imageUrl = req.file.filename;
+      }
+    } else {
+      console.log('Файл изображения не был загружен.');
+    }
+
     console.log('Сохранение продукта в базе данных...');
-    //Добавление товара 
-    // const result = await pool.query(
-    //   'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-    //   [
-    //     nameEn,
-    //     nameRu,
-    //     nameGeo,
-    //     price,
-    //     imageUrl ? `/uploads/${imageUrl}` : null,
-    //     unit,
-    //     unit === 'g' ? step : null,
-    //     discounts,
-    //   ]
-    // );
-  
-    // const newProduct = result.rows[0];
-    // const product = {
-    //   ...newProduct,
-    //   name: {
-    //     en: newProduct.name_en,
-    //     ru: newProduct.name_ru,
-    //     geo: newProduct.name_geo,
-    //   },
-    // };
-  
-    // res.status(200).json(product);
+    const result = await pool.query(
+      'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [
+        nameEn,
+        nameRu,
+        nameGeo,
+        price,
+        imageUrl ? `/uploads/${imageUrl}` : null,
+        unit,
+        unit === 'g' ? step : null,
+        discounts,
+      ]
+    );
+
+    const newProduct = result.rows[0];
+    const product = {
+      ...newProduct,
+      name: {
+        en: newProduct.name_en,
+        ru: newProduct.name_ru,
+        geo: newProduct.name_geo,
+      },
+    };
+
+    res.status(200).json(product);
   } catch (err) {
-    console.error('Ошибка добавления продукта:', err.message);
+    console.error('Ошибка при обработке запроса:', err.message);
+    console.error(err.stack);
     res.status(500).send('Ошибка сервера');
   }
 });
