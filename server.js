@@ -112,22 +112,38 @@ const isAdmin = (req, res, next) => {
 
 
 // Middleware для проверки авторизации пользователя
+const jwt = require('jsonwebtoken');
+
 const isAuthenticated = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  console.log('Authorization Header:', authHeader);
+
   if (!authHeader) {
+    console.error('Отсутствует заголовок Authorization');
     return res.status(401).json({ message: 'Токен не предоставлен' });
   }
 
   const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    req.user = decoded;
-    next();
-  } catch (error) {
-    console.error('Ошибка при проверке токена:', error.message);
-    res.status(400).json({ message: 'Неверный токен' });
+  console.log('Extracted Token:', token);
+
+  if (!token) {
+    console.error('Токен не найден в заголовке Authorization');
+    return res.status(401).json({ message: 'Токен не найден' });
   }
+
+  jwt.verify(token, 'secret_key', (err, user) => {
+    if (err) {
+      console.error('Ошибка при проверке токена:', err.message);
+      return res.status(403).json({ message: 'Недействительный токен' });
+    }
+    req.user = user;
+    console.log('Пользователь аутентифицирован:', user);
+    next();
+  });
 };
+
+module.exports = isAuthenticated;
+
 
 // Маршрут для запроса сброса пароля
 app.post('/auth/request-reset-password', async (req, res) => {
@@ -781,7 +797,8 @@ app.post('/payment/callback', async (req, res) => {
 app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
   console.log('Authenticated user:', req.user);
   const { orderId } = req.params;
-
+  console.log(`Получен запрос на получение чека для заказа с ID: ${orderId}`);
+  console.log('Authenticated user:', req.user);
   try {
     console.log(`Получен запрос на получение чека для заказа с ID: ${orderId}`);
     

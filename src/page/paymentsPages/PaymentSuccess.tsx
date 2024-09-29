@@ -45,7 +45,11 @@ const PaymentSuccess: React.FC = () => {
         responseType: 'blob', // Для получения бинарных данных
       });
   
-      const receiptBlob = response.data;
+      if (response.status !== 200) {
+        throw new Error('Не удалось получить чек');
+      }
+  
+      const receiptBlob = new Blob([response.data], { type: 'application/pdf' });
   
       const url = window.URL.createObjectURL(receiptBlob);
   
@@ -59,7 +63,7 @@ const PaymentSuccess: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Ошибка при скачивании чека:', error);
-      // Обработка ошибки
+      // Дополнительная обработка ошибки
     }
   };
 
