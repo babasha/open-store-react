@@ -112,7 +112,6 @@ const isAdmin = (req, res, next) => {
 
 
 // Middleware для проверки авторизации пользователя
-const jwt = require('jsonwebtoken');
 
 const isAuthenticated = (req, res, next) => {
   const authHeader = req.headers.authorization;
