@@ -39,33 +39,39 @@ const PaymentSuccess: React.FC = () => {
         throw new Error('Заказ не найден');
       }
       
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Пользователь не авторизован');
+      }
+      
       const response = await fetch(`/payment/receipt/${orderId}`, {
         method: 'GET',
-        // Удаляем заголовок 'Content-Type'
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
-  
+
       if (!response.ok) {
         throw new Error('Не удалось получить чек');
       }
-  
+
       const receiptBlob = await response.blob();
-  
+
       const url = window.URL.createObjectURL(receiptBlob);
-  
+
       const link = document.createElement('a');
       link.href = url;
       link.download = 'receipt.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-  
+
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Ошибка при скачивании чека:', error);
       // Обработка ошибки
     }
   };
-  
 
   const handleReturnToShop = () => {
     navigate('/');
