@@ -779,6 +779,7 @@ app.post('/payment/callback', async (req, res) => {
 
 // работа с чеками 
 app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
+  console.log('Authenticated user:', req.user);
   const { orderId } = req.params;
 
   try {

@@ -6,6 +6,8 @@ import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper'; 
 import { BascketTitle } from '../../layout/cart/BasketStyles'; 
 import { usePurchasedItems } from './PurchasedItemsContext'; // Создадим контекст для купленных товаров
+import axios from 'axios';
+
 
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation();
@@ -38,34 +40,22 @@ const PaymentSuccess: React.FC = () => {
       if (!orderId) {
         throw new Error('Заказ не найден');
       }
-      
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Пользователь не авторизован');
-      }
-      
-      const response = await fetch(`/payment/receipt/${orderId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+  
+      const response = await axios.get(`/payment/receipt/${orderId}`, {
+        responseType: 'blob', // Для получения бинарных данных
       });
-
-      if (!response.ok) {
-        throw new Error('Не удалось получить чек');
-      }
-
-      const receiptBlob = await response.blob();
-
+  
+      const receiptBlob = response.data;
+  
       const url = window.URL.createObjectURL(receiptBlob);
-
+  
       const link = document.createElement('a');
       link.href = url;
       link.download = 'receipt.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
+  
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Ошибка при скачивании чека:', error);
