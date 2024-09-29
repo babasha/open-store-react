@@ -824,37 +824,58 @@ app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
   const { orderId } = req.params;
 
   try {
+    console.log(`Получен запрос на получение чека для заказа с ID: ${orderId}`);
+    
     // Получаем заказ из базы данных
+    console.log('Запрос к базе данных для получения заказа...');
     const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
     const order = orderResult.rows[0];
 
     if (!order) {
+      console.error(`Заказ с ID ${orderId} не найден в базе данных.`);
       return res.status(404).json({ error: 'Заказ не найден' });
     }
 
+    console.log(`Заказ с ID ${orderId} найден:`, order);
+
     // Проверяем, что пользователь запрашивает свой заказ
+    console.log('Проверка, что заказ принадлежит текущему пользователю...');
     if (order.user_id !== req.user.id) {
+      console.error(`Доступ запрещен для пользователя с ID ${req.user.id}.`);
       return res.status(403).json({ error: 'Доступ запрещён' });
     }
 
+    console.log('Пользователь имеет права на получение чека.');
+
     // Получаем актуальный accessToken
+    console.log('Получаем accessToken для запроса чека у банка...');
     const accessToken = await getAccessToken();
+    console.log('accessToken успешно получен:', accessToken);
 
     // Запрашиваем чек у банка
+    console.log(`Запрос чека по URL ${order.receipt_url}...`);
     const response = await axios.get(order.receipt_url, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
+      responseType: 'arraybuffer', // Важно для получения бинарных данных
     });
+
+    console.log(`Чек успешно получен от банка, статус ответа: ${response.status}`);
+    
+    // Логируем часть данных чека для проверки
+    console.log('Первые 100 байт данных чека:', response.data.slice(0, 100));
 
     // Отправляем чек клиенту
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('Ошибка при получении чека:', error.message);
+    console.error(`Ошибка при получении чека для заказа ${orderId}:`, error.message);
+    console.error('Полная информация об ошибке:', error);
     res.status(500).json({ error: 'Не удалось получить чек' });
   }
 });
+
 
 // Маршрут для обновления статуса заказа
 app.put('/orders/:id/status', async (req, res) => {

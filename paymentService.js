@@ -195,7 +195,10 @@ async function handlePaymentCallback(event, body) {
 
 
 // Возвращаем redirectUrl для успешной страницы
-return { message: 'Заказ успешно создан', redirectUrl: `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}` }
+return { message: 'Заказ успешно создан', 
+  redirectUrl: `/payment/success?orderId=${newOrderId}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}` }
+
+  // redirectUrl: `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}` }
     } catch (error) {
       console.error('Ошибка при создании заказа:', error.message);
       throw new Error('Ошибка создания заказа после оплаты');
