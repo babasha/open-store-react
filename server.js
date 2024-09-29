@@ -243,7 +243,7 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
 
   try {
     console.log('Попытка создать платеж с данными:', { total, items });
-    const paymentUrl = await createPayment(total, items); // Используем функцию из paymentService.js
+    const { paymentUrl, receiptUrl } = await createPayment(total, items, externalOrderId);
     console.log('Платеж успешно создан, URL:', paymentUrl);
     res.json({ payment_url: paymentUrl });
   } catch (error) {
@@ -773,6 +773,9 @@ app.post('/orders', async (req, res) => {
     // Генерируем уникальный externalOrderId
     const externalOrderId = uuidv4();
 
+ // Инициируем платёж, передавая externalOrderI
+ const { paymentUrl, receiptUrl } = await createPayment(total, items, externalOrderId);
+
     // Сохраняем данные заказа временно
     temporaryOrders[externalOrderId] = {
       userId,
@@ -780,11 +783,10 @@ app.post('/orders', async (req, res) => {
       total,
       deliveryTime,
       deliveryAddress,
+      receiptUrl ,
     };
 
-    // Инициируем платёж, передавая externalOrderI
-    const paymentUrl = await createPayment(total, items, externalOrderId);
-
+   
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
   } catch (error) {
@@ -817,6 +819,42 @@ app.post('/payment/callback', async (req, res) => {
   }
 });
 
+// работа с чеками 
+app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    // Получаем заказ из базы данных
+    const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
+    const order = orderResult.rows[0];
+
+    if (!order) {
+      return res.status(404).json({ error: 'Заказ не найден' });
+    }
+
+    // Проверяем, что пользователь запрашивает свой заказ
+    if (order.user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Доступ запрещён' });
+    }
+
+    // Получаем актуальный accessToken
+    const accessToken = await getAccessToken();
+
+    // Запрашиваем чек у банка
+    const response = await axios.get(order.receipt_url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Отправляем чек клиенту
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Ошибка при получении чека:', error.message);
+    res.status(500).json({ error: 'Не удалось получить чек' });
+  }
+});
 
 // Маршрут для обновления статуса заказа
 app.put('/orders/:id/status', async (req, res) => {

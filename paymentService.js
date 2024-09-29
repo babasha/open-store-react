@@ -84,6 +84,7 @@ async function createPayment(total, items, externalOrderId) {
 
     console.log('Данные для создания платежа:', JSON.stringify(paymentData, null, 2));
 
+    // Отправляем запрос на создание платежа
     const response = await axios.post(process.env.BOG_PAYMENT_URL, paymentData, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -91,8 +92,17 @@ async function createPayment(total, items, externalOrderId) {
       }
     });
 
-   console.log('Ответ сервера Банка Грузии:', response.data);
-    return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
+    console.log('Ответ сервера Банка Грузии:', response.data);
+
+    // Получаем ссылки для оплаты и чека
+    const paymentUrl = response.data._links.redirect.href;
+    const receiptUrl = response.data._links.details.href;
+
+    // Возвращаем оба значения
+    return {
+      paymentUrl,
+      receiptUrl
+    };
   } catch (error) {
     if (error.response) {
       console.error('Ошибка создания платежа:', error.response.data);
@@ -164,7 +174,7 @@ async function handlePaymentCallback(event, body) {
 
     // Создаём заказ в базе данных
     const insertResult = await pool.query(
-      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id, receipt_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
       [
         orderData.userId,
         JSON.stringify(orderData.items),
@@ -174,6 +184,7 @@ async function handlePaymentCallback(event, body) {
         'completed', // Статус заказа
         paymentStatus, // Статус платежа
         order_id, // Идентификатор заказа в банке
+        orderData.receiptUrl // Сохраняем receiptUrl
       ]
     );
     const newOrderId = insertResult.rows[0].id;

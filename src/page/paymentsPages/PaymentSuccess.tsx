@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
@@ -10,8 +10,13 @@ import { usePurchasedItems } from './PurchasedItemsContext'; // Создадим
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { purchasedItems, clearPurchasedItems } = usePurchasedItems();
   const [counter, setCounter] = useState(30); // Инициализируем счётчик на 30 секунд
+
+  // Получаем orderId из URL
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get('orderId');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -28,22 +33,42 @@ const PaymentSuccess: React.FC = () => {
     };
   }, [navigate]);
 
-  const handleDownloadReceipt = () => {
-    // Функция для скачивания чека
-    const receiptData = purchasedItems.map((item) => {
-      return `${item.title} - ${item.quantity} x ${item.price} ₾`;
-    }).join('\n');
-
-    const blob = new Blob([receiptData], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'receipt.txt';
-    link.click();
-
-    window.URL.revokeObjectURL(url);
+  const handleDownloadReceipt = async () => {
+    try {
+      if (!orderId) {
+        throw new Error('Заказ не найден');
+      }
+      
+      const response = await fetch(`/payment/receipt/${orderId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Если используете JWT-токен, можно добавить его здесь
+          // 'Authorization': `Bearer ${token}`,
+        },
+        // Если не используете куки для аутентификации, можно убрать credentials
+      });
+  
+      if (!response.ok) {
+        throw new Error('Не удалось получить чек');
+      }
+  
+      const receiptBlob = await response.blob();
+  
+      const url = window.URL.createObjectURL(receiptBlob);
+  
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'receipt.pdf';
+      link.click();
+  
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Ошибка при скачивании чека:', error);
+      // Вы можете показать пользователю уведомление об ошибке
+    }
   };
+  
 
   const handleReturnToShop = () => {
     navigate('/');
