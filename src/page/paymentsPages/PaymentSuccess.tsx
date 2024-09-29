@@ -41,12 +41,7 @@ const PaymentSuccess: React.FC = () => {
       
       const response = await fetch(`/payment/receipt/${orderId}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          // Если используете JWT-токен, можно добавить его здесь
-          // 'Authorization': `Bearer ${token}`,
-        },
-        // Если не используете куки для аутентификации, можно убрать credentials
+        // Удаляем заголовок 'Content-Type'
       });
   
       if (!response.ok) {
@@ -60,12 +55,14 @@ const PaymentSuccess: React.FC = () => {
       const link = document.createElement('a');
       link.href = url;
       link.download = 'receipt.pdf';
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
   
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Ошибка при скачивании чека:', error);
-      // Вы можете показать пользователю уведомление об ошибке
+      // Обработка ошибки
     }
   };
   

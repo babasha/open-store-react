@@ -868,13 +868,10 @@ app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
     console.log('Первые 100 байт данных чека:', response.data.slice(0, 100));
 
     // Отправляем чек клиенту
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.error(`Ошибка при получении чека для заказа ${orderId}:`, error.message);
-    console.error('Полная информация об ошибке:', error);
-    res.status(500).json({ error: 'Не удалось получить чек' });
-  }
-});
+    // Отправляем чек клиенту
+   res.set('Content-Type', 'application/pdf');
+   res.set('Content-Disposition', 'attachment; filename="receipt.pdf"');
+   res.send(response.data);
 
 
 // Маршрут для обновления статуса заказа
