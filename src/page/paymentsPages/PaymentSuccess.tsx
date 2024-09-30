@@ -41,8 +41,8 @@ const PaymentSuccess: React.FC = () => {
         throw new Error('Заказ не найден');
       }
   
-      const response = await axios.get(`/payment/receipt/${orderId}`, {
-        responseType: 'blob', // Для получения бинарных данных
+      const response = await axios.get(`https://enddel.com/payment/receipt/${orderId}`, {
+        responseType: 'blob',
       });
   
       if (response.status !== 200) {

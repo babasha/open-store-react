@@ -683,7 +683,7 @@ app.post('/auth/login', async (req, res) => {
       return res.status(400).json({ message: 'Неверные учетные данные' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, 'secret_key', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, role: user.role }, 'secret_key', { expiresIn: '24h' });
     res.json({ token, user: { id: user.id, firstName: user.first_name, lastName: user.last_name, email: user.email, address: user.address, phone: user.phone, role: user.role } });
   } catch (err) {
     console.error('Ошибка входа пользователя:', err.message);
@@ -794,13 +794,16 @@ app.post('/payment/callback', async (req, res) => {
 
 // работа с чеками 
 app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
+  console.log(`Получен запрос на получение чека для заказа с ID: ${req.params.orderId}`);
   console.log('Authenticated user:', req.user);
+  
   const { orderId } = req.params;
   console.log(`Получен запрос на получение чека для заказа с ID: ${orderId}`);
   console.log('Authenticated user:', req.user);
   try {
     console.log(`Получен запрос на получение чека для заказа с ID: ${orderId}`);
-    
+    res.status(500).json({ error: 'Не удалось получить чек', details: error.message });
+
     // Получаем заказ из базы данных
     console.log('Запрос к базе данных для получения заказа...');
     const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
@@ -815,7 +818,7 @@ app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
 
     // Проверяем, что пользователь запрашивает свой заказ
     console.log('Проверка, что заказ принадлежит текущему пользователю...');
-    if (order.user_id !== req.user.id) {
+    if (String(order.user_id) !== String(req.user.id)) {
       console.error(`Доступ запрещен для пользователя с ID ${req.user.id}.`);
       return res.status(403).json({ error: 'Доступ запрещён' });
     }
@@ -848,7 +851,7 @@ app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
     res.send(response.data);
   } catch (error) {
     console.error(`Ошибка при получении чека для заказа ${orderId}:`, error.message);
-    res.status(500).json({ error: 'Не удалось получить чек' });
+    res.status(500).json({ error: 'Не удалось получить чек', details: error.message });
   }
 });
 

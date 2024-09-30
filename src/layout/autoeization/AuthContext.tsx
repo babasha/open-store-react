@@ -36,6 +36,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        console.log('Axios Authorization Header:', axios.defaults.headers.common['Authorization']);
         socket.emit('login', parsedUser.id);
       } catch (error) {
         console.error('Ошибка при парсинге данных пользователя из localStorage:', error);
