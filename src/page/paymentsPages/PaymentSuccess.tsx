@@ -5,9 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper'; 
 import { BascketTitle } from '../../layout/cart/BasketStyles'; 
-import { usePurchasedItems } from './PurchasedItemsContext'; // Создадим контекст для купленных товаров
+import { usePurchasedItems } from './PurchasedItemsContext'; // Контекст для купленных товаров
 import axios from 'axios';
-
 
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation();
@@ -15,11 +14,31 @@ const PaymentSuccess: React.FC = () => {
   const location = useLocation();
   const { purchasedItems, clearPurchasedItems } = usePurchasedItems();
   const [counter, setCounter] = useState(30); // Инициализируем счётчик на 30 секунд
+  const [orderId, setOrderId] = useState<string | null>(null); // Состояние для хранения orderId
+  const [orderDetails, setOrderDetails] = useState<any>(null); // Состояние для деталей заказа
 
-  // Получаем orderId из URL
+  // Получаем externalOrderId из URL
   const params = new URLSearchParams(location.search);
-  const orderId = params.get('orderId');
+  const externalOrderId = params.get('externalOrderId');
 
+  // Получение данных заказа с сервера
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const response = await axios.get(`https://enddel.com/orders/by-external-id/${externalOrderId}`);
+        setOrderId(response.data.orderId); // Сохраняем orderId
+        setOrderDetails(response.data.order); // Сохраняем детали заказа
+      } catch (error) {
+        console.error('Ошибка при получении заказа:', error);
+      }
+    };
+
+    if (externalOrderId) {
+      fetchOrder();
+    }
+  }, [externalOrderId]);
+
+  // Таймер для автоматического перенаправления через 30 секунд
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate('/');
@@ -35,31 +54,31 @@ const PaymentSuccess: React.FC = () => {
     };
   }, [navigate]);
 
+  // Функция для скачивания чека
   const handleDownloadReceipt = async () => {
     try {
       if (!orderId) {
         throw new Error('Заказ не найден');
       }
-  
+
       const response = await axios.get(`https://enddel.com/payment/receipt/${orderId}`, {
         responseType: 'blob',
       });
-  
+
       if (response.status !== 200) {
         throw new Error('Не удалось получить чек');
       }
-  
+
       const receiptBlob = new Blob([response.data], { type: 'application/pdf' });
-  
       const url = window.URL.createObjectURL(receiptBlob);
-  
+
       const link = document.createElement('a');
       link.href = url;
       link.download = 'receipt.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-  
+
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Ошибка при скачивании чека:', error);

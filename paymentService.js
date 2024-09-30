@@ -77,7 +77,7 @@ async function createPayment(total, items, externalOrderId) {
         })
       },
       redirect_urls: {
-        success: `${process.env.PUBLIC_URL}/payment/success`,
+        success: `${process.env.PUBLIC_URL}/payment/success?externalOrderId=${externalOrderId}`,
         fail: `${process.env.PUBLIC_URL}/payment/fail`
       }
     };
@@ -184,7 +184,8 @@ async function handlePaymentCallback(event, body) {
         'completed', // Статус заказа
         paymentStatus, // Статус платежа
         order_id, // Идентификатор заказа в банке
-        orderData.receiptUrl // Сохраняем receiptUrl
+        orderData.receiptUrl, // Сохраняем receiptUrl
+        external_order_id // Сохраняем external_order_id
       ]
     );
     const newOrderId = insertResult.rows[0].id;

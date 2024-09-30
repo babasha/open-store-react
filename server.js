@@ -266,7 +266,25 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Ошибка создания платежа' });
   }
 });
-
+// хранение id для чеков 
+app.get('/orders/by-external-id/:externalOrderId', isAuthenticated, async (req, res) => {
+  try {
+    const { externalOrderId } = req.params;
+    const userId = req.user.id;
+    const result = await pool.query(
+      'SELECT * FROM orders WHERE external_order_id = $1 AND user_id = $2',
+      [externalOrderId, userId]
+    );
+    const order = result.rows[0];
+    if (!order) {
+      return res.status(404).json({ error: 'Заказ не найден' });
+    }
+    res.json({ orderId: order.id, order });
+  } catch (error) {
+    console.error('Ошибка при получении заказа по externalOrderId:', error.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
 // Маршрут для обработки обратного вызова
 app.post('/payment/callback', async (req, res) => {
   const { event, body } = req.body;
