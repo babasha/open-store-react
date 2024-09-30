@@ -792,18 +792,13 @@ app.post('/payment/callback', async (req, res) => {
   }
 });
 
-// работа с чеками 
+// Работа с чеками 
 app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
   console.log(`Получен запрос на получение чека для заказа с ID: ${req.params.orderId}`);
   console.log('Authenticated user:', req.user);
   
   const { orderId } = req.params;
-  console.log(`Получен запрос на получение чека для заказа с ID: ${orderId}`);
-  console.log('Authenticated user:', req.user);
   try {
-    console.log(`Получен запрос на получение чека для заказа с ID: ${orderId}`);
-    res.status(500).json({ error: 'Не удалось получить чек', details: error.message });
-
     // Получаем заказ из базы данных
     console.log('Запрос к базе данных для получения заказа...');
     const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
@@ -842,9 +837,6 @@ app.get('/payment/receipt/:orderId', isAuthenticated, async (req, res) => {
 
     console.log(`Чек успешно получен от банка, статус ответа: ${response.status}`);
     
-    // Логируем часть данных чека для проверки
-    console.log('Первые 100 байт данных чека:', response.data.slice(0, 100));
-
     // Отправляем чек клиенту
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', 'attachment; filename="receipt.pdf"');
