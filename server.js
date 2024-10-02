@@ -20,7 +20,7 @@ const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporary
 console.log('Поддерживаемые форматы изображений:', sharp.format);
 
 
-// cерверные коды 
+// cерверные код 
 
 const app = express();
 const server = http.createServer(app);

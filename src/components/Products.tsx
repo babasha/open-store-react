@@ -8,6 +8,7 @@ import AuthorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
 import { useCart } from '../layout/cart/CartContext';
 
+
 type Product = {
   id: number;
   name: {
