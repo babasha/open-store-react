@@ -15,6 +15,7 @@ const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
+const bodyParser = require('body-parser');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -69,6 +70,11 @@ app.use(passport.initialize());
 //   }
 // );
 
+app.use(bodyParser.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString();
+  }
+}));
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -248,24 +254,24 @@ app.get('/couriers/me', isAuthenticated, async (req, res) => {
 });
 
 // Маршрут для создания платежа
-app.post('/create-payment', isAuthenticated, async (req, res) => {
-  const { total, items } = req.body;
+// app.post('/create-payment', isAuthenticated, async (req, res) => {
+//   const { total, items } = req.body;
 
-  if (!total || !items || items.length === 0) {
-    console.error('Некорректные данные для создания платежа:', req.body);
-    return res.status(400).json({ error: 'Некорректные данные для создания платежа' });
-  }
+//   if (!total || !items || items.length === 0) {
+//     console.error('Некорректные данные для создания платежа:', req.body);
+//     return res.status(400).json({ error: 'Некорректные данные для создания платежа' });
+//   }
 
-  try {
-    console.log('Попытка создать платеж с данными:', { total, items });
-    const { paymentUrl, receiptUrl } = await createPayment(total, items, externalOrderId);
-    console.log('Платеж успешно создан, URL:', paymentUrl);
-    res.json({ payment_url: paymentUrl });
-  } catch (error) {
-    console.error('Ошибка при создании платежа:', error.message);
-    res.status(500).json({ error: 'Ошибка создания платежа' });
-  }
-});
+//   try {
+//     console.log('Попытка создать платеж с данными:', { total, items });
+//     const { paymentUrl, receiptUrl } = await createPayment(total, items, externalOrderId);
+//     console.log('Платеж успешно создан, URL:', paymentUrl);
+//     res.json({ payment_url: paymentUrl });
+//   } catch (error) {
+//     console.error('Ошибка при создании платежа:', error.message);
+//     res.status(500).json({ error: 'Ошибка создания платежа' });
+//   }
+// });
 // хранение id для чеков 
 app.get('/orders/by-external-id/:externalOrderId', isAuthenticated, async (req, res) => {
   try {
@@ -286,20 +292,20 @@ app.get('/orders/by-external-id/:externalOrderId', isAuthenticated, async (req, 
   }
 });
 // Маршрут для обработки обратного вызова
-app.post('/payment/callback', async (req, res) => {
-  const { event, body } = req.body;
+// app.post('/payment/callback', async (req, res) => {
+//   const { event, body } = req.body;
 
-  console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
+//   console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
 
-  try {
-    const result = await handlePaymentCallback(event, body);
-    console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('Ошибка обработки обратного вызова:', error.message); // Логируем ошибки
-    res.status(500).json({ message: error.message });
-  }
-});
+//   try {
+//     const result = await handlePaymentCallback(event, body);
+//     console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
+//     res.status(200).json(result);
+//   } catch (error) {
+//     console.error('Ошибка обработки обратного вызова:', error.message); // Логируем ошибки
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 // Маршрут для обновления статуса курьера
 app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
@@ -761,23 +767,25 @@ app.post('/orders', async (req, res) => {
       throw new Error('Пользователь не найден');
     }
 
-    // Генерируем уникальный externalOrderId
-    const externalOrderId = uuidv4();
+    // Вставляем заказ в базу данных с состоянием 'pending'
+    const insertResult = await pool.query(
+      'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [userId, JSON.stringify(items), total, deliveryTime, deliveryAddress, 'pending']
+    );
+    const newOrderId = insertResult.rows[0].id;
 
- // Инициируем платёж, передавая externalOrderI
- const { paymentUrl, receiptUrl } = await createPayment(total, items, externalOrderId);
+    // Используем ID заказа в качестве externalOrderId
+    const externalOrderId = newOrderId.toString();
 
-    // Сохраняем данные заказа временно
-    temporaryOrders[externalOrderId] = {
-      userId,
-      items,
-      total,
-      deliveryTime,
-      deliveryAddress,
-      receiptUrl ,
-    };
+    // Инициируем платёж, передавая externalOrderId
+    const { paymentUrl, receiptUrl } = await createPayment(total, items, externalOrderId);
 
-   
+    // Обновляем заказ в базе данных, добавляя receiptUrl
+    await pool.query(
+      'UPDATE orders SET receipt_url = $1 WHERE id = $2',
+      [receiptUrl, newOrderId]
+    );
+
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
   } catch (error) {
@@ -786,24 +794,29 @@ app.post('/orders', async (req, res) => {
   }
 });
 
+
 // Маршрут для обработки обратного вызова от Банка Грузии
 app.post('/payment/callback', async (req, res) => {
   const callbackSignature = req.headers['callback-signature'];
-  const callbackData = req.body;
+  const rawBody = req.rawBody;
+
+  console.log('Получен обратный вызов с данными:', req.body);
 
   try {
     // Проверка подписи
-    const isValid = verifyCallbackSignature(callbackData, callbackSignature);
+    const isValid = verifyCallbackSignature(rawBody, callbackSignature);
     if (!isValid) {
       console.error('Неверная подпись обратного вызова');
       return res.status(400).json({ error: 'Неверная подпись' });
     }
 
     // Обработка данных обратного вызова
+    const callbackData = req.body;
     const result = await handlePaymentCallback(callbackData.event, callbackData.body);
+    console.log('Обратный вызов обработан успешно:', result);
 
     // Возвращаем 200 OK, подтверждая успешную обработку
-    res.status(200).json({ message: 'Callback обработан успешно' });
+    res.status(200).json(result);
   } catch (error) {
     console.error('Ошибка при обработке callback:', error.message);
     res.status(500).json({ error: 'Ошибка обработки callback' });
