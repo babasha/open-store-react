@@ -15,8 +15,7 @@ const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
-const isAuthenticated = require('.isAuthenticated');
-const isAdmin = require('.isAdmin');
+
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
 
@@ -86,49 +85,49 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// // Middleware для проверки, является ли пользователь администратором
-// const isAdmin = (req, res, next) => {
-//   const authHeader = req.headers.authorization;
-//   if (!authHeader) {
-//     return res.status(403).json({ error: 'Доступ запрещен.' });
-//   }
+// Middleware для проверки, является ли пользователь администратором
+const isAdmin = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(403).json({ error: 'Доступ запрещен.' });
+  }
 
-//   const token = authHeader.split(' ')[1];
-//   if (!token) {
-//     return res.status(403).json({ error: 'Доступ запрещен.' });
-//   }
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(403).json({ error: 'Доступ запрещен.' });
+  }
 
-//   try {
-//     const decoded = jwt.verify(token, 'secret_key');
-//     req.user = decoded;
-//     if (req.user.role !== 'admin') {
-//       return res.status(403).json({ error: 'Доступ запрещен.' });
-//     }
-//     next();
-//   } catch (error) {
-//     console.error('Ошибка при проверке токена:', error.message);
-//     res.status(400).json({ error: 'Неверный токен.' });
-//   }
-// };
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    req.user = decoded;
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Доступ запрещен.' });
+    }
+    next();
+  } catch (error) {
+    console.error('Ошибка при проверке токена:', error.message);
+    res.status(400).json({ error: 'Неверный токен.' });
+  }
+};
 
 
 // Middleware для проверки авторизации пользователя
-// const isAuthenticated = (req, res, next) => {
-//   const authHeader = req.headers.authorization;
-//   if (!authHeader) {
-//     return res.status(401).json({ message: 'Токен не предоставлен' });
-//   }
+const isAuthenticated = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Токен не предоставлен' });
+  }
 
-//   const token = authHeader.split(' ')[1];
-//   try {
-//     const decoded = jwt.verify(token, 'secret_key');
-//     req.user = decoded;
-//     next();
-//   } catch (error) {
-//     console.error('Ошибка при проверке токена:', error.message);
-//     res.status(400).json({ message: 'Неверный токен' });
-//   }
-// };
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Ошибка при проверке токена:', error.message);
+    res.status(400).json({ message: 'Неверный токен' });
+  }
+};
 
 // Маршрут для запроса сброса пароля
 app.post('/auth/request-reset-password', async (req, res) => {
