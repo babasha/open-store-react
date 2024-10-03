@@ -4,6 +4,7 @@ const pool = require('./db'); // Подключаем пул для взаимо
 const crypto = require('crypto');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 
 const temporaryOrders = {}; 
