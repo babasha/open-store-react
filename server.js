@@ -15,8 +15,8 @@ const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
-const isAuthenticated = require('./middlewares/isAuthenticated');
-const isAdmin = require('./middlewares/isAdmin');
+const isAuthenticated = require('.isAuthenticated');
+const isAdmin = require('.isAdmin');
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
 
