@@ -44,8 +44,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Middleware для обработки JSON
-app.use(express.json());
-
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString();
+  }
+}));
 // Middleware для заголовков CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', process.env.PUBLIC_URL);
@@ -70,11 +73,11 @@ app.use(passport.initialize());
 //   }
 // );
 
-app.use(bodyParser.json({
-  verify: (req, res, buf) => {
-    req.rawBody = buf.toString();
-  }
-}));
+// app.use(bodyParser.json({
+//   verify: (req, res, buf) => {
+//     req.rawBody = buf.toString();
+//   }
+// }));
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({
