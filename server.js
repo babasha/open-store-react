@@ -16,7 +16,6 @@ const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 // const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const { createPayment, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
-// const isAuthenticated = require('./middleware/isAuthenticated'); // Ваш middleware для аутентификации
 
 // const bodyParser = require('body-parser');
 
