@@ -15,7 +15,8 @@ const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
-
+const isAuthenticated = require('./middlewares/isAuthenticated');
+const isAdmin = require('./middlewares/isAdmin');
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
 
@@ -85,49 +86,49 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Middleware для проверки, является ли пользователь администратором
-const isAdmin = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(403).json({ error: 'Доступ запрещен.' });
-  }
+// // Middleware для проверки, является ли пользователь администратором
+// const isAdmin = (req, res, next) => {
+//   const authHeader = req.headers.authorization;
+//   if (!authHeader) {
+//     return res.status(403).json({ error: 'Доступ запрещен.' });
+//   }
 
-  const token = authHeader.split(' ')[1];
-  if (!token) {
-    return res.status(403).json({ error: 'Доступ запрещен.' });
-  }
+//   const token = authHeader.split(' ')[1];
+//   if (!token) {
+//     return res.status(403).json({ error: 'Доступ запрещен.' });
+//   }
 
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    req.user = decoded;
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Доступ запрещен.' });
-    }
-    next();
-  } catch (error) {
-    console.error('Ошибка при проверке токена:', error.message);
-    res.status(400).json({ error: 'Неверный токен.' });
-  }
-};
+//   try {
+//     const decoded = jwt.verify(token, 'secret_key');
+//     req.user = decoded;
+//     if (req.user.role !== 'admin') {
+//       return res.status(403).json({ error: 'Доступ запрещен.' });
+//     }
+//     next();
+//   } catch (error) {
+//     console.error('Ошибка при проверке токена:', error.message);
+//     res.status(400).json({ error: 'Неверный токен.' });
+//   }
+// };
 
 
 // Middleware для проверки авторизации пользователя
-const isAuthenticated = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ message: 'Токен не предоставлен' });
-  }
+// const isAuthenticated = (req, res, next) => {
+//   const authHeader = req.headers.authorization;
+//   if (!authHeader) {
+//     return res.status(401).json({ message: 'Токен не предоставлен' });
+//   }
 
-  const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    req.user = decoded;
-    next();
-  } catch (error) {
-    console.error('Ошибка при проверке токена:', error.message);
-    res.status(400).json({ message: 'Неверный токен' });
-  }
-};
+//   const token = authHeader.split(' ')[1];
+//   try {
+//     const decoded = jwt.verify(token, 'secret_key');
+//     req.user = decoded;
+//     next();
+//   } catch (error) {
+//     console.error('Ошибка при проверке токена:', error.message);
+//     res.status(400).json({ message: 'Неверный токен' });
+//   }
+// };
 
 // Маршрут для запроса сброса пароля
 app.post('/auth/request-reset-password', async (req, res) => {
@@ -252,21 +253,21 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
   }
 });
 
-// Маршрут для обработки обратного вызова
-app.post('/payment/callback', async (req, res) => {
-  const { event, body } = req.body;
+// // Маршрут для обработки обратного вызова
+// app.post('/payment/callback', async (req, res) => {
+//   const { event, body } = req.body;
 
-  console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
+//   console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
 
-  try {
-    const result = await handlePaymentCallback(event, body);
-    console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('Ошибка обработки обратного вызова:', error.message); // Логируем ошибки
-    res.status(500).json({ message: error.message });
-  }
-});
+//   try {
+//     const result = await handlePaymentCallback(event, body);
+//     console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
+//     res.status(200).json(result);
+//   } catch (error) {
+//     console.error('Ошибка обработки обратного вызова:', error.message); // Логируем ошибки
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 // Маршрут для обновления статуса курьера
 app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
