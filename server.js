@@ -14,8 +14,11 @@ const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
-const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
-const bodyParser = require('body-parser');
+// const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
+const { createPayment, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
+const isAuthenticated = require('./middleware/isAuthenticated'); // Ваш middleware для аутентификации
+
+// const bodyParser = require('body-parser');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -769,7 +772,16 @@ app.post('/orders', async (req, res) => {
     if (!user) {
       throw new Error('Пользователь не найден');
     }
+  // Формируем данные заказа
+  const orderData = {
+    userId,
+    items,
+    total,
+    deliveryTime,
+    deliveryAddress
+  };
 
+  
     // Вставляем заказ в базу данных с состоянием 'pending'
     const insertResult = await pool.query(
       'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
@@ -781,7 +793,7 @@ app.post('/orders', async (req, res) => {
     const externalOrderId = newOrderId.toString();
 
     // Инициируем платёж, передавая externalOrderId
-    const { paymentUrl, receiptUrl } = await createPayment(total, items, externalOrderId);
+    const { paymentUrl } = await createPayment(orderData);
 
     // Обновляем заказ в базе данных, добавляя receiptUrl
     await pool.query(
