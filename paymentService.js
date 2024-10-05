@@ -284,8 +284,8 @@ async function getReceipt(orderId) {
     const accessToken = await getAccessToken();
     console.log('Токен доступа для получения чека:', accessToken);
 
-    // Формируем URL для запроса чека
-    const receiptUrl = `${process.env.BOG_PAYMENT_URL}/receipt/${orderId}`;
+    // Формируем правильный URL для запроса чека
+    const receiptUrl = `${process.env.BOG_PAYMENT_URL}/orders/${orderId}`;
     console.log('URL для получения чека:', receiptUrl);
 
     // Выполняем GET-запрос для получения чека
