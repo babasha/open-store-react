@@ -97,7 +97,7 @@ async function createPayment(total, items, externalOrderId) {
 
     // Выполняем запрос на создание платежа
     console.log('Отправляем запрос на создание платежа...');
-    const response = await axios.post(process.env.BOG_PAYMENT_URL, paymentData, {
+    const response = await axios.post(`${process.env.BOG_PAYMENT_URL}/payments`, paymentData, {
       headers: {
         'Authorization': `Bearer ${accessToken}`, // Заголовок с токеном доступа
         'Content-Type': 'application/json' // Указываем тип контента как JSON
@@ -285,7 +285,7 @@ async function getReceipt(orderId) {
     console.log('Токен доступа для получения чека:', accessToken);
 
     // Формируем правильный URL для запроса чека
-    const receiptUrl = `${process.env.BOG_PAYMENT_URL}/ecommerce/orders/${orderId}`;
+    const receiptUrl = `${process.env.BOG_PAYMENT_URL}/orders/${orderId}`;
     console.log('URL для получения чека:', receiptUrl);
 
     // Выполняем GET-запрос для получения чека
