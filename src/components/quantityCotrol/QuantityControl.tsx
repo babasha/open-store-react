@@ -53,7 +53,7 @@ const Button = styled(motion.button)`
   justify-content: center;
   font-size: 24px;
   cursor: pointer;
-  margin: 5.5px;
+  margin: 5.5px;я
   &:hover {
     background-color: #e2e8f0;
   }

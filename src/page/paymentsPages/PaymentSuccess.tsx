@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper'; 
-import { BascketTitle } from '../../layout/cart/BasketStyles'; 
+import { BascketTitle } from '../../layout/basket/BasketStyles'; 
 import { usePurchasedItems } from './PurchasedItemsContext'; // Создадим контекст для купленных товаров
 
 const PaymentSuccess: React.FC = () => {

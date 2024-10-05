@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useCart } from '../cart/CartContext';
+import { useCart } from '../basket/CartContext';
 import { useTranslation } from 'react-i18next';
 import { useInView } from 'react-intersection-observer';
 import {

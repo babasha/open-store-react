@@ -3,7 +3,7 @@
   import { BrowserRouter as Router } from 'react-router-dom';
   import { App } from './App';
   import { GlobalStyled } from './styles/globalStyled';
-  import { CartProvider } from './layout/cart/CartContext';
+  import { CartProvider } from './layout/basket/CartContext';
   import './i18n';
   import './scripts/telegram-web-app.js'; // Обновленный путь
 

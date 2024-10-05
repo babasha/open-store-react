@@ -3,10 +3,11 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../styles/Theme';
 import  ProductCart  from '../layout/prouctCart/cart';
-import Basket from '../layout/cart/basket';
+import Basket from '../layout/basket/basket';
 import AuthorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
-import { useCart } from '../layout/cart/CartContext';
+import { useCart } from '../layout/basket/CartContext';
+import Cardpromo from '../layout/promoCard/Cardpromo';
 
 type Product = {
   id: number;
@@ -66,6 +67,7 @@ const Products: React.FC = () => {
             step={product.step}  // Использую step
           />
         ))}
+        <Cardpromo />
       </ShopInner>
       <StyledMenuWrapper
         isExpanded={isExpanded}

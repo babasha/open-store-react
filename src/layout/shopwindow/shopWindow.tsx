@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from "styled-components";
 import { theme } from '../../styles/Theme';
-import { Basket } from '../cart/basket';
+import { Basket } from '../basket/basket';
 import  ProductCart  from '../prouctCart/cart';
 import { useTranslation } from 'react-i18next';
 
