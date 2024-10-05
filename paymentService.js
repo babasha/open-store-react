@@ -1,3 +1,11 @@
+const axios = require('axios');
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid'); // Для генерации UUID
+const express = require('express');
+const app = express();
+const pool = require('./db'); 
 const temporaryOrders = {};
 
 /**
