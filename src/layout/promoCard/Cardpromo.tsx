@@ -50,7 +50,7 @@ const CardPromo: React.FC<CardPromoProps> = ({ title, description }) => {
           onClick={handleCardClick}
           layoutId="promo-card"
           initial={{ borderRadius: 10 }}
-          whileHover={{ scale: 1.03 }}
+          whileHover={{ scale: 1.0 }}
           whileTap={{ scale: 0.97 }}
           transition={transition}
         >
