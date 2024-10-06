@@ -274,7 +274,8 @@ async function handlePaymentCallback(event, body) {
         [receiptUrl, newOrderId]
       );
       console.log('Ссылка на чек сохранена в заказе');
-
+       // Вызываем функцию для получения и вывода чека
+       await getReceiptAndLog(newOrderId);
       // Удаляем временные данные заказа из временного хранилища
       console.log('Удаляем временные данные заказа для external_order_id:', external_order_id);
       delete temporaryOrders[external_order_id];
