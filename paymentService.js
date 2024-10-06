@@ -1,4 +1,3 @@
-
 const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
@@ -6,31 +5,45 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid'); // Для генерации UUID
 const express = require('express');
 const app = express();
-const pool = require('./db'); 
+const pool = require('./db');
 const temporaryOrders = {};
 
 /**
  * Получение access_token от API Банка Грузии
  */
 async function getAccessToken(userId) {
+  console.log('Получен userId в getAccessToken:', userId);
   // Формируем строку авторизации из client_id и client_secret, закодированную в base64
-  const auth = Buffer.from(`${process.env.BOG_CLIENT_ID}:${process.env.BOG_CLIENT_SECRET}`).toString('base64');
+  const auth = Buffer.from(
+    `${process.env.BOG_CLIENT_ID}:${process.env.BOG_CLIENT_SECRET}`
+  ).toString('base64');
   console.log('Получаем токен доступа...');
   try {
     // Выполняем POST-запрос для получения access_token
     console.log('Отправляем запрос на получение access_token...');
-    const response = await axios.post(process.env.BOG_TOKEN_URL, 'grant_type=client_credentials', {
-      headers: {
-        'Authorization': `Basic ${auth}`, // Добавляем заголовок авторизации с base64 закодированными данными
-        'Content-Type': 'application/x-www-form-urlencoded' // Указываем тип контента для формы
+    const response = await axios.post(
+      process.env.BOG_TOKEN_URL,
+      'grant_type=client_credentials',
+      {
+        headers: {
+          Authorization: `Basic ${auth}`, // Заголовок авторизации
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       }
-    });
+    );
     console.log('Токен успешно получен:', response.data);
 
     // Сохраняем access_token в базу данных
     if (userId) {
-      await pool.query('UPDATE users SET card_token = $1 WHERE id = $2', [response.data.access_token, userId]);
-      console.log(`Токен сохранён для пользователя с ID ${userId}`);
+      try {
+        await pool.query(
+          'UPDATE users SET card_token = $1 WHERE id = $2',
+          [response.data.access_token, userId]
+        );
+        console.log(`Токен сохранён для пользователя с ID ${userId}`);
+      } catch (dbError) {
+        console.error('Ошибка при сохранении токена в базу данных:', dbError);
+      }
     }
 
     return response.data.access_token; // Возвращаем access_token
@@ -38,10 +51,16 @@ async function getAccessToken(userId) {
     // Обработка ошибок
     if (error.response) {
       console.error('Ошибка получения токена доступа:', error.response.data);
-      throw new Error(`Не удалось получить токен доступа: ${error.response.data.error_description || error.response.statusText}`);
+      throw new Error(
+        `Не удалось получить токен доступа: ${
+          error.response.data.error_description || error.response.statusText
+        }`
+      );
     } else if (error.request) {
       console.error('Сервер не ответил на запрос:', error.request);
-      throw new Error('Сервер Банка Грузии не ответил на запрос. Попробуйте позже.');
+      throw new Error(
+        'Сервер Банка Грузии не ответил на запрос. Попробуйте позже.'
+      );
     } else {
       console.error('Ошибка настройки запроса:', error.message);
       throw new Error('Ошибка настройки запроса к API Банка Грузии');
@@ -54,16 +73,18 @@ async function getAccessToken(userId) {
  * @param {number} total - Общая сумма заказа
  * @param {Array} items - Список товаров
  * @param {string} externalOrderId - Уникальный идентификатор заказа
+ * @param {number} userId - Идентификатор пользователя
  * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
-async function createPayment(total, items, externalOrderId, userId){
+async function createPayment(total, items, externalOrderId, userId) {
   console.log('Начало создания платежа...');
+  console.log('Получен userId в createPayment:', userId);
 
   try {
     // Получаем access_token для авторизации
     console.log('Запрашиваем токен доступа для создания платежа...');
-    const accessToken = await getAccessToken(userId); 
-        console.log('Токен доступа для платежа:', accessToken);
+    const accessToken = await getAccessToken(userId);
+    console.log('Токен доступа для платежа:', accessToken);
 
     if (!accessToken) {
       throw new Error('Не удалось получить токен доступа');
@@ -72,40 +93,47 @@ async function createPayment(total, items, externalOrderId, userId){
     // Формируем данные для создания платежа
     console.log('Формируем данные для создания платежа...');
     const paymentData = {
-      callback_url: process.env.BOG_CALLBACK_URL, // URL для обратного вызова после оплаты
+      callback_url: process.env.BOG_CALLBACK_URL, // URL для обратного вызова
       external_order_id: externalOrderId, // Внешний идентификатор заказа
       purchase_units: {
         currency: 'GEL', // Валюта платежа
-        total_amount: Number(parseFloat(total).toFixed(2)), // Преобразуем total в число с двумя знаками после запятой
-        basket: items.map(item => {
+        total_amount: Number(parseFloat(total).toFixed(2)),
+        basket: items.map((item) => {
           // Преобразуем item.price в число с двумя знаками после запятой
           const unitPrice = Number(parseFloat(item.price).toFixed(2));
           console.log('item.price:', item.price, 'unitPrice:', unitPrice);
 
           return {
             product_id: item.productId.toString(), // Идентификатор товара
-            description: item.description || 'Товар', // Описание товара (по умолчанию "Товар")
-            quantity: item.quantity, // Количество товара
-            unit_price: unitPrice, // Цена за единицу товара
+            description: item.description || 'Товар',
+            quantity: item.quantity,
+            unit_price: unitPrice,
           };
-        })
+        }),
       },
       redirect_urls: {
-        success: `${process.env.PUBLIC_URL}/payment/success`, // URL для перенаправления в случае успеха
-        fail: `${process.env.PUBLIC_URL}/payment/fail` // URL для перенаправления в случае ошибки
-      }
+        success: `${process.env.PUBLIC_URL}/payment/success`,
+        fail: `${process.env.PUBLIC_URL}/payment/fail`,
+      },
     };
 
-    console.log('Данные для создания платежа:', JSON.stringify(paymentData, null, 2));
+    console.log(
+      'Данные для создания платежа:',
+      JSON.stringify(paymentData, null, 2)
+    );
 
     // Выполняем запрос на создание платежа
     console.log('Отправляем запрос на создание платежа...');
-    const response = await axios.post(process.env.BOG_PAYMENT_URL, paymentData, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`, // Заголовок с токеном доступа
-        'Content-Type': 'application/json' // Указываем тип контента как JSON
+    const response = await axios.post(
+      process.env.BOG_PAYMENT_URL,
+      paymentData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Заголовок с токеном доступа
+          'Content-Type': 'application/json',
+        },
       }
-    });
+    );
 
     console.log('Ответ сервера Банка Грузии:', response.data);
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
@@ -113,15 +141,23 @@ async function createPayment(total, items, externalOrderId, userId){
     if (error.response) {
       // Обрабатываем ошибку, если сервер вернул ответ с кодом ошибки
       console.error('Ошибка создания платежа:', error.response.data);
-      throw new Error(`Ошибка создания платежа: ${error.response.data.message || error.response.statusText}`);
+      throw new Error(
+        `Ошибка создания платежа: ${
+          error.response.data.message || error.response.statusText
+        }`
+      );
     } else if (error.request) {
       // Обрабатываем ошибку, если сервер не ответил
       console.error('Сервер не ответил на запрос создания платежа:', error.request);
-      throw new Error('Сервер Банка Грузии не ответил на запрос создания платежа. Попробуйте позже.');
+      throw new Error(
+        'Сервер Банка Грузии не ответил на запрос создания платежа. Попробуйте позже.'
+      );
     } else {
       // Обрабатываем ошибку настройки запроса
       console.error('Ошибка настройки запроса создания платежа:', error.message);
-      throw new Error('Ошибка настройки запроса к API Банка Грузии при создании платежа');
+      throw new Error(
+        'Ошибка настройки запроса к API Банка Грузии при создании платежа'
+      );
     }
   }
 }
@@ -136,17 +172,17 @@ function verifyCallbackSignature(data, signature) {
   console.log('Начало верификации подписи обратного вызова...');
 
   // Загрузка публичного ключа из файла
-  const publicKeyPath = path.join(__dirname, 'public_key.pem'); // Убедитесь, что путь к файлу корректный
+  const publicKeyPath = path.join(__dirname, 'public_key.pem');
   console.log('Загружаем публичный ключ из:', publicKeyPath);
-  const publicKey = fs.readFileSync(publicKeyPath, 'utf8'); // Читаем содержимое файла с публичным ключом
+  const publicKey = fs.readFileSync(publicKeyPath, 'utf8');
 
   // Создание объекта для верификации подписи
   const verifier = crypto.createVerify('SHA256');
 
-  // Важно: данные должны быть сериализованы точно так же, как были на стороне банка
+  // Данные должны быть сериализованы так же, как на стороне банка
   const dataString = JSON.stringify(data);
   console.log('Сериализованные данные для верификации:', dataString);
-  verifier.update(dataString); // Обновляем объект верификатора данными
+  verifier.update(dataString);
   verifier.end();
 
   // Проверка подписи с использованием публичного ключа
@@ -185,7 +221,7 @@ async function handlePaymentCallback(event, body) {
       console.log('Получаем данные заказа для external_order_id:', external_order_id);
       const orderData = temporaryOrders[external_order_id];
       if (!orderData) {
-        console.error('Данные заказа не найдены для external_order_id:', externalOrderId);
+        console.error('Данные заказа не найдены для external_order_id:', external_order_id);
         throw new Error('Данные заказа не найдены');
       }
 
@@ -212,11 +248,13 @@ async function handlePaymentCallback(event, body) {
       delete temporaryOrders[external_order_id];
 
       // Возвращаем redirectUrl для успешной страницы
-      const redirectUrl = `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}`;
+      const redirectUrl = `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(
+        JSON.stringify(orderData.items)
+      )}`;
       console.log('Возвращаем redirectUrl для успешной страницы:', redirectUrl);
       return {
         message: 'Заказ успешно создан',
-        redirectUrl: redirectUrl
+        redirectUrl: redirectUrl,
       };
     } catch (error) {
       console.error('Ошибка при создании заказа:', error.message);
@@ -243,22 +281,31 @@ async function getReceipt(orderId) {
     console.log('Токен доступа для получения чека:', accessToken);
 
     // Выполняем GET-запрос для получения чека
-    const response = await axios.get(`${process.env.BOG_PAYMENT_URL}/receipt/${orderId}`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+    const response = await axios.get(
+      `${process.env.BOG_PAYMENT_URL}/receipt/${orderId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
       }
-    });
+    );
 
     console.log('Полученный чек:', JSON.stringify(response.data, null, 2));
     return response.data; // Возвращаем чек в формате JSON
   } catch (error) {
     if (error.response) {
       console.error('Ошибка получения чека:', error.response.data);
-      throw new Error(`Ошибка получения чека: ${error.response.data.message || error.response.statusText}`);
+      throw new Error(
+        `Ошибка получения чека: ${
+          error.response.data.message || error.response.statusText
+        }`
+      );
     } else if (error.request) {
       console.error('Сервер не ответил на запрос получения чека:', error.request);
-      throw new Error('Сервер Банка Грузии не ответил на запрос получения чека. Попробуйте позже.');
+      throw new Error(
+        'Сервер Банка Грузии не ответил на запрос получения чека. Попробуйте позже.'
+      );
     } else {
       console.error('Ошибка настройки запроса получения чека:', error.message);
       throw new Error('Ошибка настройки запроса к API Банка Грузии при получении чека');
@@ -273,5 +320,4 @@ module.exports = {
   verifyCallbackSignature,
   getReceipt,
   temporaryOrders, // Экспортируем temporaryOrders для использования в server.js
-  }
-
+};
