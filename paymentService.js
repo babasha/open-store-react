@@ -1,3 +1,4 @@
+
 const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
@@ -97,7 +98,7 @@ async function createPayment(total, items, externalOrderId) {
 
     // Выполняем запрос на создание платежа
     console.log('Отправляем запрос на создание платежа...');
-    const response = await axios.post(`${process.env.BOG_PAYMENT_URL}/ecommerce/payments`, paymentData, {
+    const response = await axios.post(process.env.BOG_PAYMENT_URL, paymentData, {
       headers: {
         'Authorization': `Bearer ${accessToken}`, // Заголовок с токеном доступа
         'Content-Type': 'application/json' // Указываем тип контента как JSON
@@ -204,17 +205,9 @@ async function handlePaymentCallback(event, body) {
       const newOrderId = insertResult.rows[0].id;
       console.log('Заказ успешно создан с ID:', newOrderId);
 
-
-  // **Получаем чек после успешного создания заказа**
-  console.log('Получение чека для order_id:', order_id);
-  const receipt = await getReceipt(order_id);
-  console.log('Полученный чек:', JSON.stringify(receipt, null, 2));
-
-
       // Удаляем временные данные заказа из временного хранилища
       console.log('Удаляем временные данные заказа для external_order_id:', external_order_id);
       delete temporaryOrders[external_order_id];
-
 
       // Возвращаем redirectUrl для успешной страницы
       const redirectUrl = `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}`;
@@ -239,43 +232,6 @@ async function handlePaymentCallback(event, body) {
  * @param {string} orderId - Идентификатор заказа
  * @returns {Object} - Чек в формате JSON
  */
-// async function getReceipt(orderId) {
-//   console.log('Получение чека для orderId:', orderId);
-
-//   try {
-//     // Получаем access_token для авторизации
-//     const accessToken = await getAccessToken();
-//     console.log('Токен доступа для получения чека:', accessToken);
-
-//     // Выполняем GET-запрос для получения чека
-//     const response = await axios.get(`${process.env.BOG_PAYMENT_URL}/receipt/${orderId}`, {
-//       headers: {
-//         'Authorization': `Bearer ${accessToken}`,
-//         'Content-Type': 'application/json'
-//       }
-//     });
-
-//     console.log('Полученный чек:', JSON.stringify(response.data, null, 2));
-//     return response.data; // Возвращаем чек в формате JSON
-//   } catch (error) {
-//     if (error.response) {
-//       console.error('Ошибка получения чека:', error.response.data);
-//       throw new Error(`Ошибка получения чека: ${error.response.data.message || error.response.statusText}`);
-//     } else if (error.request) {
-//       console.error('Сервер не ответил на запрос получения чека:', error.request);
-//       throw new Error('Сервер Банка Грузии не ответил на запрос получения чека. Попробуйте позже.');
-//     } else {
-//       console.error('Ошибка настройки запроса получения чека:', error.message);
-//       throw new Error('Ошибка настройки запроса к API Банка Грузии при получении чека');
-//     }
-//   }
-// }
-/**
- * Получение чека после успешного платежа
- * @param {string} orderId - Идентификатор заказа (order_id от банка)
- * @returns {Object} - Чек в формате JSON
- */
-
 async function getReceipt(orderId) {
   console.log('Получение чека для orderId:', orderId);
 
@@ -284,24 +240,17 @@ async function getReceipt(orderId) {
     const accessToken = await getAccessToken();
     console.log('Токен доступа для получения чека:', accessToken);
 
-    // Формируем правильный URL для запроса чека
-    const receiptUrl = `${process.env.BOG_PAYMENT_URL}/ecommerce/orders/${orderId}`;
-    console.log('URL для получения чека:', receiptUrl);
-
     // Выполняем GET-запрос для получения чека
-    const response = await axios.get(receiptUrl, {
+    const response = await axios.get(`${process.env.BOG_PAYMENT_URL}/receipt/${orderId}`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       }
     });
 
-    // Выводим чек в консоль
     console.log('Полученный чек:', JSON.stringify(response.data, null, 2));
-
     return response.data; // Возвращаем чек в формате JSON
   } catch (error) {
-    // Обработка ошибок
     if (error.response) {
       console.error('Ошибка получения чека:', error.response.data);
       throw new Error(`Ошибка получения чека: ${error.response.data.message || error.response.statusText}`);
@@ -322,4 +271,5 @@ module.exports = {
   verifyCallbackSignature,
   getReceipt,
   temporaryOrders, // Экспортируем temporaryOrders для использования в server.js
-};
+  }
+
