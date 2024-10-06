@@ -63,7 +63,7 @@ async function createPayment(total, items, externalOrderId, userId){
     // Получаем access_token для авторизации
     console.log('Запрашиваем токен доступа для создания платежа...');
     const accessToken = await getAccessToken(userId); 
-        console.log('Токен доступа для платежа:', accessToken);с
+        console.log('Токен доступа для платежа:', accessToken);
 
     if (!accessToken) {
       throw new Error('Не удалось получить токен доступа');
