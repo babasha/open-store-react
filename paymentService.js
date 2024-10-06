@@ -221,8 +221,17 @@ async function handlePaymentCallback(event, body) {
     console.log('Статус платежа:', paymentStatus);
     if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
       console.warn('Платёж не завершён успешно:', paymentStatus);
-      return { message: 'Платёж не завершён успешно' };
-    }
+        // Добавьте логирование кода ошибки и описания
+  const errorCode = body.payment_detail.code;
+  const errorDescription = body.payment_detail.code_description;
+  console.warn(`Код ошибки: ${errorCode}, Описание: ${errorDescription}`);
+
+  return { 
+    message: 'Платёж не завершён успешно', 
+    errorCode, 
+    errorDescription 
+  };
+}
 
     try {
       // Получаем сохранённые данные заказа из временного хранилища
