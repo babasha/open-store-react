@@ -782,8 +782,8 @@ app.post('/orders', async (req, res) => {
       deliveryAddress,
     };
 
-    // Инициируем платёж, передавая externalOrderI
-    const paymentUrl = await createPayment(total, items, externalOrderId);
+    // Инициируем платёж, передавая externalOrderId и userId
+    const paymentUrl = await createPayment(total, items, externalOrderId, userId);
 
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
