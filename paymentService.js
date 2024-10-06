@@ -12,12 +12,10 @@ const temporaryOrders = {};
 /**
  * Получение access_token от API Банка Грузии
  */
-async function getAccessToken() {
+async function getAccessToken(userId) {
   // Формируем строку авторизации из client_id и client_secret, закодированную в base64
   const auth = Buffer.from(`${process.env.BOG_CLIENT_ID}:${process.env.BOG_CLIENT_SECRET}`).toString('base64');
-
   console.log('Получаем токен доступа...');
-
   try {
     // Выполняем POST-запрос для получения access_token
     console.log('Отправляем запрос на получение access_token...');
@@ -27,20 +25,24 @@ async function getAccessToken() {
         'Content-Type': 'application/x-www-form-urlencoded' // Указываем тип контента для формы
       }
     });
-
     console.log('Токен успешно получен:', response.data);
+
+    // Сохраняем access_token в базу данных
+    if (userId) {
+      await pool.query('UPDATE users SET card_token = $1 WHERE id = $2', [response.data.access_token, userId]);
+      console.log(`Токен сохранён для пользователя с ID ${userId}`);
+    }
+
     return response.data.access_token; // Возвращаем access_token
   } catch (error) {
+    // Обработка ошибок
     if (error.response) {
-      // Обрабатываем ошибку, если сервер вернул ответ с кодом ошибки
       console.error('Ошибка получения токена доступа:', error.response.data);
       throw new Error(`Не удалось получить токен доступа: ${error.response.data.error_description || error.response.statusText}`);
     } else if (error.request) {
-      // Обрабатываем ошибку, если сервер не ответил
       console.error('Сервер не ответил на запрос:', error.request);
       throw new Error('Сервер Банка Грузии не ответил на запрос. Попробуйте позже.');
     } else {
-      // Обрабатываем ошибку настройки запроса
       console.error('Ошибка настройки запроса:', error.message);
       throw new Error('Ошибка настройки запроса к API Банка Грузии');
     }
@@ -54,14 +56,14 @@ async function getAccessToken() {
  * @param {string} externalOrderId - Уникальный идентификатор заказа
  * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
-async function createPayment(total, items, externalOrderId) {
+async function createPayment(total, items, externalOrderId, userId){
   console.log('Начало создания платежа...');
 
   try {
     // Получаем access_token для авторизации
     console.log('Запрашиваем токен доступа для создания платежа...');
-    const accessToken = await getAccessToken();
-    console.log('Токен доступа для платежа:', accessToken);
+    const accessToken = await getAccessToken(userId); 
+        console.log('Токен доступа для платежа:', accessToken);с
 
     if (!accessToken) {
       throw new Error('Не удалось получить токен доступа');
