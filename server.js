@@ -133,6 +133,7 @@ const isAuthenticated = (req, res, next) => {
 
 
 async function processOrderReceipt(bankOrderId, cardToken) {
+  console.log('Начало обработки чека:', { bankOrderId, cardToken });
   const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bankOrderId}`;
   try {
     const response = await axios.get(receiptUrl, {
@@ -143,6 +144,7 @@ async function processOrderReceipt(bankOrderId, cardToken) {
     console.log('Ответ от сервера банка:', response.data);
   } catch (error) {
     console.error('Ошибка при получении чека от банка:', error.message);
+    console.error('Подробности ошибки:', error.response?.data || error);
   }
 }
 
@@ -786,7 +788,10 @@ app.post('/payment/callback', async (req, res) => {
 
     const { bank_order_id: bankOrderId, card_token: cardToken } = result;
     if (bankOrderId && cardToken) {
+      console.log('Вызов processOrderReceipt с:', { bankOrderId, cardToken });
       await processOrderReceipt(bankOrderId, cardToken);
+    } else {
+      console.log('bankOrderId или cardToken отсутствуют:', { bankOrderId, cardToken });
     }
 
     res.status(200).json({ message: 'Callback обработан успешно' });
