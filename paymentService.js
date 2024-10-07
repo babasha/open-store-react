@@ -78,6 +78,15 @@ async function createPayment(
       throw new Error('Не удалось получить токен доступа');
     }
 
+    // Сохраняем данные заказа вместе с accessToken
+    temporaryOrders[externalOrderId] = {
+      userId,
+      items,
+      total,
+      deliveryTime,
+      deliveryAddress,
+    };
+
     // Формируем данные для создания платежа
     console.log('Формируем данные для создания платежа...');
     const paymentData = {
@@ -125,16 +134,9 @@ async function createPayment(
 
     console.log('Ответ сервера Банка Грузии:', response.data);
 
-    // Сохраняем данные заказа вместе с detailsUrl
-    temporaryOrders[externalOrderId] = {
-      userId,
-      items,
-      total,
-      deliveryTime,
-      deliveryAddress,
-      accessToken, // Сохраняем accessToken
-      detailsUrl: response.data._links.details.href, // Сохраняем ссылку для получения данных заказа
-    };
+    // Сохраняем данные заказа вместе с accessToken и order_id
+    temporaryOrders[externalOrderId].accessToken = accessToken;
+    temporaryOrders[externalOrderId].order_id = response.data.id;
 
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
@@ -234,15 +236,13 @@ async function handlePaymentCallback(event, body) {
         throw new Error('Данные заказа не найдены');
       }
 
-      const { accessToken, detailsUrl } = orderData;
+      const { accessToken } = orderData;
 
-      // Получаем детали заказа с помощью функции getReceipt
-      const orderDetails = await getReceipt(detailsUrl, accessToken);
-
-      // Извлекаем receipt_url из полученных данных заказа
+      // Получаем receipt_url с помощью функции getReceipt
+      const receiptData = await getReceipt(order_id, accessToken);
       const receiptUrl =
-        orderDetails._links && orderDetails._links.receipt
-          ? orderDetails._links.receipt.href
+        receiptData._links && receiptData._links.self
+          ? receiptData._links.self.href
           : null;
 
       if (!receiptUrl) {
@@ -297,45 +297,46 @@ async function handlePaymentCallback(event, body) {
 }
 
 /**
- * Получение данных заказа после успешного платежа
+ * Получение чека после успешного платежа
  */
-async function getReceipt(detailsUrl, accessToken) {
-  console.log('Получение данных заказа по detailsUrl:', detailsUrl);
+async function getReceipt(orderId, accessToken) {
+  console.log('Получение чека для orderId:', orderId);
 
   try {
-    // Выполняем GET-запрос для получения данных заказа
-    const response = await axios.get(detailsUrl, {
+    // Выполняем GET-запрос для получения чека
+    const receiptUrl = `${process.env.BOG_PAYMENT_URL}/${orderId}/receipt`;
+    const response = await axios.get(receiptUrl, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
     });
 
-    console.log('Полученные данные заказа:', JSON.stringify(response.data, null, 2));
-    return response.data; // Возвращаем данные заказа
+    console.log('Полученный чек:', JSON.stringify(response.data, null, 2));
+    return response.data; // Возвращаем данные чека
   } catch (error) {
     if (error.response) {
-      console.error('Ошибка получения данных заказа:', error.response.data);
+      console.error('Ошибка получения чека:', error.response.data);
       throw new Error(
-        `Ошибка получения данных заказа: ${
+        `Ошибка получения чека: ${
           error.response.data.message || error.response.statusText
         }`
       );
     } else if (error.request) {
       console.error(
-        'Сервер не ответил на запрос получения данных заказа:',
+        'Сервер не ответил на запрос получения чека:',
         error.request
       );
       throw new Error(
-        'Сервер Банка Грузии не ответил на запрос получения данных заказа. Попробуйте позже.'
+        'Сервер Банка Грузии не ответил на запрос получения чека. Попробуйте позже.'
       );
     } else {
       console.error(
-        'Ошибка настройки запроса получения данных заказа:',
+        'Ошибка настройки запроса получения чека:',
         error.message
       );
       throw new Error(
-        'Ошибка настройки запроса к API Банка Грузии при получении данных заказа'
+        'Ошибка настройки запроса к API Банка Грузии при получении чека'
       );
     }
   }
