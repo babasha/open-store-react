@@ -33,18 +33,7 @@ async function getAccessToken(userId) {
     );
     console.log('Токен успешно получен:', response.data);
 
-    // Сохраняем access_token в базу данных
-    if (userId) {
-      try {
-        await pool.query(
-          'UPDATE users SET card_token = $1 WHERE id = $2',
-          [response.data.access_token, userId]
-        );
-        console.log(`Токен сохранён для пользователя с ID ${userId}`);
-      } catch (dbError) {
-        console.error('Ошибка при сохранении токена в базу данных:', dbError);
-      }
-    }
+    // Убираем сохранение токена в таблицу users
 
     return response.data.access_token; // Возвращаем access_token
   } catch (error) {
@@ -74,9 +63,18 @@ async function getAccessToken(userId) {
  * @param {Array} items - Список товаров
  * @param {string} externalOrderId - Уникальный идентификатор заказа
  * @param {number} userId - Идентификатор пользователя
+ * @param {string} deliveryTime - Время доставки
+ * @param {string} deliveryAddress - Адрес доставки
  * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
-async function createPayment(total, items, externalOrderId, userId) {
+async function createPayment(
+  total,
+  items,
+  externalOrderId,
+  userId,
+  deliveryTime,
+  deliveryAddress
+) {
   console.log('Начало создания платежа...');
   console.log('Получен userId в createPayment:', userId);
 
@@ -89,6 +87,16 @@ async function createPayment(total, items, externalOrderId, userId) {
     if (!accessToken) {
       throw new Error('Не удалось получить токен доступа');
     }
+
+    // Сохраняем данные заказа вместе с accessToken
+    temporaryOrders[externalOrderId] = {
+      userId,
+      items,
+      total,
+      deliveryTime,
+      deliveryAddress,
+      accessToken, // Сохраняем accessToken
+    };
 
     // Формируем данные для создания платежа
     console.log('Формируем данные для создания платежа...');
@@ -148,13 +156,19 @@ async function createPayment(total, items, externalOrderId, userId) {
       );
     } else if (error.request) {
       // Обрабатываем ошибку, если сервер не ответил
-      console.error('Сервер не ответил на запрос создания платежа:', error.request);
+      console.error(
+        'Сервер не ответил на запрос создания платежа:',
+        error.request
+      );
       throw new Error(
         'Сервер Банка Грузии не ответил на запрос создания платежа. Попробуйте позже.'
       );
     } else {
       // Обрабатываем ошибку настройки запроса
-      console.error('Ошибка настройки запроса создания платежа:', error.message);
+      console.error(
+        'Ошибка настройки запроса создания платежа:',
+        error.message
+      );
       throw new Error(
         'Ошибка настройки запроса к API Банка Грузии при создании платежа'
       );
@@ -211,24 +225,39 @@ async function handlePaymentCallback(event, body) {
     // Проверка статуса платежа
     const paymentStatus = order_status.key;
     console.log('Статус платежа:', paymentStatus);
-    if (paymentStatus !== 'completed' && paymentStatus !== 'refunded_partially') {
+    if (
+      paymentStatus !== 'completed' &&
+      paymentStatus !== 'refunded_partially'
+    ) {
       console.warn('Платёж не завершён успешно:', paymentStatus);
       return { message: 'Платёж не завершён успешно' };
     }
 
     try {
-      // Получаем сохранённые данные заказа из временного хранилища
-      console.log('Получаем данные заказа для external_order_id:', external_order_id);
+      // Получаем сохранённые данные заказа из temporaryOrders
+      console.log(
+        'Получаем данные заказа для external_order_id:',
+        external_order_id
+      );
       const orderData = temporaryOrders[external_order_id];
       if (!orderData) {
-        console.error('Данные заказа не найдены для external_order_id:', external_order_id);
+        console.error(
+          'Данные заказа не найдены для external_order_id:',
+          external_order_id
+        );
         throw new Error('Данные заказа не найдены');
       }
 
-      // Создаём запись заказа в базе данных
+      const { accessToken } = orderData;
+
+      // Получаем receipt_url с помощью функции getReceipt
+      const receiptData = await getReceipt(order_id, accessToken);
+      const receiptUrl = receiptData.receipt_url; // Убедитесь, что это правильное поле
+
+      // Создаём запись заказа в базе данных, включая card_token и receipt_url
       console.log('Создаём запись заказа в базе данных...');
       const insertResult = await pool.query(
-        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id, card_token, receipt_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
         [
           orderData.userId, // ID пользователя
           JSON.stringify(orderData.items), // Список товаров в формате JSON
@@ -238,19 +267,24 @@ async function handlePaymentCallback(event, body) {
           'completed', // Статус заказа
           paymentStatus, // Статус платежа
           order_id, // Идентификатор заказа в банке
+          accessToken, // Сохраняем accessToken в card_token
+          receiptUrl, // Сохраняем receipt_url
         ]
       );
       const newOrderId = insertResult.rows[0].id;
       console.log('Заказ успешно создан с ID:', newOrderId);
 
-      // Удаляем временные данные заказа из временного хранилища
-      console.log('Удаляем временные данные заказа для external_order_id:', external_order_id);
+      // Удаляем временные данные заказа
+      console.log(
+        'Удаляем временные данные заказа для external_order_id:',
+        external_order_id
+      );
       delete temporaryOrders[external_order_id];
 
       // Возвращаем redirectUrl для успешной страницы
-      const redirectUrl = `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(
-        JSON.stringify(orderData.items)
-      )}`;
+      const redirectUrl = `/payment/success?orderNumber=${external_order_id}&total=${
+        orderData.total
+      }&items=${encodeURIComponent(JSON.stringify(orderData.items))}`;
       console.log('Возвращаем redirectUrl для успешной страницы:', redirectUrl);
       return {
         message: 'Заказ успешно создан',
@@ -270,16 +304,13 @@ async function handlePaymentCallback(event, body) {
 /**
  * Получение чека после успешного платежа
  * @param {string} orderId - Идентификатор заказа
+ * @param {string} accessToken - Токен доступа
  * @returns {Object} - Чек в формате JSON
  */
-async function getReceipt(orderId) {
+async function getReceipt(orderId, accessToken) {
   console.log('Получение чека для orderId:', orderId);
 
   try {
-    // Получаем access_token для авторизации
-    const accessToken = await getAccessToken();
-    console.log('Токен доступа для получения чека:', accessToken);
-
     // Выполняем GET-запрос для получения чека
     const response = await axios.get(
       `${process.env.BOG_PAYMENT_URL}/receipt/${orderId}`,
@@ -302,13 +333,21 @@ async function getReceipt(orderId) {
         }`
       );
     } else if (error.request) {
-      console.error('Сервер не ответил на запрос получения чека:', error.request);
+      console.error(
+        'Сервер не ответил на запрос получения чека:',
+        error.request
+      );
       throw new Error(
         'Сервер Банка Грузии не ответил на запрос получения чека. Попробуйте позже.'
       );
     } else {
-      console.error('Ошибка настройки запроса получения чека:', error.message);
-      throw new Error('Ошибка настройки запроса к API Банка Грузии при получении чека');
+      console.error(
+        'Ошибка настройки запроса получения чека:',
+        error.message
+      );
+      throw new Error(
+        'Ошибка настройки запроса к API Банка Грузии при получении чека'
+      );
     }
   }
 }
