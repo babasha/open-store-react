@@ -2,10 +2,9 @@ const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const { v4: uuidv4 } = require('uuid'); // Для генерации UUID
-const express = require('express');
-const app = express();
 const pool = require('./db');
+
+// Создаём объект temporaryOrders
 const temporaryOrders = {};
 
 /**
@@ -31,15 +30,12 @@ async function getAccessToken() {
     return response.data.access_token; // Возвращаем access_token
   } catch (error) {
     if (error.response) {
-      // Обрабатываем ошибку, если сервер вернул ответ с кодом ошибки
       console.error('Ошибка получения токена доступа:', error.response.data);
       throw new Error(`Не удалось получить токен доступа: ${error.response.data.error_description || error.response.statusText}`);
     } else if (error.request) {
-      // Обрабатываем ошибку, если сервер не ответил
       console.error('Сервер не ответил на запрос:', error.request);
       throw new Error('Сервер Банка Грузии не ответил на запрос. Попробуйте позже.');
     } else {
-      // Обрабатываем ошибку настройки запроса
       console.error('Ошибка настройки запроса:', error.message);
       throw new Error('Ошибка настройки запроса к API Банка Грузии');
     }
@@ -51,10 +47,9 @@ async function getAccessToken() {
  * @param {number} total - Общая сумма заказа
  * @param {Array} items - Список товаров
  * @param {string} externalOrderId - Уникальный идентификатор заказа
- * @param {Object} orderData - Данные заказа (userId, deliveryTime, deliveryAddress)
  * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
-async function createPayment(total, items, externalOrderId, orderData) {
+async function createPayment(total, items, externalOrderId) {
   console.log('Начало создания платежа...');
 
   try {
@@ -76,7 +71,6 @@ async function createPayment(total, items, externalOrderId, orderData) {
         currency: 'GEL', // Валюта платежа
         total_amount: Number(parseFloat(total).toFixed(2)), // Преобразуем total в число с двумя знаками после запятой
         basket: items.map(item => {
-          // Преобразуем item.price в число с двумя знаками после запятой
           const unitPrice = Number(parseFloat(item.price).toFixed(2));
           console.log('item.price:', item.price, 'unitPrice:', unitPrice);
 
@@ -107,26 +101,25 @@ async function createPayment(total, items, externalOrderId, orderData) {
 
     console.log('Ответ сервера Банка Грузии:', response.data);
 
-    // Сохраняем accessToken и данные заказа во временное хранилище
-    temporaryOrders[externalOrderId] = {
-      ...orderData,
-      items: items,
-      total: total,
-      accessToken: accessToken,
-    };
+    // Сохраняем accessToken в temporaryOrders
+    if (temporaryOrders[externalOrderId]) {
+      temporaryOrders[externalOrderId].accessToken = accessToken;
+    } else {
+      // Если по какой-то причине временный заказ отсутствует, создадим его
+      temporaryOrders[externalOrderId] = {
+        accessToken: accessToken,
+      };
+    }
 
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {
-      // Обрабатываем ошибку, если сервер вернул ответ с кодом ошибки
       console.error('Ошибка создания платежа:', error.response.data);
       throw new Error(`Ошибка создания платежа: ${error.response.data.message || error.response.statusText}`);
     } else if (error.request) {
-      // Обрабатываем ошибку, если сервер не ответил
       console.error('Сервер не ответил на запрос создания платежа:', error.request);
       throw new Error('Сервер Банка Грузии не ответил на запрос создания платежа. Попробуйте позже.');
     } else {
-      // Обрабатываем ошибку настройки запроса
       console.error('Ошибка настройки запроса создания платежа:', error.message);
       throw new Error('Ошибка настройки запроса к API Банка Грузии при создании платежа');
     }
@@ -143,9 +136,9 @@ function verifyCallbackSignature(data, signature) {
   console.log('Начало верификации подписи обратного вызова...');
 
   // Загрузка публичного ключа из файла
-  const publicKeyPath = path.join(__dirname, 'public_key.pem'); // Убедитесь, что путь к файлу корректный
+  const publicKeyPath = path.join(__dirname, 'public_key.pem');
   console.log('Загружаем публичный ключ из:', publicKeyPath);
-  const publicKey = fs.readFileSync(publicKeyPath, 'utf8'); // Читаем содержимое файла с публичным ключом
+  const publicKey = fs.readFileSync(publicKeyPath, 'utf8');
 
   // Создание объекта для верификации подписи
   const verifier = crypto.createVerify('SHA256');
@@ -153,7 +146,7 @@ function verifyCallbackSignature(data, signature) {
   // Важно: данные должны быть сериализованы точно так же, как были на стороне банка
   const dataString = JSON.stringify(data);
   console.log('Сериализованные данные для верификации:', dataString);
-  verifier.update(dataString); // Обновляем объект верификатора данными
+  verifier.update(dataString);
   verifier.end();
 
   // Проверка подписи с использованием публичного ключа
@@ -231,7 +224,6 @@ async function handlePaymentCallback(event, body) {
       throw new Error('Ошибка создания заказа после оплаты');
     }
   } else {
-    // Обрабатываем ошибку, если событие не поддерживается
     console.error('Неверное событие для обработки платежа:', event);
     throw new Error('Неверное событие для обратного вызова платежа');
   }

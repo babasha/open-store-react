@@ -14,7 +14,8 @@ const crypto = require('crypto');
 const sendResetPasswordEmail = require('./mailer');
 const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
-const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
+// const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
+const { createPayment, temporaryOrders, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -783,7 +784,7 @@ app.post('/orders', async (req, res) => {
     };
 
     // Инициируем платёж, передавая externalOrderId и userId
-    const paymentUrl = await createPayment(total, items, externalOrderId, userId);
+    const paymentUrl = await createPayment(total, items, externalOrderId);
 
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
