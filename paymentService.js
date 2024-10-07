@@ -11,13 +11,13 @@ const temporaryOrders = {};
 /**
  * Получение access_token от API Банка Грузии
  */
-async function getAccessToken(userId) {
-  console.log('Получен userId в getAccessToken:', userId);
+async function getAccessToken() {
+  // Обратите внимание, что мы убрали параметр userId, так как больше не сохраняем токен в таблицу users
+  console.log('Получаем токен доступа...');
   // Формируем строку авторизации из client_id и client_secret, закодированную в base64
   const auth = Buffer.from(
     `${process.env.BOG_CLIENT_ID}:${process.env.BOG_CLIENT_SECRET}`
   ).toString('base64');
-  console.log('Получаем токен доступа...');
   try {
     // Выполняем POST-запрос для получения access_token
     console.log('Отправляем запрос на получение access_token...');
@@ -32,8 +32,6 @@ async function getAccessToken(userId) {
       }
     );
     console.log('Токен успешно получен:', response.data);
-
-    // Убираем сохранение токена в таблицу users
 
     return response.data.access_token; // Возвращаем access_token
   } catch (error) {
@@ -81,7 +79,7 @@ async function createPayment(
   try {
     // Получаем access_token для авторизации
     console.log('Запрашиваем токен доступа для создания платежа...');
-    const accessToken = await getAccessToken(userId);
+    const accessToken = await getAccessToken();
     console.log('Токен доступа для платежа:', accessToken);
 
     if (!accessToken) {
@@ -95,7 +93,7 @@ async function createPayment(
       total,
       deliveryTime,
       deliveryAddress,
-      accessToken, // Сохраняем accessToken
+      accessToken, // Сохраняем accessToken для использования при обработке обратного вызова
     };
 
     // Формируем данные для создания платежа
@@ -248,11 +246,21 @@ async function handlePaymentCallback(event, body) {
         throw new Error('Данные заказа не найдены');
       }
 
-      const { accessToken } = orderData;
+      // Получаем новый accessToken
+      const accessToken = await getAccessToken();
 
-      // Получаем receipt_url с помощью функции getReceipt
-      const receiptData = await getReceipt(order_id, accessToken);
-      const receiptUrl = receiptData.receipt_url; // Убедитесь, что это правильное поле
+      // Получаем детали заказа с помощью функции getReceipt
+      const orderDetails = await getReceipt(order_id, accessToken);
+
+      // Извлекаем receipt_url из полученных данных заказа
+      const receiptUrl =
+        orderDetails._links && orderDetails._links.receipt
+          ? orderDetails._links.receipt.href
+          : null;
+
+      if (!receiptUrl) {
+        console.warn('receipt_url не найден в данных заказа');
+      }
 
       // Создаём запись заказа в базе данных, включая card_token и receipt_url
       console.log('Создаём запись заказа в базе данных...');
@@ -267,7 +275,7 @@ async function handlePaymentCallback(event, body) {
           'completed', // Статус заказа
           paymentStatus, // Статус платежа
           order_id, // Идентификатор заказа в банке
-          accessToken, // Сохраняем accessToken в card_token
+          orderData.accessToken, // Сохраняем accessToken в card_token
           receiptUrl, // Сохраняем receipt_url
         ]
       );
@@ -302,18 +310,18 @@ async function handlePaymentCallback(event, body) {
 }
 
 /**
- * Получение чека после успешного платежа
+ * Получение данных заказа после успешного платежа
  * @param {string} orderId - Идентификатор заказа
  * @param {string} accessToken - Токен доступа
- * @returns {Object} - Чек в формате JSON
+ * @returns {Object} - Данные заказа в формате JSON
  */
 async function getReceipt(orderId, accessToken) {
-  console.log('Получение чека для orderId:', orderId);
+  console.log('Получение данных заказа для orderId:', orderId);
 
   try {
-    // Выполняем GET-запрос для получения чека
+    // Выполняем GET-запрос для получения данных заказа
     const response = await axios.get(
-      `${process.env.BOG_PAYMENT_URL}/receipt/${orderId}`,
+      `${process.env.BOG_PAYMENT_URL}/${orderId}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -322,31 +330,31 @@ async function getReceipt(orderId, accessToken) {
       }
     );
 
-    console.log('Полученный чек:', JSON.stringify(response.data, null, 2));
-    return response.data; // Возвращаем чек в формате JSON
+    console.log('Полученные данные заказа:', JSON.stringify(response.data, null, 2));
+    return response.data; // Возвращаем данные заказа
   } catch (error) {
     if (error.response) {
-      console.error('Ошибка получения чека:', error.response.data);
+      console.error('Ошибка получения данных заказа:', error.response.data);
       throw new Error(
-        `Ошибка получения чека: ${
+        `Ошибка получения данных заказа: ${
           error.response.data.message || error.response.statusText
         }`
       );
     } else if (error.request) {
       console.error(
-        'Сервер не ответил на запрос получения чека:',
+        'Сервер не ответил на запрос получения данных заказа:',
         error.request
       );
       throw new Error(
-        'Сервер Банка Грузии не ответил на запрос получения чека. Попробуйте позже.'
+        'Сервер Банка Грузии не ответил на запрос получения данных заказа. Попробуйте позже.'
       );
     } else {
       console.error(
-        'Ошибка настройки запроса получения чека:',
+        'Ошибка настройки запроса получения данных заказа:',
         error.message
       );
       throw new Error(
-        'Ошибка настройки запроса к API Банка Грузии при получении чека'
+        'Ошибка настройки запроса к API Банка Грузии при получении данных заказа'
       );
     }
   }
