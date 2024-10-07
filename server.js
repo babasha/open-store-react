@@ -786,6 +786,29 @@ app.post('/orders', async (req, res) => {
     // Инициируем платёж, передавая externalOrderId и userId
     const paymentUrl = await createPayment(total, items, externalOrderId);
 
+    // Получаем order_id и card_token из таблицы orders
+    const orderResult = await pool.query('SELECT bank_order_id, card_token FROM orders WHERE external_order_id = $1', [externalOrderId]);
+    const { bank_order_id, card_token } = orderResult.rows[0];
+
+    // Проверяем, что банк выдал order_id и токен
+    if (!bank_order_id || !card_token) {
+      throw new Error('Отсутствует bank_order_id или card_token');
+    }
+
+    // Формируем URL для получения чека
+    const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bank_order_id}`;
+
+    // Делаем запрос для получения чека
+    const response = await axios.get(receiptUrl, {
+      headers: {
+        'Authorization': `Bearer ${card_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Выводим чек в консоль
+    console.log('Полученный чек:', response.data);
+
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
   } catch (error) {
