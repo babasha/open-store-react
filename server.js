@@ -132,13 +132,13 @@ const isAuthenticated = (req, res, next) => {
 };
 
 
-async function processOrderReceipt(bankOrderId, cardToken) {
-  console.log('Начало обработки чека:', { bankOrderId, cardToken });
-  const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bankOrderId}`;
+async function processOrderReceipt(bank_order_id , card_token ) {
+  console.log('Начало обработки чека:', { bank_order_id , card_token  });
+  const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bank_order_id }`;
   try {
     const response = await axios.get(receiptUrl, {
       headers: {
-        'Authorization': `Bearer ${cardToken}`
+        'Authorization': `Bearer ${card_token }`
       }
     });
     console.log('Ответ от сервера банка:', response.data);
@@ -785,13 +785,13 @@ app.post('/payment/callback', async (req, res) => {
     }
 
     // Извлекаем корректные поля bank_order_id и card_token
-    const { bank_order_id: bankOrderId, card_token: cardToken } = callbackData.body?.payment_detail || {};
-    console.log('Извлеченные bankOrderId и cardToken:', { bankOrderId, cardToken });
+    const { bank_order_id: bank_order_id , card_token: card_token  } = callbackData.body?.payment_detail || {};
+    console.log('Извлеченные bank_order_id  и card_token :', { bank_order_id , card_token  });
 
-    if (bankOrderId && cardToken) {
-      await processOrderReceipt(bankOrderId, cardToken);
+    if (bank_order_id  && card_token ) {
+      await processOrderReceipt(bank_order_id , card_token );
     } else {
-      console.log('bankOrderId или cardToken отсутствуют:', { bankOrderId, cardToken });
+      console.log('bank_order_id  или card_token  отсутствуют:', { bank_order_id , card_token  });
     }
 
     res.status(200).json({ message: 'Callback обработан успешно' });
