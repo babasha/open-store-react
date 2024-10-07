@@ -12,7 +12,6 @@ const temporaryOrders = {};
  * Получение access_token от API Банка Грузии
  */
 async function getAccessToken() {
-  // Обратите внимание, что мы убрали параметр userId, так как больше не сохраняем токен в таблицу users
   console.log('Получаем токен доступа...');
   // Формируем строку авторизации из client_id и client_secret, закодированную в base64
   const auth = Buffer.from(
@@ -57,13 +56,6 @@ async function getAccessToken() {
 
 /**
  * Создание платежной сессии через API Банка Грузии
- * @param {number} total - Общая сумма заказа
- * @param {Array} items - Список товаров
- * @param {string} externalOrderId - Уникальный идентификатор заказа
- * @param {number} userId - Идентификатор пользователя
- * @param {string} deliveryTime - Время доставки
- * @param {string} deliveryAddress - Адрес доставки
- * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
 async function createPayment(
   total,
@@ -85,16 +77,6 @@ async function createPayment(
     if (!accessToken) {
       throw new Error('Не удалось получить токен доступа');
     }
-
-    // Сохраняем данные заказа вместе с accessToken
-    temporaryOrders[externalOrderId] = {
-      userId,
-      items,
-      total,
-      deliveryTime,
-      deliveryAddress,
-      accessToken, // Сохраняем accessToken для использования при обработке обратного вызова
-    };
 
     // Формируем данные для создания платежа
     console.log('Формируем данные для создания платежа...');
@@ -142,6 +124,18 @@ async function createPayment(
     );
 
     console.log('Ответ сервера Банка Грузии:', response.data);
+
+    // Сохраняем данные заказа вместе с detailsUrl
+    temporaryOrders[externalOrderId] = {
+      userId,
+      items,
+      total,
+      deliveryTime,
+      deliveryAddress,
+      accessToken, // Сохраняем accessToken
+      detailsUrl: response.data._links.details.href, // Сохраняем ссылку для получения данных заказа
+    };
+
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {
@@ -176,9 +170,6 @@ async function createPayment(
 
 /**
  * Верификация подписи обратного вызова от Банка Грузии
- * @param {Object} data - Тело запроса
- * @param {string} signature - Подпись из заголовка
- * @returns {boolean} - Результат проверки
  */
 function verifyCallbackSignature(data, signature) {
   console.log('Начало верификации подписи обратного вызова...');
@@ -208,9 +199,6 @@ function verifyCallbackSignature(data, signature) {
 
 /**
  * Обработка обратного вызова платежа от Банка Грузии
- * @param {string} event - Тип события
- * @param {Object} body - Тело запроса
- * @returns {Object} - Результат обработки
  */
 async function handlePaymentCallback(event, body) {
   console.log('Обработка обратного вызова платежа...');
@@ -246,11 +234,10 @@ async function handlePaymentCallback(event, body) {
         throw new Error('Данные заказа не найдены');
       }
 
-      // Получаем новый accessToken
-      const accessToken = await getAccessToken();
+      const { accessToken, detailsUrl } = orderData;
 
       // Получаем детали заказа с помощью функции getReceipt
-      const orderDetails = await getReceipt(order_id, accessToken);
+      const orderDetails = await getReceipt(detailsUrl, accessToken);
 
       // Извлекаем receipt_url из полученных данных заказа
       const receiptUrl =
@@ -275,7 +262,7 @@ async function handlePaymentCallback(event, body) {
           'completed', // Статус заказа
           paymentStatus, // Статус платежа
           order_id, // Идентификатор заказа в банке
-          orderData.accessToken, // Сохраняем accessToken в card_token
+          accessToken, // Сохраняем accessToken в card_token
           receiptUrl, // Сохраняем receipt_url
         ]
       );
@@ -311,24 +298,18 @@ async function handlePaymentCallback(event, body) {
 
 /**
  * Получение данных заказа после успешного платежа
- * @param {string} orderId - Идентификатор заказа
- * @param {string} accessToken - Токен доступа
- * @returns {Object} - Данные заказа в формате JSON
  */
-async function getReceipt(orderId, accessToken) {
-  console.log('Получение данных заказа для orderId:', orderId);
+async function getReceipt(detailsUrl, accessToken) {
+  console.log('Получение данных заказа по detailsUrl:', detailsUrl);
 
   try {
     // Выполняем GET-запрос для получения данных заказа
-    const response = await axios.get(
-      `${process.env.BOG_PAYMENT_URL}/${orderId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const response = await axios.get(detailsUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     console.log('Полученные данные заказа:', JSON.stringify(response.data, null, 2));
     return response.data; // Возвращаем данные заказа
