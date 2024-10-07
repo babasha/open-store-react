@@ -16,6 +16,7 @@ const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 // const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const { createPayment, temporaryOrders, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
+const axios = require('axios');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -129,6 +130,22 @@ const isAuthenticated = (req, res, next) => {
     res.status(400).json({ message: 'Неверный токен' });
   }
 };
+
+
+async function processOrderReceipt(bankOrderId, cardToken) {
+  const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bankOrderId}`;
+  try {
+    const response = await axios.get(receiptUrl, {
+      headers: {
+        'Authorization': `Bearer ${cardToken}`
+      }
+    });
+    console.log('Ответ от сервера банка:', response.data);
+  } catch (error) {
+    console.error('Ошибка при получении чека от банка:', error.message);
+  }
+}
+
 
 // Маршрут для запроса сброса пароля
 app.post('/auth/request-reset-password', async (req, res) => {
@@ -714,47 +731,6 @@ app.put('/api/users/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-// Маршрут для создания заказа
-// app.post('/orders', async (req, res) => {
-//   const { userId, items, total, deliveryTime, deliveryAddress } = req.body;
-
-//   try {
-//     const userResult = await pool.query('SELECT first_name, last_name, address FROM users WHERE id = $1', [userId]);
-//     const user = userResult.rows[0];
-
-//     const orderResult = await pool.query(
-//       'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-//       [userId, JSON.stringify(items), total, deliveryTime || null, deliveryAddress || user.address]
-//     );
-
-//     const orderId = orderResult.rows[0].id;
-
-//     const productIds = items.map(item => item.productId);
-//     const productResult = await pool.query('SELECT id, name_en FROM products WHERE id = ANY($1)', [productIds]);
-
-//     const products = productResult.rows.reduce((acc, product) => {
-//       acc[product.id] = product.name_en;
-//       return acc;
-//     }, {});
-
-//     const newOrder = {
-//       ...orderResult.rows[0],
-//       first_name: user.first_name,
-//       last_name: user.last_name,
-//       address: user.address,
-//       items: items.map(item => ({
-//         ...item,
-//         productName: products[item.productId]
-//       }))
-//     };
-
-//     io.emit('newOrder', newOrder);
-//     res.status(201).json(newOrder);
-//   } catch (error) {
-//     console.error('Ошибка при оформлении заказа:', error.message);
-//     res.status(500).json({ error: 'Ошибка сервера' });
-//   }
-// });
 
 
 // Маршрут для инициирования платежа
@@ -786,29 +762,6 @@ app.post('/orders', async (req, res) => {
     // Инициируем платёж, передавая externalOrderId и userId
     const paymentUrl = await createPayment(total, items, externalOrderId);
 
-    // Получаем order_id и card_token из таблицы orders
-    const orderResult = await pool.query('SELECT bank_order_id, card_token FROM orders WHERE external_order_id = $1', [externalOrderId]);
-    const { bank_order_id, card_token } = orderResult.rows[0];
-
-    // Проверяем, что банк выдал order_id и токен
-    if (!bank_order_id || !card_token) {
-      throw new Error('Отсутствует bank_order_id или card_token');
-    }
-
-    // Формируем URL для получения чека
-    const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bank_order_id}`;
-
-    // Делаем запрос для получения чека
-    const response = await axios.get(receiptUrl, {
-      headers: {
-        'Authorization': `Bearer ${card_token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    // Выводим чек в консоль
-    console.log('Полученный чек:', response.data);
-
     // Возвращаем URL для перенаправления пользователя на страницу оплаты
     res.status(200).json({ paymentUrl });
   } catch (error) {
@@ -823,17 +776,19 @@ app.post('/payment/callback', async (req, res) => {
   const callbackData = req.body;
 
   try {
-    // Проверка подписи
     const isValid = verifyCallbackSignature(callbackData, callbackSignature);
     if (!isValid) {
       console.error('Неверная подпись обратного вызова');
       return res.status(400).json({ error: 'Неверная подпись' });
     }
 
-    // Обработка данных обратного вызова
     const result = await handlePaymentCallback(callbackData.event, callbackData.body);
 
-    // Возвращаем 200 OK, подтверждая успешную обработку
+    const { bank_order_id: bankOrderId, card_token: cardToken } = result;
+    if (bankOrderId && cardToken) {
+      await processOrderReceipt(bankOrderId, cardToken);
+    }
+
     res.status(200).json({ message: 'Callback обработан успешно' });
   } catch (error) {
     console.error('Ошибка при обработке callback:', error.message);
