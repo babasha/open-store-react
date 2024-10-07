@@ -51,9 +51,10 @@ async function getAccessToken() {
  * @param {number} total - Общая сумма заказа
  * @param {Array} items - Список товаров
  * @param {string} externalOrderId - Уникальный идентификатор заказа
+ * @param {Object} orderData - Данные заказа (userId, deliveryTime, deliveryAddress)
  * @returns {string} - URL для перенаправления пользователя на страницу оплаты
  */
-async function createPayment(total, items, externalOrderId) {
+async function createPayment(total, items, externalOrderId, orderData) {
   console.log('Начало создания платежа...');
 
   try {
@@ -105,6 +106,15 @@ async function createPayment(total, items, externalOrderId) {
     });
 
     console.log('Ответ сервера Банка Грузии:', response.data);
+
+    // Сохраняем accessToken и данные заказа во временное хранилище
+    temporaryOrders[externalOrderId] = {
+      ...orderData,
+      items: items,
+      total: total,
+      accessToken: accessToken,
+    };
+
     return response.data._links.redirect.href; // Возвращаем ссылку для оплаты
   } catch (error) {
     if (error.response) {
@@ -182,14 +192,14 @@ async function handlePaymentCallback(event, body) {
       console.log('Получаем данные заказа для external_order_id:', external_order_id);
       const orderData = temporaryOrders[external_order_id];
       if (!orderData) {
-        console.error('Данные заказа не найдены для external_order_id:', externalOrderId);
+        console.error('Данные заказа не найдены для external_order_id:', external_order_id);
         throw new Error('Данные заказа не найдены');
       }
 
       // Создаём запись заказа в базе данных
       console.log('Создаём запись заказа в базе данных...');
       const insertResult = await pool.query(
-        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id, card_token) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
         [
           orderData.userId, // ID пользователя
           JSON.stringify(orderData.items), // Список товаров в формате JSON
@@ -199,6 +209,7 @@ async function handlePaymentCallback(event, body) {
           'completed', // Статус заказа
           paymentStatus, // Статус платежа
           order_id, // Идентификатор заказа в банке
+          orderData.accessToken, // Сохраняем access_token в колонку card_token
         ]
       );
       const newOrderId = insertResult.rows[0].id;
@@ -270,4 +281,4 @@ module.exports = {
   verifyCallbackSignature,
   getReceipt,
   temporaryOrders, // Экспортируем temporaryOrders для использования в server.js
-}
+};
