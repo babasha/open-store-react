@@ -784,11 +784,11 @@ app.post('/payment/callback', async (req, res) => {
       return res.status(400).json({ error: 'Неверная подпись' });
     }
 
-    const result = await handlePaymentCallback(callbackData.event, callbackData.body);
+    // Извлекаем корректные поля bank_order_id и card_token
+    const { bank_order_id: bankOrderId, card_token: cardToken } = callbackData.body?.payment_detail || {};
+    console.log('Извлеченные bankOrderId и cardToken:', { bankOrderId, cardToken });
 
-    const { bank_order_id: bankOrderId, card_token: cardToken } = result;
     if (bankOrderId && cardToken) {
-      console.log('Вызов processOrderReceipt с:', { bankOrderId, cardToken });
       await processOrderReceipt(bankOrderId, cardToken);
     } else {
       console.log('bankOrderId или cardToken отсутствуют:', { bankOrderId, cardToken });
