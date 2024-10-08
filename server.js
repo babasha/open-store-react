@@ -967,6 +967,28 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
   }
 });
 
+// Маршрут для получения заказа по externalOrderId
+app.get('/api/orders', async (req, res) => {
+  const { externalOrderId } = req.query;
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM orders WHERE external_order_id = $1',
+      [externalOrderId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Заказ не найден' });
+    }
+
+    const order = result.rows[0];
+    res.json(order);
+  } catch (error) {
+    console.error('Ошибка при получении данных заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка при получении данных заказа' });
+  }
+});
+
 // Новый маршрут для получения данных заказа по его ID
 app.get('/api/order/:id', async (req, res) => {
   const { id } = req.params;
