@@ -6,12 +6,17 @@ import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper'; 
 import { BascketTitle } from '../../layout/basket/BasketStyles'; 
 import { usePurchasedItems } from './PurchasedItemsContext'; // Создадим контекст для купленных товаров
+import { useLocation } from 'react-router-dom';
 
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { purchasedItems, clearPurchasedItems } = usePurchasedItems();
-  const [counter, setCounter] = useState(30); // Инициализируем счётчик на 30 секунд
+  const [counter, setCounter] = useState(30);
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get('orderId');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -51,28 +56,29 @@ const PaymentSuccess: React.FC = () => {
 
   return (
     <Container width="100%">
-      <FlexWrapper justify="center" align="center" style={{ minHeight: '80vh', flexDirection: 'column' }}>
-        <BascketTitle>{t('payment.successTitle')}</BascketTitle>
-        <Message>{t('payment.successMessage')}</Message>
+    <FlexWrapper justify="center" align="center" style={{ minHeight: '80vh', flexDirection: 'column' }}>
+      <BascketTitle>{t('payment.successTitle')}</BascketTitle>
+      <Message>{t('payment.orderNumber')}: {orderId}</Message> {/* Добавили отображение номера заказа */}
+      <Message>{t('payment.successMessage')}</Message>
 
-        <ItemsList>
-          {purchasedItems.map((item) => (
-            <Item key={item.id}>
-              {item.title} - {item.quantity} x {item.price} ₾
-            </Item>
-          ))}
-        </ItemsList>
+      <ItemsList>
+        {purchasedItems.map((item) => (
+          <Item key={item.id}>
+            {item.title} - {item.quantity} x {item.price} ₾
+          </Item>
+        ))}
+      </ItemsList>
 
-        <ButtonsWrapper>
-          <Button onClick={handleReturnToShop}>{t('payment.returnToShop')}</Button>
-          <Button onClick={handleDownloadReceipt}>{t('payment.downloadReceipt')}</Button>
-        </ButtonsWrapper>
+      <ButtonsWrapper>
+        <Button onClick={handleReturnToShop}>{t('payment.returnToShop')}</Button>
+        <Button onClick={handleDownloadReceipt}>{t('payment.downloadReceipt')}</Button>
+      </ButtonsWrapper>
 
-        <AutoRedirectMessage>
-          {t('payment.autoRedirect')} {counter} {t('payment.seconds')}
-        </AutoRedirectMessage>
-      </FlexWrapper>
-    </Container>
+      <AutoRedirectMessage>
+        {t('payment.autoRedirect')} {counter} {t('payment.seconds')}
+      </AutoRedirectMessage>
+    </FlexWrapper>
+  </Container>
   );
 };
 

@@ -213,7 +213,7 @@ async function handlePaymentCallback(event, body) {
       delete temporaryOrders[external_order_id];
 
       // Возвращаем redirectUrl для успешной страницы
-      const redirectUrl = `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}`;
+      const redirectUrl = `/payment/success?orderId=${newOrderId}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}`;
       console.log('Возвращаем redirectUrl для успешной страницы:', redirectUrl);
       return {
         message: 'Заказ успешно создан',
