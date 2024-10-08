@@ -17,6 +17,7 @@ const passport = require('./passport-config'); // Импортируем мод�
 // const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const { createPayment, temporaryOrders, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
 const axios = require('axios');
+const getRawBody = require('raw-body');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -762,10 +763,55 @@ app.post('/orders', async (req, res) => {
 // Маршрут для обработки обратного вызова от Банка Грузии
 app.post('/payment/callback', async (req, res) => {
   const callbackSignature = req.headers['callback-signature'];
-  const callbackData = req.body;
+  
+  // Получаем необработанное тело запроса
+  let rawBody;
+  try {
+    rawBody = await getRawBody(req);
+  } catch (err) {
+    console.error('Ошибка при получении тела запроса:', err);
+    return res.status(400).send('Bad Request');
+  }
+
+  // Попробуем распарсить тело как JSON
+  let callbackData;
+  try {
+    callbackData = JSON.parse(rawBody);
+  } catch (err) {
+    console.error('Ошибка при парсинге тела запроса:', err);
+    return res.status(400).send('Invalid JSON');
+  }
+
+  // Логируем заголовки и тело запроса
+  console.log('Получены заголовки:', JSON.stringify(req.headers, null, 2));
+  console.log('Получены данные обратного вызова:', JSON.stringify(callbackData, null, 2));
+
+  try {
+    const isValid = verifyCallbackSignature(rawBody, callbackSignature);
+    if (!isValid) {
+      console.error('Неверная подпись обратного вызова');
+      return res.status(400).json({ error: 'Неверная подпись' });
+    }
+
+    // Извлекаем данные в соответствии с фактической структурой
+    const { bank_order_id: bankOrderId, card_token: cardToken } = callbackData.payment_detail || {};
+    console.log('Извлеченные bankOrderId и cardToken:', { bankOrderId, cardToken });
+
+    if (bankOrderId && cardToken) {
+      await processOrderReceipt(bankOrderId, cardToken);
+    } else {
+      console.log('bankOrderId или cardToken отсутствуют:', { bankOrderId, cardToken });
+    }
+
+    res.status(200).json({ message: 'Callback обработан успешно' });
+  } catch (error) {
+    console.error('Ошибка при обработке callback:', error.message);
+    res.status(500).json({ error: 'Ошибка обработки callback' });
+  }
+});
 // Логируем заголовки и тело запроса
-console.log('Получены заголовки:', req.headers);
-console.log('Получены данные обратного вызова:', JSON.stringify(callbackData, null, 2));
+ console.log('Получены заголовки:', JSON.stringify(req.headers, null, 2));
+ console.log('Получены данные обратного вызова:', JSON.stringify(req.body, null, 2));
 
   try {
     const isValid = verifyCallbackSignature(callbackData, callbackSignature);
