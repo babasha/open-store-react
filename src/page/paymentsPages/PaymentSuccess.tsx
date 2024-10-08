@@ -17,7 +17,7 @@ const PaymentSuccess: React.FC = () => {
   const [total, setTotal] = useState<number>(0);
   const [cardToken, setCardToken] = useState<string | null>(null);
   const [bankOrderId, setBankOrderId] = useState<string | null>(null);
-
+  
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const externalOrderId = params.get('externalOrderId');
@@ -27,11 +27,11 @@ const PaymentSuccess: React.FC = () => {
       fetch(`/api/orders?externalOrderId=${externalOrderId}`)
         .then(response => response.json())
         .then(data => {
-          setOrderId(data.orderId);
-          setPurchasedItems(JSON.parse(data.items)); // Предполагается, что товары хранятся как JSON-строка
+          setOrderId(data.id);
+          setPurchasedItems(JSON.parse(data.items)); // Предполагается, что items хранится как JSON-строка
           setTotal(data.total);
-          setCardToken(data.card_token); // Установка card_token из данных заказа
-          setBankOrderId(data.bank_order_id); // Установка bank_order_id из данных заказа
+          setCardToken(data.card_token);
+          setBankOrderId(data.bank_order_id);
         })
         .catch(error => {
           console.error('Ошибка при получении данных заказа:', error);
@@ -84,7 +84,8 @@ const PaymentSuccess: React.FC = () => {
         {/* Отображение bank_order_id и card_token */}
         <p>{t('payment.bankOrderId')}: {bankOrderId}</p>
         <p>{t('payment.cardToken')}: {cardToken}</p>
-
+        <Message>{t('payment.bankOrderId')}: {bankOrderId}</Message>
+        <Message>{t('payment.cardToken')}: {cardToken}</Message>
         <ItemsList>
           {purchasedItems.map((item, index) => (
             <Item key={index}>
