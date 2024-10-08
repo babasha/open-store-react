@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
-import { FlexWrapper } from '../../components/FlexWrapper'; 
-import { BascketTitle } from '../../layout/basket/BasketStyles'; 
-import { usePurchasedItems } from './PurchasedItemsContext'; // Создадим контекст для купленных товаров
+import { FlexWrapper } from '../../components/FlexWrapper';
+import { BascketTitle } from '../../layout/basket/BasketStyles';
 import { useLocation } from 'react-router-dom';
 
 const PaymentSuccess: React.FC = () => {
@@ -16,6 +15,8 @@ const PaymentSuccess: React.FC = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
   const [total, setTotal] = useState<number>(0);
+  const [cardToken, setCardToken] = useState<string | null>(null);
+  const [bankOrderId, setBankOrderId] = useState<string | null>(null);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -29,6 +30,8 @@ const PaymentSuccess: React.FC = () => {
           setOrderId(data.orderId);
           setPurchasedItems(JSON.parse(data.items)); // Предполагается, что товары хранятся как JSON-строка
           setTotal(data.total);
+          setCardToken(data.card_token); // Установка card_token из данных заказа
+          setBankOrderId(data.bank_order_id); // Установка bank_order_id из данных заказа
         })
         .catch(error => {
           console.error('Ошибка при получении данных заказа:', error);
@@ -42,17 +45,16 @@ const PaymentSuccess: React.FC = () => {
     }, 30000);
 
     const countdown = setInterval(() => {
-      setCounter(prev => prev - 1); // Уменьшаем счётчик каждую секунду
+      setCounter(prev => prev - 1);
     }, 1000);
 
     return () => {
       clearTimeout(timer);
-      clearInterval(countdown); // Очищаем таймеры при размонтировании компонента
+      clearInterval(countdown);
     };
   }, [navigate]);
 
   const handleDownloadReceipt = () => {
-    // Функция для скачивания чека
     const receiptData = purchasedItems.map((item) => {
       return `${item.description} - ${item.quantity} x ${item.unit_price} ₾`;
     }).join('\n');
@@ -76,8 +78,13 @@ const PaymentSuccess: React.FC = () => {
     <Container width="100%">
       <FlexWrapper justify="center" align="center" style={{ minHeight: '80vh', flexDirection: 'column' }}>
         <BascketTitle>{t('payment.successTitle')}</BascketTitle>
-        <Message>{t('payment.orderNumber')}: {orderId}</Message> {/* Отображение номера заказа */}
+        <Message>{t('payment.orderNumber')}: {orderId}</Message>
         <Message>{t('payment.successMessage')}</Message>
+        
+        {/* Отображение bank_order_id и card_token */}
+        <p>{t('payment.bankOrderId')}: {bankOrderId}</p>
+        <p>{t('payment.cardToken')}: {cardToken}</p>
+
         <ItemsList>
           {purchasedItems.map((item, index) => (
             <Item key={index}>
