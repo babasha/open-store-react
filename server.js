@@ -17,7 +17,6 @@ const passport = require('./passport-config'); // Импортируем мод�
 // const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const { createPayment, temporaryOrders, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
 const axios = require('axios');
-const getRawBody = require('raw-body');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -47,8 +46,6 @@ app.use(cors(corsOptions));
 
 // Middleware для обработки JSON
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Для парсинга URL-encoded тела запросов
-
 
 // Middleware для заголовков CORS
 app.use((req, res, next) => {
@@ -135,21 +132,21 @@ const isAuthenticated = (req, res, next) => {
 };
 
 
-async function processOrderReceipt(bankOrderId, cardToken) {
-  console.log('Начало обработки чека:', { bankOrderId, cardToken });
-  const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bankOrderId}`;
-  try {
-    const response = await axios.get(receiptUrl, {
-      headers: {
-        'Authorization': `Bearer ${cardToken}`
-      }
-    });
-    console.log('Ответ от сервера банка:', response.data);
-  } catch (error) {
-    console.error('Ошибка при получении чека от банка:', error.message);
-    console.error('Подробности ошибки:', error.response?.data || error);
-  }
-}
+// async function processOrderReceipt(bank_order_id , card_token ) {
+//   console.log('Начало обработки чека:', { bank_order_id , card_token  });
+//   const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bank_order_id }`;
+//   try {
+//     const response = await axios.get(receiptUrl, {
+//       headers: {
+//         'Authorization': `Bearer ${card_token }`
+//       }
+//     });
+//     console.log('Ответ от сервера банка:', response.data);
+//   } catch (error) {
+//     console.error('Ошибка при получении чека от банка:', error.message);
+//     console.error('Подробности ошибки:', error.response?.data || error);
+//   }
+// }
 
 
 // Маршрут для запроса сброса пароля
@@ -275,6 +272,19 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
   }
 });
 
+// // Маршрут для обработки обратного вызова
+// app.post('/payment/callback', async (req, res) => {
+//   const { event, body } = req.body;
+//   console.log('Получен обратный вызов с данными:', req.body); // Логируем полный ответ
+//   try {
+//     const result = await handlePaymentCallback(event, body);
+//     console.log('Обратный вызов обработан успешно:', result); // Логируем успешную обработку
+//     res.status(200).json(result);
+//   } catch (error) {
+//     console.error('Ошибка обработки обратного вызова:', error.message); // Логируем ошибки
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 // Маршрут для обновления статуса курьера
 app.put('/couriers/me/status', isAuthenticated, async (req, res) => {
@@ -763,55 +773,7 @@ app.post('/orders', async (req, res) => {
 // Маршрут для обработки обратного вызова от Банка Грузии
 app.post('/payment/callback', async (req, res) => {
   const callbackSignature = req.headers['callback-signature'];
-  
-  // Получаем необработанное тело запроса
-  let rawBody;
-  try {
-    rawBody = await getRawBody(req);
-  } catch (err) {
-    console.error('Ошибка при получении тела запроса:', err);
-    return res.status(400).send('Bad Request');
-  }
-
-  // Попробуем распарсить тело как JSON
-  let callbackData;
-  try {
-    callbackData = JSON.parse(rawBody);
-  } catch (err) {
-    console.error('Ошибка при парсинге тела запроса:', err);
-    return res.status(400).send('Invalid JSON');
-  }
-
-  // Логируем заголовки и тело запроса
-  console.log('Получены заголовки:', JSON.stringify(req.headers, null, 2));
-  console.log('Получены данные обратного вызова:', JSON.stringify(callbackData, null, 2));
-
-  try {
-    const isValid = verifyCallbackSignature(rawBody, callbackSignature);
-    if (!isValid) {
-      console.error('Неверная подпись обратного вызова');
-      return res.status(400).json({ error: 'Неверная подпись' });
-    }
-
-    // Извлекаем данные в соответствии с фактической структурой
-    const { bank_order_id: bankOrderId, card_token: cardToken } = callbackData.payment_detail || {};
-    console.log('Извлеченные bankOrderId и cardToken:', { bankOrderId, cardToken });
-
-    if (bankOrderId && cardToken) {
-      await processOrderReceipt(bankOrderId, cardToken);
-    } else {
-      console.log('bankOrderId или cardToken отсутствуют:', { bankOrderId, cardToken });
-    }
-
-    res.status(200).json({ message: 'Callback обработан успешно' });
-  } catch (error) {
-    console.error('Ошибка при обработке callback:', error.message);
-    res.status(500).json({ error: 'Ошибка обработки callback' });
-  }
-});
-// Логируем заголовки и тело запроса
- console.log('Получены заголовки:', JSON.stringify(req.headers, null, 2));
- console.log('Получены данные обратного вызова:', JSON.stringify(req.body, null, 2));
+  const callbackData = req.body;
 
   try {
     const isValid = verifyCallbackSignature(callbackData, callbackSignature);
@@ -821,13 +783,13 @@ app.post('/payment/callback', async (req, res) => {
     }
 
     // Извлекаем корректные поля bank_order_id и card_token
-    const { bank_order_id: bankOrderId, card_token: cardToken } = callbackData.payment_detail || {};
-    console.log('Извлеченные bankOrderId и cardToken:', { bankOrderId, cardToken });
+    const { bank_order_id: bank_order_id , card_token: card_token  } = callbackData.body?.payment_detail || {};
+    console.log('Извлеченные bank_order_id  и card_token :', { bank_order_id , card_token  });
 
-    if (bankOrderId && cardToken) {
-      await processOrderReceipt(bankOrderId, cardToken);
+    if (bank_order_id  && card_token ) {
+      await processOrderReceipt(bank_order_id , card_token );
     } else {
-      console.log('bankOrderId или cardToken отсутствуют:', { bankOrderId, cardToken });
+      console.log('bank_order_id  или card_token  отсутствуют:', { bank_order_id , card_token  });
     }
 
     res.status(200).json({ message: 'Callback обработан успешно' });
@@ -1033,3 +995,4 @@ io.on('connection', (socket) => {
     console.log('Отключение');
   });
 });
+server.js
