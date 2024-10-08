@@ -78,7 +78,6 @@ const PaymentSuccess: React.FC = () => {
         <BascketTitle>{t('payment.successTitle')}</BascketTitle>
         <Message>{t('payment.orderNumber')}: {orderId}</Message> {/* Отображение номера заказа */}
         <Message>{t('payment.successMessage')}</Message>
-
         <ItemsList>
           {purchasedItems.map((item, index) => (
             <Item key={index}>
