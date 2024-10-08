@@ -255,27 +255,32 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
 // API для получения деталей заказа по externalOrderId
 app.get('/api/orders', async (req, res) => {
   const { externalOrderId } = req.query;
+
   if (!externalOrderId) {
-    return res.status(400).json({ error: 'externalOrderId is required' });
+    return res.status(400).json({ error: 'Отсутствует externalOrderId' });
   }
 
   try {
     const result = await pool.query(
-      'SELECT * FROM orders WHERE external_order_id = $1',
+      'SELECT id, items, total FROM orders WHERE external_order_id = $1',
       [externalOrderId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ error: 'Заказ не найден' });
     }
 
-    res.json(result.rows[0]); // возвращаем данные заказа
-  } catch (err) {
-    console.error('Ошибка при получении заказа:', err.message);
-    res.status(500).json({ error: 'Ошибка сервера', message: err.message });
+    const order = result.rows[0];
+    res.json({
+      orderId: order.id,
+      items: order.items,
+      total: order.total
+    });
+  } catch (error) {
+    console.error('Ошибка при получении данных заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка при получении данных заказа' });
   }
 });
-
 
 // // Маршрут для обработки обратного вызова
 // app.post('/payment/callback', async (req, res) => {
@@ -962,7 +967,27 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
   }
 });
 
+// Новый маршрут для получения данных заказа по его ID
+app.get('/api/order/:id', async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    const result = await pool.query(
+      'SELECT * FROM orders WHERE id = $1',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Заказ не найден' });
+    }
+
+    const order = result.rows[0];
+    res.json(order);
+  } catch (error) {
+    console.error('Ошибка при получении данных заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка при получении данных заказа' });
+  }
+});
 
 // Маршрут для получения всех пользователей
 app.get('/users', async (req, res) => {

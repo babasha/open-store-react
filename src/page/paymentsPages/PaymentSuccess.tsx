@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
-import { FlexWrapper } from '../../components/FlexWrapper';
-import { BascketTitle } from '../../layout/basket/BasketStyles';
+import { FlexWrapper } from '../../components/FlexWrapper'; 
+import { BascketTitle } from '../../layout/basket/BasketStyles'; 
 import { useLocation } from 'react-router-dom';
 
 const PaymentSuccess: React.FC = () => {
@@ -15,9 +15,8 @@ const PaymentSuccess: React.FC = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
   const [total, setTotal] = useState<number>(0);
-  const [cardToken, setCardToken] = useState<string | null>(null);
-  const [bankOrderId, setBankOrderId] = useState<string | null>(null);
-  
+  const [orderDetails, setOrderDetails] = useState<any | null>(null);
+
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const externalOrderId = params.get('externalOrderId');
@@ -27,11 +26,16 @@ const PaymentSuccess: React.FC = () => {
       fetch(`/api/orders?externalOrderId=${externalOrderId}`)
         .then(response => response.json())
         .then(data => {
-          setOrderId(data.id);
-          setPurchasedItems(JSON.parse(data.items)); // Предполагается, что items хранится как JSON-строка
+          setOrderId(data.orderId);
+          setPurchasedItems(JSON.parse(data.items));
           setTotal(data.total);
-          setCardToken(data.card_token);
-          setBankOrderId(data.bank_order_id);
+
+          // Запрос для получения полной информации о заказе по ID
+          return fetch(`/api/order/${data.orderId}`);
+        })
+        .then(response => response.json())
+        .then(orderData => {
+          setOrderDetails(orderData);
         })
         .catch(error => {
           console.error('Ошибка при получении данных заказа:', error);
@@ -80,12 +84,13 @@ const PaymentSuccess: React.FC = () => {
         <BascketTitle>{t('payment.successTitle')}</BascketTitle>
         <Message>{t('payment.orderNumber')}: {orderId}</Message>
         <Message>{t('payment.successMessage')}</Message>
-        
-        {/* Отображение bank_order_id и card_token */}
-        <p>{t('payment.bankOrderId')}: {bankOrderId}</p>
-        <p>{t('payment.cardToken')}: {cardToken}</p>
-        <Message>{t('payment.bankOrderId')}: {bankOrderId}</Message>
-        <Message>{t('payment.cardToken')}: {cardToken}</Message>
+        {orderDetails && (
+          <>
+            <Message>{t('payment.deliveryAddress')}: {orderDetails.delivery_address}</Message>
+            <Message>{t('payment.deliveryTime')}: {orderDetails.delivery_time}</Message>
+            <Message>{t('payment.status')}: {orderDetails.status}</Message>
+          </>
+        )}
         <ItemsList>
           {purchasedItems.map((item, index) => (
             <Item key={index}>
