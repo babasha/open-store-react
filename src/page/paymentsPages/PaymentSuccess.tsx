@@ -24,64 +24,75 @@ const PaymentSuccess: React.FC = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const externalOrderId = params.get('externalOrderId');
-
   useEffect(() => {
     if (externalOrderId) {
-      fetch(`/api/orders?externalOrderId=${externalOrderId}`)
-        .then(response => response.json())
-        .then(data => {
-          setOrderId(data.id);
-          setPurchasedItems(data.items); // Если items уже объект
-          setTotal(data.total);
-          setCardToken(data.card_token);
-          setBankOrderId(data.bank_order_id);
-        })
-        .catch(error => {
-          console.error('Ошибка при получении данных заказа:', error);
-          setError('Не удалось загрузить данные заказа.');
-        });
+        console.log('Fetching order data with externalOrderId:', externalOrderId);
+        fetch(`/api/orders?externalOrderId=${externalOrderId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Order data received:', data);
+                setOrderId(data.id);
+                setPurchasedItems(data.items);
+                setTotal(data.total);
+                setCardToken(data.card_token);
+                setBankOrderId(data.bank_order_id);
+            })
+            .catch(error => {
+                console.error('Error fetching order data:', error);
+                setError('Не удалось загрузить данные заказа.');
+            });
     }
-  }, [externalOrderId]);
+}, [externalOrderId]);
 
   // Второй useEffect для получения подробных данных заказа по orderId
   useEffect(() => {
     if (orderId) {
-      fetch(`/api/order/${orderId}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Заказ не найден');
-          }
-          return response.json();
-        })
-        .then(data => {
-          setOrderDetails(data);
-        })
-        .catch(error => {
-          console.error('Ошибка при получении подробных данных заказа:', error);
-          setError('Не удалось загрузить подробные данные заказа.');
-        });
+        console.log('Fetching detailed order data for orderId:', orderId);
+        fetch(`/api/order/${orderId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Order not found');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Detailed order data received:', data);
+                setOrderDetails(data);
+            })
+            .catch(error => {
+                console.error('Error fetching detailed order data:', error);
+                setError('Не удалось загрузить подробные данные заказа.');
+            });
     }
-  }, [orderId]);
+}, [orderId]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+useEffect(() => {
+  console.log('Starting auto-redirect countdown...');
+  const timer = setTimeout(() => {
+      console.log('Redirecting to home page');
       navigate('/');
-    }, 30000);
+  }, 30000);
 
-    const countdown = setInterval(() => {
-      setCounter(prev => prev - 1);
-    }, 1000);
+  const countdown = setInterval(() => {
+    setCounter(prev => {
+        console.log('Countdown:', prev - 1);
+        return prev - 1;
+    });
+}, 1000);
 
-    return () => {
-      clearTimeout(timer);
-      clearInterval(countdown);
-    };
-  }, [navigate]);
+return () => {
+  console.log('Clearing timers');
+  clearTimeout(timer);
+  clearInterval(countdown);
+};
+}, [navigate]);
 
-  const handleDownloadReceipt = () => {
-    const receiptData = purchasedItems.map((item) => {
+const handleDownloadReceipt = () => {
+  console.log('Downloading receipt...');
+  const receiptData = purchasedItems.map((item) => {
       return `${item.description} - ${item.quantity} x ${item.unit_price} ₾`;
-    }).join('\n');
+  }).join('\n');
+;
 
     const blob = new Blob([receiptData], { type: 'text/plain;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);

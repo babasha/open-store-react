@@ -970,21 +970,25 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
 // Маршрут для получения заказа по externalOrderId
 app.get('/api/orders', async (req, res) => {
   const { externalOrderId } = req.query;
+  console.log('Received request to fetch order by externalOrderId:', externalOrderId);
 
   try {
+    console.log('Querying database for order with externalOrderId:', externalOrderId);
     const result = await pool.query(
       'SELECT * FROM orders WHERE external_order_id = $1',
       [externalOrderId]
     );
 
     if (result.rows.length === 0) {
+      console.log('Order not found for externalOrderId:', externalOrderId);
       return res.status(404).json({ error: 'Заказ не найден' });
     }
 
     const order = result.rows[0];
+    console.log('Order found:', order);
     res.json(order);
   } catch (error) {
-    console.error('Ошибка при получении данных заказа:', error.message);
+    console.error('Error fetching order data for externalOrderId:', externalOrderId, error.message);
     res.status(500).json({ error: 'Ошибка при получении данных заказа' });
   }
 });
@@ -992,24 +996,29 @@ app.get('/api/orders', async (req, res) => {
 // Новый маршрут для получения данных заказа по его ID
 app.get('/api/order/:id', async (req, res) => {
   const { id } = req.params;
+  console.log('Received request to fetch order by ID:', id);
 
   try {
+    console.log('Querying database for order with ID:', id);
     const result = await pool.query(
       'SELECT * FROM orders WHERE id = $1',
       [id]
     );
 
     if (result.rows.length === 0) {
+      console.log('Order not found for ID:', id);
       return res.status(404).json({ error: 'Заказ не найден' });
     }
 
     const order = result.rows[0];
+    console.log('Order found:', order);
     res.json(order);
   } catch (error) {
-    console.error('Ошибка при получении данных заказа:', error.message);
+    console.error('Error fetching order data for ID:', id, error.message);
     res.status(500).json({ error: 'Ошибка при получении данных заказа' });
   }
 });
+
 
 // Маршрут для получения всех пользователей
 app.get('/users', async (req, res) => {
