@@ -171,7 +171,7 @@ async function handlePaymentCallback(event, body) {
 
   if (event === 'order_payment') {
     const { external_order_id, order_status, order_id } = body;
-
+    
     // Проверка статуса платежа
     const paymentStatus = order_status.key;
     console.log('Статус платежа:', paymentStatus);
@@ -212,6 +212,11 @@ async function handlePaymentCallback(event, body) {
       console.log('Удаляем временные данные заказа для external_order_id:', external_order_id);
       delete temporaryOrders[external_order_id];
 
+      // Получение и вывод чека
+      console.log('Получение чека для order_id:', order_id);
+      const receipt = await getReceipt(order_id);
+      console.log('Полученный чек:', receipt);
+
       // Возвращаем redirectUrl для успешной страницы
       const redirectUrl = `/payment/success?orderNumber=${external_order_id}&total=${orderData.total}&items=${encodeURIComponent(JSON.stringify(orderData.items))}`;
       console.log('Возвращаем redirectUrl для успешной страницы:', redirectUrl);
@@ -228,6 +233,7 @@ async function handlePaymentCallback(event, body) {
     throw new Error('Неверное событие для обратного вызова платежа');
   }
 }
+
 
 /**
  * Получение чека после успешного платежа

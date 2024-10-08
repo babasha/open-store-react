@@ -132,21 +132,21 @@ const isAuthenticated = (req, res, next) => {
 };
 
 
-// async function processOrderReceipt(bank_order_id , card_token ) {
-//   console.log('Начало обработки чека:', { bank_order_id , card_token  });
-//   const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bank_order_id }`;
-//   try {
-//     const response = await axios.get(receiptUrl, {
-//       headers: {
-//         'Authorization': `Bearer ${card_token }`
-//       }
-//     });
-//     console.log('Ответ от сервера банка:', response.data);
-//   } catch (error) {
-//     console.error('Ошибка при получении чека от банка:', error.message);
-//     console.error('Подробности ошибки:', error.response?.data || error);
-//   }
-// }
+async function processOrderReceipt(bank_order_id , card_token ) {
+  console.log('Начало обработки чека:', { bank_order_id , card_token  });
+  const receiptUrl = `https://api.bog.ge/payments/v1/receipt/${bank_order_id }`;
+  try {
+    const response = await axios.get(receiptUrl, {
+      headers: {
+        'Authorization': `Bearer ${card_token }`
+      }
+    });
+    console.log('Ответ от сервера банка:', response.data);
+  } catch (error) {
+    console.error('Ошибка при получении чека от банка:', error.message);
+    console.error('Подробности ошибки:', error.response?.data || error);
+  }
+}
 
 
 // Маршрут для запроса сброса пароля
