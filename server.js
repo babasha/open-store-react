@@ -252,6 +252,35 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Ошибка создания платежа' });
   }
 });
+// API для получения деталей заказа по externalOrderId
+app.get('/api/orders', async (req, res) => {
+  const { externalOrderId } = req.query;
+
+  if (!externalOrderId) {
+    return res.status(400).json({ error: 'Отсутствует externalOrderId' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT id, items, total FROM orders WHERE external_order_id = $1',
+      [externalOrderId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Заказ не найден' });
+    }
+
+    const order = result.rows[0];
+    res.json({
+      orderId: order.id,
+      items: order.items,
+      total: order.total
+    });
+  } catch (error) {
+    console.error('Ошибка при получении данных заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка при получении данных заказа' });
+  }
+});
 
 // // Маршрут для обработки обратного вызова
 // app.post('/payment/callback', async (req, res) => {

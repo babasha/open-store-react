@@ -11,12 +11,30 @@ import { useLocation } from 'react-router-dom';
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { purchasedItems, clearPurchasedItems } = usePurchasedItems();
   const [counter, setCounter] = useState(30);
+
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
+  const [total, setTotal] = useState<number>(0);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const orderId = params.get('orderId');
+  const externalOrderId = params.get('externalOrderId');
+
+  useEffect(() => {
+    if (externalOrderId) {
+      fetch(`/api/orders?externalOrderId=${externalOrderId}`)
+        .then(response => response.json())
+        .then(data => {
+          setOrderId(data.orderId);
+          setPurchasedItems(JSON.parse(data.items)); // Предполагается, что товары хранятся как JSON-строка
+          setTotal(data.total);
+        })
+        .catch(error => {
+          console.error('Ошибка при получении данных заказа:', error);
+        });
+    }
+  }, [externalOrderId]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,7 +42,7 @@ const PaymentSuccess: React.FC = () => {
     }, 30000);
 
     const countdown = setInterval(() => {
-      setCounter(prev => prev - 1); // Уменьшаем значение счётчика каждую секунду
+      setCounter(prev => prev - 1); // Уменьшаем счётчик каждую секунду
     }, 1000);
 
     return () => {
@@ -36,7 +54,7 @@ const PaymentSuccess: React.FC = () => {
   const handleDownloadReceipt = () => {
     // Функция для скачивания чека
     const receiptData = purchasedItems.map((item) => {
-      return `${item.title} - ${item.quantity} x ${item.price} ₾`;
+      return `${item.description} - ${item.quantity} x ${item.unit_price} ₾`;
     }).join('\n');
 
     const blob = new Blob([receiptData], { type: 'text/plain;charset=utf-8' });
@@ -56,29 +74,29 @@ const PaymentSuccess: React.FC = () => {
 
   return (
     <Container width="100%">
-    <FlexWrapper justify="center" align="center" style={{ minHeight: '80vh', flexDirection: 'column' }}>
-      <BascketTitle>{t('payment.successTitle')}</BascketTitle>
-      <Message>{t('payment.orderNumber')}: {orderId}</Message> {/* Добавили отображение номера заказа */}
-      <Message>{t('payment.successMessage')}</Message>
+      <FlexWrapper justify="center" align="center" style={{ minHeight: '80vh', flexDirection: 'column' }}>
+        <BascketTitle>{t('payment.successTitle')}</BascketTitle>
+        <Message>{t('payment.orderNumber')}: {orderId}</Message> {/* Отображение номера заказа */}
+        <Message>{t('payment.successMessage')}</Message>
 
-      <ItemsList>
-        {purchasedItems.map((item) => (
-          <Item key={item.id}>
-            {item.title} - {item.quantity} x {item.price} ₾
-          </Item>
-        ))}
-      </ItemsList>
+        <ItemsList>
+          {purchasedItems.map((item, index) => (
+            <Item key={index}>
+              {item.description} - {item.quantity} x {item.unit_price} ₾
+            </Item>
+          ))}
+        </ItemsList>
 
-      <ButtonsWrapper>
-        <Button onClick={handleReturnToShop}>{t('payment.returnToShop')}</Button>
-        <Button onClick={handleDownloadReceipt}>{t('payment.downloadReceipt')}</Button>
-      </ButtonsWrapper>
+        <ButtonsWrapper>
+          <Button onClick={handleReturnToShop}>{t('payment.returnToShop')}</Button>
+          <Button onClick={handleDownloadReceipt}>{t('payment.downloadReceipt')}</Button>
+        </ButtonsWrapper>
 
-      <AutoRedirectMessage>
-        {t('payment.autoRedirect')} {counter} {t('payment.seconds')}
-      </AutoRedirectMessage>
-    </FlexWrapper>
-  </Container>
+        <AutoRedirectMessage>
+          {t('payment.autoRedirect')} {counter} {t('payment.seconds')}
+        </AutoRedirectMessage>
+      </FlexWrapper>
+    </Container>
   );
 };
 

@@ -65,26 +65,24 @@ async function createPayment(total, items, externalOrderId) {
     // Формируем данные для создания платежа
     console.log('Формируем данные для создания платежа...');
     const paymentData = {
-      callback_url: process.env.BOG_CALLBACK_URL, // URL для обратного вызова после оплаты
-      external_order_id: externalOrderId, // Внешний идентификатор заказа
+      callback_url: process.env.BOG_CALLBACK_URL,
+      external_order_id: externalOrderId,
       purchase_units: {
-        currency: 'GEL', // Валюта платежа
-        total_amount: Number(parseFloat(total).toFixed(2)), // Преобразуем total в число с двумя знаками после запятой
+        currency: 'GEL',
+        total_amount: Number(parseFloat(total).toFixed(2)),
         basket: items.map(item => {
           const unitPrice = Number(parseFloat(item.price).toFixed(2));
-          console.log('item.price:', item.price, 'unitPrice:', unitPrice);
-
           return {
-            product_id: item.productId.toString(), // Идентификатор товара
-            description: item.description || 'Товар', // Описание товара (по умолчанию "Товар")
-            quantity: item.quantity, // Количество товара
-            unit_price: unitPrice, // Цена за единицу товара
+            product_id: item.productId.toString(),
+            description: item.description || 'Товар',
+            quantity: item.quantity,
+            unit_price: unitPrice,
           };
         })
       },
       redirect_urls: {
-        success: `${process.env.PUBLIC_URL}/payment/success`, // URL для перенаправления в случае успеха
-        fail: `${process.env.PUBLIC_URL}/payment/fail` // URL для перенаправления в случае ошибки
+        success: `${process.env.PUBLIC_URL}/payment/success?externalOrderId=${externalOrderId}`, // Включите externalOrderId здесь
+        fail: `${process.env.PUBLIC_URL}/payment/fail`
       }
     };
 
@@ -192,17 +190,18 @@ async function handlePaymentCallback(event, body) {
       // Создаём запись заказа в базе данных
       console.log('Создаём запись заказа в базе данных...');
       const insertResult = await pool.query(
-        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id, card_token) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+        'INSERT INTO orders (user_id, items, total, delivery_time, delivery_address, status, payment_status, bank_order_id, card_token, external_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
         [
-          orderData.userId, // ID пользователя
-          JSON.stringify(orderData.items), // Список товаров в формате JSON
-          orderData.total, // Общая сумма заказа
-          orderData.deliveryTime, // Время доставки
-          orderData.deliveryAddress, // Адрес доставки
-          'completed', // Статус заказа
-          paymentStatus, // Статус платежа
-          order_id, // Идентификатор заказа в банке
-          orderData.accessToken, // Сохраняем access_token в колонку card_token
+         orderData.userId,
+         JSON.stringify(orderData.items),
+         orderData.total,
+         orderData.deliveryTime,
+         orderData.deliveryAddress,
+         'completed',
+         paymentStatus,
+         order_id,
+         orderData.accessToken,
+         external_order_id // Добавьте эту строку
         ]
       );
       const newOrderId = insertResult.rows[0].id;
