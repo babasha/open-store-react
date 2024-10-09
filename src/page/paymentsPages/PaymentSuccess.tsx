@@ -11,88 +11,62 @@ const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [counter, setCounter] = useState(30);
 
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [cardToken, setCardToken] = useState<string | null>(null);
-  const [bankOrderId, setBankOrderId] = useState<string | null>(null);
-
-  // Новые состояния для дополнительных данных заказа
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const externalOrderId = params.get('externalOrderId');
+
   useEffect(() => {
     if (externalOrderId) {
-        console.log('Fetching order data with externalOrderId:', externalOrderId);
-        fetch(`/api/orders?externalOrderId=${externalOrderId}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log('Order data received:', data);
-                setOrderId(data.id);
-                setPurchasedItems(data.items);
-                setTotal(data.total);
-                setCardToken(data.card_token);
-                setBankOrderId(data.bank_order_id);
-            })
-            .catch(error => {
-                console.error('Error fetching order data:', error);
-                setError('Не удалось загрузить данные заказа.');
-            });
+      console.log('Fetching order data with externalOrderId:', externalOrderId);
+      fetch(`/api/orders?externalOrderId=${externalOrderId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Заказ не найден');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Order data received:', data);
+          setOrderDetails(data);
+        })
+        .catch(error => {
+          console.error('Error fetching order data:', error);
+          setError('Не удалось загрузить данные заказа.');
+        });
     }
-}, [externalOrderId]);
+  }, [externalOrderId]);
 
-  // Второй useEffect для получения подробных данных заказа по orderId
   useEffect(() => {
-    if (orderId) {
-        console.log('Fetching detailed order data for orderId:', orderId);
-        fetch(`/api/order/${orderId}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Order not found');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Detailed order data received:', data);
-                setOrderDetails(data);
-            })
-            .catch(error => {
-                console.error('Error fetching detailed order data:', error);
-                setError('Не удалось загрузить подробные данные заказа.');
-            });
-    }
-}, [orderId]);
-
-useEffect(() => {
-  console.log('Starting auto-redirect countdown...');
-  const timer = setTimeout(() => {
+    console.log('Starting auto-redirect countdown...');
+    const timer = setTimeout(() => {
       console.log('Redirecting to home page');
       navigate('/');
-  }, 30000);
+    }, 30000);
 
-  const countdown = setInterval(() => {
-    setCounter(prev => {
+    const countdown = setInterval(() => {
+      setCounter(prev => {
         console.log('Countdown:', prev - 1);
         return prev - 1;
-    });
-}, 1000);
+      });
+    }, 1000);
 
-return () => {
-  console.log('Clearing timers');
-  clearTimeout(timer);
-  clearInterval(countdown);
-};
-}, [navigate]);
+    return () => {
+      console.log('Clearing timers');
+      clearTimeout(timer);
+      clearInterval(countdown);
+    };
+  }, [navigate]);
 
-const handleDownloadReceipt = () => {
-  console.log('Downloading receipt...');
-  const receiptData = purchasedItems.map((item) => {
-      return `${item.description} - ${item.quantity} x ${item.unit_price} ₾`;
-  }).join('\n');
-;
+  const handleDownloadReceipt = () => {
+    console.log('Downloading receipt...');
+    if (!orderDetails || !orderDetails.items) return;
+
+    const receiptData = orderDetails.items.map((item: any) => {
+      return `${item.description} - ${item.quantity} x ${item.price} ₾`;
+    }).join('\n');
 
     const blob = new Blob([receiptData], { type: 'text/plain;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
@@ -113,45 +87,46 @@ const handleDownloadReceipt = () => {
     <Container width="100%">
       <FlexWrapper justify="center" align="center" style={{ minHeight: '80vh', flexDirection: 'column' }}>
         <BascketTitle>{t('payment.successTitle')}</BascketTitle>
-        <Message>{t('payment.orderNumber')}: {orderId}</Message>
-        <Message>{t('payment.successMessage')}</Message>
-
-        {/* Отображение подробных данных заказа */}
         {orderDetails && (
-          <OrderDetails>
-            <h3>{t('payment.orderDetails')}</h3>
-            <p><strong>ID:</strong> {orderDetails.id}</p>
-            <p><strong>User ID:</strong> {orderDetails.user_id}</p>
-            <p><strong>Total:</strong> {orderDetails.total} ₾</p>
-            <p><strong>Status:</strong> {orderDetails.status}</p>
-            <p><strong>Created At:</strong> {new Date(orderDetails.created_at).toLocaleString()}</p>
-            <p><strong>Delivery Time:</strong> {orderDetails.delivery_time}</p>
-            <p><strong>Delivery Option:</strong> {orderDetails.delivery_option}</p>
-            <p><strong>Delivery Address:</strong> {orderDetails.delivery_address}</p>
-            <p><strong>Courier ID:</strong> {orderDetails.courier_id}</p>
-            <p><strong>Payment Status:</strong> {orderDetails.payment_status}</p>
-            <p><strong>Bank Order ID:</strong> {orderDetails.bank_order_id}</p>
-            <p><strong>Receipt URL:</strong> <a href={orderDetails.receipt_url} target="_blank" rel="noopener noreferrer">Скачать чек</a></p>
-            <p><strong>External Order ID:</strong> {orderDetails.external_order_id}</p>
-            <p><strong>Card Token:</strong> {orderDetails.card_token}</p>
-          </OrderDetails>
+          <>
+            <Message>{t('payment.orderNumber')}: {orderDetails.id}</Message>
+            <Message>{t('payment.successMessage')}</Message>
+
+            <OrderDetails>
+              <h3>{t('payment.orderDetails')}</h3>
+              <p><strong>ID:</strong> {orderDetails.id}</p>
+              <p><strong>User ID:</strong> {orderDetails.user_id}</p>
+              <p><strong>Total:</strong> {orderDetails.total} ₾</p>
+              <p><strong>Status:</strong> {orderDetails.status}</p>
+              <p><strong>Created At:</strong> {new Date(orderDetails.created_at).toLocaleString()}</p>
+              <p><strong>Delivery Time:</strong> {orderDetails.delivery_time || 'Не указано'}</p>
+              <p><strong>Delivery Option:</strong> {orderDetails.delivery_option || 'Не указано'}</p>
+              <p><strong>Delivery Address:</strong> {orderDetails.delivery_address}</p>
+              <p><strong>Courier ID:</strong> {orderDetails.courier_id || 'Не назначен'}</p>
+              <p><strong>Payment Status:</strong> {orderDetails.payment_status}</p>
+              <p><strong>Bank Order ID:</strong> {orderDetails.bank_order_id}</p>
+              <p><strong>Receipt URL:</strong> {orderDetails.receipt_url ? <a href={orderDetails.receipt_url} target="_blank" rel="noopener noreferrer">Скачать чек</a> : 'Не доступно'}</p>
+              <p><strong>External Order ID:</strong> {orderDetails.external_order_id}</p>
+              <p><strong>Card Token:</strong> {orderDetails.card_token}</p>
+            </OrderDetails>
+
+            {/* Отображение списка купленных товаров */}
+            <ItemsList>
+              {orderDetails.items.map((item: any, index: number) => (
+                <Item key={index}>
+                  {item.description} - {item.quantity} x {item.price} ₾
+                </Item>
+              ))}
+            </ItemsList>
+
+            <ButtonsWrapper>
+              <Button onClick={handleReturnToShop}>{t('payment.returnToShop')}</Button>
+              <Button onClick={handleDownloadReceipt}>{t('payment.downloadReceipt')}</Button>
+            </ButtonsWrapper>
+          </>
         )}
 
         {error && <Message style={{ color: 'red' }}>{error}</Message>}
-
-        {/* Отображение списка купленных товаров */}
-        <ItemsList>
-          {purchasedItems.map((item, index) => (
-            <Item key={index}>
-              {item.description} - {item.quantity} x {item.unit_price} ₾
-            </Item>
-          ))}
-        </ItemsList>
-
-        <ButtonsWrapper>
-          <Button onClick={handleReturnToShop}>{t('payment.returnToShop')}</Button>
-          <Button onClick={handleDownloadReceipt}>{t('payment.downloadReceipt')}</Button>
-        </ButtonsWrapper>
 
         <AutoRedirectMessage>
           {t('payment.autoRedirect')} {counter} {t('payment.seconds')}
@@ -198,6 +173,10 @@ const Button = styled.button`
   cursor: pointer;
   border-radius: 5px;
   font-size: 16px;
+
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
 
 const AutoRedirectMessage = styled.p`
@@ -209,6 +188,7 @@ const AutoRedirectMessage = styled.p`
 const OrderDetails = styled.div`
   margin-top: 20px;
   text-align: left;
+  max-width: 600px;
 
   h3 {
     margin-bottom: 10px;
