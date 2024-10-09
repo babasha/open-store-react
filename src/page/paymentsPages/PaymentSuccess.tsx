@@ -6,12 +6,37 @@ import { Container } from '../../components/Container';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import { BascketTitle } from '../../layout/basket/BasketStyles';
 
+interface OrderItem {
+  price: number;
+  quantity: number;
+  productId: number;
+  description: string;
+}
+
+interface OrderDetails {
+  id: number;
+  userId: number;
+  items: OrderItem[];
+  total: string;
+  status: string;
+  createdAt: string;
+  deliveryTime: string | null;
+  deliveryOption: string | null;
+  deliveryAddress: string | null;
+  courierId: number | null;
+  paymentStatus: string;
+  bankOrderId: string;
+  receiptUrl: string | null;
+  externalOrderId: string;
+  cardToken: string;
+}
+
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [counter, setCounter] = useState(30);
 
-  const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const location = useLocation();
@@ -40,43 +65,26 @@ const PaymentSuccess: React.FC = () => {
   }, [externalOrderId]);
 
   useEffect(() => {
-    console.log('Starting auto-redirect countdown...');
     const timer = setTimeout(() => {
-      console.log('Redirecting to home page');
       navigate('/');
     }, 30000);
 
     const countdown = setInterval(() => {
-      setCounter(prev => {
-        console.log('Countdown:', prev - 1);
-        return prev - 1;
-      });
+      setCounter(prev => prev - 1);
     }, 1000);
 
     return () => {
-      console.log('Clearing timers');
       clearTimeout(timer);
       clearInterval(countdown);
     };
   }, [navigate]);
 
   const handleDownloadReceipt = () => {
-    console.log('Downloading receipt...');
-    if (!orderDetails || !orderDetails.items) return;
-
-    const receiptData = orderDetails.items.map((item: any) => {
-      return `${item.description} - ${item.quantity} x ${item.price} ₾`;
-    }).join('\n');
-
-    const blob = new Blob([receiptData], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'receipt.txt';
-    link.click();
-
-    window.URL.revokeObjectURL(url);
+    if (orderDetails?.receiptUrl) {
+      window.open(orderDetails.receiptUrl, '_blank');
+    } else {
+      alert('Чек недоступен');
+    }
   };
 
   const handleReturnToShop = () => {
@@ -94,25 +102,23 @@ const PaymentSuccess: React.FC = () => {
 
             <OrderDetails>
               <h3>{t('payment.orderDetails')}</h3>
-              <p><strong>ID:</strong> {orderDetails.id}</p>
-              <p><strong>User ID:</strong> {orderDetails.user_id}</p>
-              <p><strong>Total:</strong> {orderDetails.total} ₾</p>
-              <p><strong>Status:</strong> {orderDetails.status}</p>
-              <p><strong>Created At:</strong> {new Date(orderDetails.created_at).toLocaleString()}</p>
-              <p><strong>Delivery Time:</strong> {orderDetails.delivery_time || 'Не указано'}</p>
-              <p><strong>Delivery Option:</strong> {orderDetails.delivery_option || 'Не указано'}</p>
-              <p><strong>Delivery Address:</strong> {orderDetails.delivery_address}</p>
-              <p><strong>Courier ID:</strong> {orderDetails.courier_id || 'Не назначен'}</p>
-              <p><strong>Payment Status:</strong> {orderDetails.payment_status}</p>
-              <p><strong>Bank Order ID:</strong> {orderDetails.bank_order_id}</p>
-              <p><strong>Receipt URL:</strong> {orderDetails.receipt_url ? <a href={orderDetails.receipt_url} target="_blank" rel="noopener noreferrer">Скачать чек</a> : 'Не доступно'}</p>
-              <p><strong>External Order ID:</strong> {orderDetails.external_order_id}</p>
-              <p><strong>Card Token:</strong> {orderDetails.card_token}</p>
+              <p><strong>ID заказа:</strong> {orderDetails.id}</p>
+              <p><strong>ID пользователя:</strong> {orderDetails.userId}</p>
+              <p><strong>Итого:</strong> {orderDetails.total} ₾</p>
+              <p><strong>Статус:</strong> {orderDetails.status}</p>
+              <p><strong>Создан:</strong> {new Date(orderDetails.createdAt).toLocaleString()}</p>
+              <p><strong>Время доставки:</strong> {orderDetails.deliveryTime || 'Не указано'}</p>
+              <p><strong>Опция доставки:</strong> {orderDetails.deliveryOption || 'Не указано'}</p>
+              <p><strong>Адрес доставки:</strong> {orderDetails.deliveryAddress || 'Не указано'}</p>
+              <p><strong>ID курьера:</strong> {orderDetails.courierId || 'Не назначен'}</p>
+              <p><strong>Статус оплаты:</strong> {orderDetails.paymentStatus}</p>
+              <p><strong>ID банковского заказа:</strong> {orderDetails.bankOrderId}</p>
+              <p><strong>Внешний ID заказа:</strong> {orderDetails.externalOrderId}</p>
             </OrderDetails>
 
-            {/* Отображение списка купленных товаров */}
             <ItemsList>
-              {orderDetails.items.map((item: any, index: number) => (
+              <h3>{t('payment.orderedItems')}</h3>
+              {orderDetails.items.map((item: OrderItem, index: number) => (
                 <Item key={index}>
                   {item.description} - {item.quantity} x {item.price} ₾
                 </Item>
@@ -138,31 +144,67 @@ const PaymentSuccess: React.FC = () => {
 
 export default PaymentSuccess;
 
-// Стили
+// Стили остаются без изменений
 const Message = styled.p`
   font-size: 18px;
   text-align: center;
   margin-bottom: 20px;
 `;
 
+const OrderDetails = styled.div`
+  margin-top: 20px;
+  text-align: left;
+  max-width: 600px;
+  width: 100%;
+  padding: 20px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+
+  p {
+    margin: 10px 0;
+    font-size: 16px;
+  }
+
+  strong {
+    color: #555;
+  }
+`;
+
 const ItemsList = styled.ul`
   list-style-type: none;
-  padding: 0;
-  margin-bottom: 20px;
+  padding: 20px;
+  margin: 20px 0;
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
 `;
 
 const Item = styled.li`
   font-size: 16px;
   padding: 10px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #eee;
+  &:last-child {
+    border-bottom: none;
+  }
 `;
 
 const ButtonsWrapper = styled.div`
   display: flex;
   gap: 20px;
-  margin-bottom: 20px;
+  margin: 20px 0;
 `;
 
 const Button = styled.button`
@@ -173,6 +215,7 @@ const Button = styled.button`
   cursor: pointer;
   border-radius: 5px;
   font-size: 16px;
+  transition: background-color 0.3s;
 
   &:hover {
     background-color: #0056b3;
@@ -183,23 +226,4 @@ const AutoRedirectMessage = styled.p`
   font-size: 14px;
   color: #666;
   text-align: center;
-`;
-
-const OrderDetails = styled.div`
-  margin-top: 20px;
-  text-align: left;
-  max-width: 600px;
-
-  h3 {
-    margin-bottom: 10px;
-  }
-
-  p {
-    margin: 5px 0;
-  }
-
-  a {
-    color: blue;
-    text-decoration: underline;
-  }
 `;

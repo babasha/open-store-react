@@ -986,7 +986,25 @@ app.get('/api/orders', async (req, res) => {
 
     const order = result.rows[0];
     console.log('Order found:', order);
-    res.json(order);
+
+    // Отправляем все данные заказа клиенту
+    res.json({
+      id: order.id,
+      userId: order.user_id,
+      items: order.items,
+      total: order.total,
+      status: order.status,
+      createdAt: order.created_at,
+      deliveryTime: order.delivery_time,
+      deliveryOption: order.delivery_option,
+      deliveryAddress: order.delivery_address,
+      courierId: order.courier_id,
+      paymentStatus: order.payment_status,
+      bankOrderId: order.bank_order_id,
+      receiptUrl: order.receipt_url,
+      externalOrderId: order.external_order_id,
+      cardToken: order.card_token
+    });
   } catch (error) {
     console.error('Error fetching order data for externalOrderId:', externalOrderId, error.message);
     res.status(500).json({ error: 'Ошибка при получении данных заказа' });
