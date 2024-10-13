@@ -262,7 +262,7 @@ app.get('/api/orders', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, items, total FROM orders WHERE external_order_id = $1',
+      'SELECT * FROM orders WHERE external_order_id = $1',
       [externalOrderId]
     );
 
@@ -271,17 +271,12 @@ app.get('/api/orders', async (req, res) => {
     }
 
     const order = result.rows[0];
-    res.json({
-      orderId: order.id,
-      items: order.items,
-      total: order.total
-    });
+    res.json(order);
   } catch (error) {
     console.error('Ошибка при получении данных заказа:', error.message);
     res.status(500).json({ error: 'Ошибка при получении данных заказа' });
   }
 });
-
 // // Маршрут для обработки обратного вызова
 // app.post('/payment/callback', async (req, res) => {
 //   const { event, body } = req.body;

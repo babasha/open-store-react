@@ -15,20 +15,20 @@ interface OrderItem {
 
 interface OrderDetails {
   id: number;
-  userId: number;
+  user_id: number;
   items: OrderItem[];
   total: string;
   status: string;
-  createdAt: string;
-  deliveryTime: string | null;
-  deliveryOption: string | null;
-  deliveryAddress: string | null;
-  courierId: number | null;
-  paymentStatus: string;
-  bankOrderId: string;
-  receiptUrl: string | null;
-  externalOrderId: string;
-  cardToken: string;
+  created_at: string;
+  delivery_time: string | null;
+  delivery_option: string | null;
+  delivery_address: string | null;
+  courier_id: number | null;
+  payment_status: string;
+  bank_order_id: string;
+  receipt_url: string | null;
+  external_order_id: string;
+  card_token: string;
 }
 
 const PaymentSuccess: React.FC = () => {
@@ -80,8 +80,8 @@ const PaymentSuccess: React.FC = () => {
   }, [navigate]);
 
   const handleDownloadReceipt = () => {
-    if (orderDetails?.receiptUrl) {
-      window.open(orderDetails.receiptUrl, '_blank');
+    if (orderDetails?.receipt_url) {
+      window.open(orderDetails.receipt_url, '_blank');
     } else {
       alert('Чек недоступен');
     }
@@ -100,21 +100,21 @@ const PaymentSuccess: React.FC = () => {
             <Message>{t('payment.orderNumber')}: {orderDetails.id}</Message>
             <Message>{t('payment.successMessage')}</Message>
 
-            <OrderDetails>
+            <OrderDetailsContainer>
               <h3>{t('payment.orderDetails')}</h3>
               <p><strong>ID заказа:</strong> {orderDetails.id}</p>
-              <p><strong>ID пользователя:</strong> {orderDetails.userId}</p>
+              <p><strong>ID пользователя:</strong> {orderDetails.user_id}</p>
               <p><strong>Итого:</strong> {orderDetails.total} ₾</p>
               <p><strong>Статус:</strong> {orderDetails.status}</p>
-              <p><strong>Создан:</strong> {new Date(orderDetails.createdAt).toLocaleString()}</p>
-              <p><strong>Время доставки:</strong> {orderDetails.deliveryTime || 'Не указано'}</p>
-              <p><strong>Опция доставки:</strong> {orderDetails.deliveryOption || 'Не указано'}</p>
-              <p><strong>Адрес доставки:</strong> {orderDetails.deliveryAddress || 'Не указано'}</p>
-              <p><strong>ID курьера:</strong> {orderDetails.courierId || 'Не назначен'}</p>
-              <p><strong>Статус оплаты:</strong> {orderDetails.paymentStatus}</p>
-              <p><strong>ID банковского заказа:</strong> {orderDetails.bankOrderId}</p>
-              <p><strong>Внешний ID заказа:</strong> {orderDetails.externalOrderId}</p>
-            </OrderDetails>
+              <p><strong>Создан:</strong> {new Date(orderDetails.created_at).toLocaleString()}</p>
+              <p><strong>Время доставки:</strong> {orderDetails.delivery_time || 'Не указано'}</p>
+              <p><strong>Опция доставки:</strong> {orderDetails.delivery_option || 'Не указано'}</p>
+              <p><strong>Адрес доставки:</strong> {orderDetails.delivery_address || 'Не указано'}</p>
+              <p><strong>ID курьера:</strong> {orderDetails.courier_id || 'Не назначен'}</p>
+              <p><strong>Статус оплаты:</strong> {orderDetails.payment_status}</p>
+              <p><strong>ID банковского заказа:</strong> {orderDetails.bank_order_id}</p>
+              <p><strong>Внешний ID заказа:</strong> {orderDetails.external_order_id}</p>
+            </OrderDetailsContainer>
 
             <ItemsList>
               <h3>{t('payment.orderedItems')}</h3>
@@ -144,13 +144,53 @@ const PaymentSuccess: React.FC = () => {
 
 export default PaymentSuccess;
 
+
 // Стили остаются без изменений
 const Message = styled.p`
   font-size: 18px;
   text-align: center;
   margin-bottom: 20px;
 `;
+export const OrderDetailsContainer = styled.div`
+  width: 100%;
+  max-width: 800px;
+  background-color: #ffffff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
 
+  h3 {
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    color: #2c3e50;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 10px;
+  }
+
+  p {
+    margin: 10px 0;
+    font-size: 1em;
+    color: #34495e;
+    line-height: 1.6;
+
+    strong {
+      color: #2c3e50;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px;
+    
+    h3 {
+      font-size: 1.5em;
+    }
+
+    p {
+      font-size: 0.95em;
+    }
+  }
+`;
 const OrderDetails = styled.div`
   margin-top: 20px;
   text-align: left;
