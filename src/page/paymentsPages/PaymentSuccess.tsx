@@ -145,7 +145,6 @@ const PaymentSuccess: React.FC = () => {
 export default PaymentSuccess;
 
 
-// Стили остаются без изменений
 const Message = styled.p`
   font-size: 18px;
   text-align: center;
