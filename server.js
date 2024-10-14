@@ -16,7 +16,6 @@ const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 // const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const { createPayment, temporaryOrders, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
-const axios = require('axios');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -253,81 +252,29 @@ app.post('/create-payment', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Ошибка создания платежа' });
   }
 });
+// API для получения деталей заказа по externalOrderId
 app.get('/api/orders', async (req, res) => {
   const { externalOrderId } = req.query;
-  console.log('Получен запрос на получение данных заказа', { externalOrderId });
 
   if (!externalOrderId) {
-    console.error('Отсутствует externalOrderId');
     return res.status(400).json({ error: 'Отсутствует externalOrderId' });
   }
 
   try {
-    console.log('Поиск заказа в базе данных по externalOrderId:', externalOrderId);
     const result = await pool.query(
       'SELECT * FROM orders WHERE external_order_id = $1',
       [externalOrderId]
     );
 
     if (result.rows.length === 0) {
-      console.warn('Заказ не найден:', externalOrderId);
       return res.status(404).json({ error: 'Заказ не найден' });
     }
 
     const order = result.rows[0];
-    console.log('Найден заказ:', order);
-
-    const cardToken = order.card_token;
-    const bankOrderId = order.bank_order_id;
-
-    if (!cardToken || !bankOrderId) {
-      console.warn('Недостаточно данных для запроса к банку:', { cardToken, bankOrderId });
-      return res.status(400).json({ error: 'Недостаточно данных для запроса к банку' });
-    }
-
-    console.log('Получение токена доступа от Банка Грузии');
-    const authResponse = await axios.post('https://api.bog.ge/v1/auth/token', {
-      grant_type: 'card_token',
-      card_token: cardToken
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const accessToken = authResponse.data.access_token;
-    console.log('Токен доступа получен:', accessToken);
-
-    console.log('Получение ссылки на чек по bank_order_id:', bankOrderId);
-    const receiptResponse = await axios.get(`https://api.bog.ge/v1/orders/${bankOrderId}/receipt`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
-    const receiptUrl = receiptResponse.data.receipt_url;
-    console.log('Ссылка на чек получена:', receiptUrl);
-
-    console.log('Обновление заказа в базе данных с receipt_url');
-    await pool.query(
-      'UPDATE orders SET receipt_url = $1 WHERE id = $2',
-      [receiptUrl, order.id]
-    );
-
-    console.log('Удаление чувствительных данных перед отправкой');
-    delete order.card_token;
-    order.receipt_url = receiptUrl;
-
-    console.log('Ответ с данными заказа отправлен клиенту');
     res.json(order);
   } catch (error) {
-    console.error('Ошибка при получении данных заказа или запросе к банку:', error.message);
-
-    if (error.response && error.response.data) {
-      console.error('Детали ошибки от Банка Грузии:', error.response.data);
-    }
-
-    res.status(500).json({ error: 'Ошибка при обработке запроса' });
+    console.error('Ошибка при получении данных заказа:', error.message);
+    res.status(500).json({ error: 'Ошибка при получении данных заказа' });
   }
 });
 // // Маршрут для обработки обратного вызова
@@ -1018,109 +965,73 @@ app.get('/api/orders/me', isAuthenticated, async (req, res) => {
 // Маршрут для получения заказа по externalOrderId
 app.get('/api/orders', async (req, res) => {
   const { externalOrderId } = req.query;
-  console.log('Получен запрос на получение данных заказа', { externalOrderId });
-
-  if (!externalOrderId) {
-    console.error('Отсутствует externalOrderId');
-    return res.status(400).json({ error: 'Отсутствует externalOrderId' });
-  }
+  console.log('Received request to fetch order by externalOrderId:', externalOrderId);
 
   try {
-    console.log('Поиск заказа в базе данных по externalOrderId:', externalOrderId);
+    console.log('Querying database for order with externalOrderId:', externalOrderId);
     const result = await pool.query(
       'SELECT * FROM orders WHERE external_order_id = $1',
       [externalOrderId]
     );
 
     if (result.rows.length === 0) {
-      console.warn('Заказ не найден:', externalOrderId);
+      console.log('Order not found for externalOrderId:', externalOrderId);
       return res.status(404).json({ error: 'Заказ не найден' });
     }
 
     const order = result.rows[0];
-    console.log('Найден заказ:', order);
+    console.log('Order found:', order);
 
-    const cardToken = order.card_token;
-    const bankOrderId = order.bank_order_id;
-
-    if (!cardToken || !bankOrderId) {
-      console.warn('Недостаточно данных для запроса к банку:', { cardToken, bankOrderId });
-      return res.status(400).json({ error: 'Недостаточно данных для запроса к банку' });
-    }
-
-    console.log('Получение токена доступа от Банка Грузии');
-    const authResponse = await axios.post('https://api.bog.ge/v1/auth/token', {
-      grant_type: 'card_token',
-      card_token: cardToken
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    // Отправляем все данные заказа клиенту
+    res.json({
+      id: order.id,
+      userId: order.user_id,
+      items: order.items,
+      total: order.total,
+      status: order.status,
+      createdAt: order.created_at,
+      deliveryTime: order.delivery_time,
+      deliveryOption: order.delivery_option,
+      deliveryAddress: order.delivery_address,
+      courierId: order.courier_id,
+      paymentStatus: order.payment_status,
+      bankOrderId: order.bank_order_id,
+      receiptUrl: order.receipt_url,
+      externalOrderId: order.external_order_id,
+      cardToken: order.card_token
     });
-
-    // Выводим полный ответ от запроса на получение токена доступа
-    console.log('Полный ответ от запроса на получение токена доступа:', authResponse.data);
-
-    // Проверяем наличие ошибок в ответе
-    if (authResponse.data.error) {
-      console.error('Ошибка при получении токена доступа:', authResponse.data.error_description || authResponse.data.error);
-      return res.status(500).json({ error: 'Ошибка при получении токена доступа' });
-    }
-
-    const accessToken = authResponse.data.access_token;
-    console.log('Токен доступа получен:', accessToken);
-
-    if (!accessToken) {
-      console.error('Токен доступа не получен');
-      return res.status(500).json({ error: 'Не удалось получить токен доступа' });
-    }
-
-    console.log('Получение ссылки на чек по bank_order_id:', bankOrderId);
-    const receiptResponse = await axios.get(`https://api.bog.ge/v1/orders/${bankOrderId}/receipt`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
-    // Выводим полный ответ от запроса на получение чека
-    console.log('Полный ответ от запроса на получение чека:', receiptResponse.data);
-
-    // Проверяем наличие ошибок в ответе
-    if (receiptResponse.data.error) {
-      console.error('Ошибка при получении ссылки на чек:', receiptResponse.data.error_description || receiptResponse.data.error);
-      return res.status(500).json({ error: 'Ошибка при получении ссылки на чек' });
-    }
-
-    const receiptUrl = receiptResponse.data.receipt_url;
-    console.log('Ссылка на чек получена:', receiptUrl);
-
-    if (!receiptUrl) {
-      console.error('Ссылка на чек не получена');
-      return res.status(500).json({ error: 'Не удалось получить ссылку на чек' });
-    }
-
-    console.log('Обновление заказа в базе данных с receipt_url');
-    await pool.query(
-      'UPDATE orders SET receipt_url = $1 WHERE id = $2',
-      [receiptUrl, order.id]
-    );
-
-    console.log('Удаление чувствительных данных перед отправкой');
-    delete order.card_token;
-    order.receipt_url = receiptUrl;
-
-    console.log('Ответ с данными заказа отправлен клиенту');
-    res.json(order);
   } catch (error) {
-    console.error('Ошибка при получении данных заказа или запросе к банку:', error.message);
-
-    if (error.response && error.response.data) {
-      console.error('Детали ошибки от Банка Грузии:', error.response.data);
-    }
-
-    res.status(500).json({ error: 'Ошибка при обработке запроса' });
+    console.error('Error fetching order data for externalOrderId:', externalOrderId, error.message);
+    res.status(500).json({ error: 'Ошибка при получении данных заказа' });
   }
 });
+
+// Новый маршрут для получения данных заказа по его ID
+app.get('/api/order/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log('Received request to fetch order by ID:', id);
+
+  try {
+    console.log('Querying database for order with ID:', id);
+    const result = await pool.query(
+      'SELECT * FROM orders WHERE id = $1',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      console.log('Order not found for ID:', id);
+      return res.status(404).json({ error: 'Заказ не найден' });
+    }
+
+    const order = result.rows[0];
+    console.log('Order found:', order);
+    res.json(order);
+  } catch (error) {
+    console.error('Error fetching order data for ID:', id, error.message);
+    res.status(500).json({ error: 'Ошибка при получении данных заказа' });
+  }
+});
+
 
 // Маршрут для получения всех пользователей
 app.get('/users', async (req, res) => {

@@ -64,43 +64,51 @@ const CardPromo: React.FC<CardPromoProps> = ({ title, description }) => {
         </PromoCard>
 
         <AnimatePresence>
-          {isOpen && (
-            <Overlay
-              variants={overlayVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              onClick={handleClose}
-              aria-modal="true"
-              role="dialog"
-            >
-              <AnimatedCard
-                layoutId="promo-card"
-                initial={{ borderRadius: 10 }}
-                animate={{ borderRadius: 20 }}
-                transition={transition}
-                onClick={(e) => e.stopPropagation()}
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={0.2}
-                onDragEnd={(event, info) => {
-                  if (info.offset.y > 100 || info.velocity.y > 500) {
-                    handleClose();
-                  }
-                }}
-              >
-                <FlexWrapper direction="column">
-                  <h5>{title || 'CardPromo'}</h5>
-                  <p>
-                    {description ||
-                      'Lorem ipsum dolor sit amet consectetur adipisicing elit. Est praesentium obcaecati qui facere, dignissimos minus. Ad architecto expedita, accusantium laboriosam vel quibusdam amet nisi! Porro aperiam tenetur laudantium sit voluptatem?'}
-                  </p>
-                  <CloseButton onClick={handleClose}>&times;</CloseButton>
-                </FlexWrapper>
-              </AnimatedCard>
-            </Overlay>
-          )}
-        </AnimatePresence>
+  {isOpen && (
+    <Overlay
+      variants={overlayVariants}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
+      onClick={handleClose}
+      aria-modal="true"
+      role="dialog"
+      drag="y"
+      dragConstraints={{ top: 0, bottom: 0 }}
+      dragElastic={0.2}
+      onDragEnd={(event, info) => {
+        if (info.offset.y > 100 || info.velocity.y > 500) {
+          handleClose();
+        }
+      }}
+    >
+      <AnimatedCard
+        layoutId="promo-card"
+        initial={{ borderRadius: 10 }}
+        animate={{ borderRadius: 20 }}
+        transition={transition}
+        onClick={(e) => e.stopPropagation()}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(event, info) => {
+          if (info.offset.y > 100 || info.velocity.y > 500) {
+            handleClose();
+          }
+        }}
+      >
+        <FlexWrapper direction="column">
+          <h5>{title || 'CardPromo'}</h5>
+          <p>
+            {description ||
+              'Lorem ipsum dolor sit amet consectetur adipisicing elit. Est praesentium obcaecati qui facere, dignissimos minus. Ad architecto expedita, accusantium laboriosam vel quibusdam amet nisi! Porro aperiam tenetur laudantium sit voluptatem?'}
+          </p>
+          <CloseButton onClick={handleClose}>&times;</CloseButton>
+        </FlexWrapper>
+      </AnimatedCard>
+    </Overlay>
+  )}
+</AnimatePresence>
       </>
     </LayoutGroup>
   );

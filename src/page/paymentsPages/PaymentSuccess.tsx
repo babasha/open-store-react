@@ -68,13 +68,7 @@ const PaymentSuccess: React.FC = () => {
     const timer = setTimeout(() => {
       navigate('/');
     }, 30000);
-    const handleDownloadReceipt = () => {
-      if (orderDetails?.receipt_url) {
-        window.open(orderDetails.receipt_url, '_blank');
-      } else {
-        alert('Чек недоступен');
-      }
-    };
+
     const countdown = setInterval(() => {
       setCounter(prev => prev - 1);
     }, 1000);
@@ -150,7 +144,7 @@ const PaymentSuccess: React.FC = () => {
 
 export default PaymentSuccess;
 
-
+// Стили остаются без изменений
 const Message = styled.p`
   font-size: 18px;
   text-align: center;
@@ -164,7 +158,6 @@ export const OrderDetailsContainer = styled.div`
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
-
   h3 {
     margin-bottom: 20px;
     font-size: 1.8em;
@@ -172,25 +165,21 @@ export const OrderDetailsContainer = styled.div`
     border-bottom: 2px solid #ecf0f1;
     padding-bottom: 10px;
   }
-
   p {
     margin: 10px 0;
     font-size: 1em;
     color: #34495e;
     line-height: 1.6;
-
     strong {
       color: #2c3e50;
     }
   }
-
   @media (max-width: 768px) {
     padding: 20px;
     
     h3 {
       font-size: 1.5em;
     }
-
     p {
       font-size: 0.95em;
     }
@@ -205,17 +194,14 @@ const OrderDetails = styled.div`
   background-color: #f8f8f8;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
   h3 {
     margin-bottom: 15px;
     color: #333;
   }
-
   p {
     margin: 10px 0;
     font-size: 16px;
   }
-
   strong {
     color: #555;
   }
@@ -230,7 +216,6 @@ const ItemsList = styled.ul`
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
   h3 {
     margin-bottom: 15px;
     color: #333;
@@ -261,14 +246,12 @@ const Button = styled.button`
   border-radius: 5px;
   font-size: 16px;
   transition: background-color 0.3s;
-
   &:hover {
     background-color: #0056b3;
   }
 `;
 
-const AutoRedirectMessage = styled.p`
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-`;
+const AutoRedirectMessage = styled.p`font-size: 14px;
+color: #666;
+text-align: center;
+`
