@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlexWrapper } from '../FlexWrapper';
 import ModalCard from '../../layout/promoCard/ModalCard'; // Убедитесь, что путь правильный
 import StyledButton from './StyledButton';
-import { TextContainer, ActiveText, ClickableText, BtnWrapper } from './DataSwitchStyles';
-import { ModalInnerContent } from './ModalStyles'; // Если необходимы дополнительные стили
+import {
+  TextContainer,
+  ActiveText,
+  ClickableText,
+  BtnWrapper,
+  Select,
+  Label,
+  SubmitButton,
+} from './DataSwitchStyles';
 import { toZonedTime } from 'date-fns-tz';
 import { motion, LayoutGroup } from 'framer-motion';
+import { ModalInnerContent } from './ModalStyles';
 
 interface Delivery {
   day: string;
@@ -33,24 +41,31 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
   );
   const [deliveryDay, setDeliveryDay] = useState<string>('today');
 
+  // Обновляем текущее время каждые 60 секунд
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBatumiTime(toZonedTime(new Date(), 'Asia/Tbilisi'));
-    }, 60000); // Обновляем время каждую минуту
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const handleOptionChange = (option: number) => {
-    setActiveOption(option);
-    if (option === 1) {
+  // Обновляем выбранную опцию доставки, если выбрана опция 1
+  useEffect(() => {
+    if (activeOption === 1) {
       setSelectedDelivery(null);
       onSelectedDelivery({ day: 'asap', time: 'asap' });
     }
+  }, [activeOption, onSelectedDelivery]);
+
+  const handleOptionChange = (option: number) => {
+    setActiveOption(option);
+    // Уберите автоматическое открытие модального окна при выборе опции 2
+    // Если нужно, можно добавить дополнительные действия здесь
   };
 
   const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
+    setIsModalOpen((prev) => !prev);
   };
 
   const handleDeliverySelect = (event: React.FormEvent<HTMLFormElement>) => {
@@ -69,7 +84,7 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
     setDeliveryDay(event.target.value);
   };
 
-  const generateTimeOptions = (day: string) => {
+  const generateTimeOptions = useMemo(() => {
     const startTime = 10;
     const endTime = 23;
     const currentHour = currentBatumiTime.getHours();
@@ -83,7 +98,7 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
         const timeValue = `${hour}:${minutes}`;
         const timeNumber = hour + (minutes === '30' ? 0.5 : 0);
 
-        if (day === 'today' && timeNumber < minSelectableTime) {
+        if (deliveryDay === 'today' && timeNumber < minSelectableTime) {
           continue;
         }
 
@@ -96,14 +111,14 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
     }
 
     return options;
-  };
+  }, [currentBatumiTime, deliveryDay]);
 
   const layoutId = 'delivery-modal';
 
   return (
     <LayoutGroup>
       <FlexWrapper direction="column">
-        <FlexWrapper justify='space-between'>
+        <FlexWrapper justify="space-between">
           <StyledButton
             isActive={activeOption === 1}
             onClick={() => handleOptionChange(1)}
@@ -119,45 +134,61 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
         </FlexWrapper>
         <TextContainer>
           {activeOption === 1 ? (
-            <BtnWrapper as={motion.div} layoutId={layoutId} isActive={true}>
+            <BtnWrapper
+              as={motion.div}
+              layoutId={layoutId}
+              isActive={true}
+            >
               <ActiveText>{t('as_soon_as_possible')}</ActiveText>
             </BtnWrapper>
           ) : selectedDelivery ? (
-            <BtnWrapper as={motion.div} layoutId={layoutId} isActive={true}>
+            <BtnWrapper
+              as={motion.div}
+              layoutId={layoutId}
+              isActive={true}
+            >
               <ActiveText>
-                {t('delivery_time_selected')}: {selectedDelivery.day}, {selectedDelivery.time}
+                {t('delivery_time_selected')}: {selectedDelivery.day},{' '}
+                {selectedDelivery.time}
               </ActiveText>
             </BtnWrapper>
           ) : (
-            <BtnWrapper as={motion.div} layoutId={layoutId} isActive={false} onClick={toggleModal}>
-              <ClickableText>
-                {t('choose_delivery_time')}
-              </ClickableText>
+            <BtnWrapper
+              as={motion.div}
+              layoutId={layoutId}
+              isActive={false}
+              onClick={toggleModal}
+            >
+              <ClickableText>{t('choose_delivery_time')}</ClickableText>
             </BtnWrapper>
           )}
         </TextContainer>
-        <ModalCard isOpen={isModalOpen} onClose={toggleModal} layoutId={layoutId}>
+        <ModalCard
+          isOpen={isModalOpen}
+          onClose={toggleModal}
+          layoutId={layoutId}
+        >
           <ModalInnerContent>
             <h2>{t('choose_delivery_time')}</h2>
             <form onSubmit={handleDeliverySelect}>
-              <label>
+              <Label>
                 {t('delivery_day')}:
-                <select
+                <Select
                   name="day"
                   value={deliveryDay}
                   onChange={handleDayChange}
                 >
                   <option value="today">{t('today')}</option>
                   <option value="tomorrow">{t('tomorrow')}</option>
-                </select>
-              </label>
-              <label>
+                </Select>
+              </Label>
+              <Label>
                 {t('delivery_time')}:
-                <select name="time" id="time-select">
-                  {generateTimeOptions(deliveryDay)}
-                </select>
-              </label>
-              <button type="submit">{t('confirm')}</button>
+                <Select name="time" id="time-select">
+                  {generateTimeOptions}
+                </Select>
+              </Label>
+              <SubmitButton type="submit">{t('confirm')}</SubmitButton>
             </form>
           </ModalInnerContent>
         </ModalCard>

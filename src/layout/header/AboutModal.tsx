@@ -7,7 +7,7 @@ interface AboutModalProps {
   onClose: () => void;
   children: React.ReactNode;
   isOpen: boolean; // Добавим флаг для управления открытием/закрытием модального окна
-}
+} 
 
 const AboutModal: React.FC<AboutModalProps> = ({ onClose, children, isOpen }) => {
   return createPortal(

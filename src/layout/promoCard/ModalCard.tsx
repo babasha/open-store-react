@@ -98,15 +98,16 @@ const Overlay = styled(motion.div)`
 `;
 
 const AnimatedCard = styled(motion.div)`
-  background-color: ${theme.colors.primaryBg};
+  background-color: ${theme.colors.mainBg};
   padding: 20px;
   border-radius: 20px;
   position: relative;
   z-index: 1001;
   width: 90%;
   max-width: 600px;
-  height: 80vh;
-  overflow-y: auto;
+  height: auto; /* Автоматическая высота */
+  max-height: 80vh; /* Максимальная высота 80% от высоты окна */
+  overflow-y: auto; /* Прокрутка при переполнении */
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 `;
 
