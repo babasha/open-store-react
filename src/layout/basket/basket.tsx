@@ -152,7 +152,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   );
 
   return (
-    <Container width="100%">
+<Container width="100%">
       <CartdiInner>
         <FlexWrapper align="center" justify="space-between">
           <BascketTitle>{t('cart.title')}</BascketTitle>
@@ -184,19 +184,17 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
               buttonText2={t('schedule_delivery')}
               onSelectedDelivery={setSelectedDelivery}
             />
-          <FlexWrapper justify="space-between" top='15px' bottom='15px'>
-
-            <TotalPrice>
-              {t('cart.total')}: {totalWithDelivery} ₾
-            </TotalPrice>         
-                  <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
-                  </FlexWrapper>
-         <FlexWrapper direction='column' align='center' content='center'>
+            <FlexWrapper justify="space-between" top='15px' bottom='15px'>
+              <TotalPrice>
+                {t('cart.total')}: {totalWithDelivery} ₾
+              </TotalPrice>         
+              <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
+            </FlexWrapper>
+            <FlexWrapper direction='column' align='center' content='center'>
               <PurchaseButton isActive={isActive} isDisabled={isActive} onClick={handlePurchase}>
                 {isActive ? `Переадресация${'.'.repeat(dotCount)}` : 'Перейти к оплате'}
               </PurchaseButton>
-
-            <GooglePayButton totalPrice={totalWithDelivery} />
+              <GooglePayButton totalPrice={totalWithDelivery} />
             </FlexWrapper>
             {error && <ErrorText>{error}</ErrorText>}
           </>

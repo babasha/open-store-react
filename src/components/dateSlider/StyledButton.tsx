@@ -14,13 +14,9 @@ const StyledButton = styled.button<StyledButtonProps>`
   font-size: 16px;
   position: relative;
   overflow: hidden;
-  /* width: 120px; */
-  /* height: 35px; */
   margin-top: 15px;
   transition: 0.3s;
-  padding: 5px 0px 5px 0px;
-  /* margin: 0 5px; */
-  margin-right: 5px;
+  padding: 5px 3px;
   pointer-events: auto;
 
   &:hover {
@@ -31,21 +27,21 @@ const StyledButton = styled.button<StyledButtonProps>`
     background-color: gray;
   }
 
+  &:first-child {
+    margin-right: 5px;
+  }
+
   @media (max-width: 652px) {
     padding: 10px 15px;
-   
   }
   @media (max-width: 410px) {
     padding: 7px 10px;
-   
   }
   @media (max-width: 390px) {
     padding: 7px 5px;
- 
   }
   @media (max-width: 360px) {
     padding: 7px 2.3px;
-    
   }
 `;
 

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlexWrapper } from '../FlexWrapper';
-import Modal from './modal';
+import ModalCard from '../../layout/promoCard/ModalCard'; // Убедитесь, что путь правильный
 import StyledButton from './StyledButton';
-import { TextContainer, ActiveText, ClickableText } from './DataSwitchStyles';
-import { ModalInnerContent } from './ModalStyles';
+import { TextContainer, ActiveText, ClickableText, BtnWrapper } from './DataSwitchStyles';
+import { ModalInnerContent } from './ModalStyles'; // Если необходимы дополнительные стили
 import { toZonedTime } from 'date-fns-tz';
+import { motion, LayoutGroup } from 'framer-motion';
 
 interface Delivery {
   day: string;
@@ -42,6 +43,10 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
 
   const handleOptionChange = (option: number) => {
     setActiveOption(option);
+    if (option === 1) {
+      setSelectedDelivery(null);
+      onSelectedDelivery({ day: 'asap', time: 'asap' });
+    }
   };
 
   const toggleModal = () => {
@@ -93,38 +98,45 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
     return options;
   };
 
+  const layoutId = 'delivery-modal';
+
   return (
-    <FlexWrapper direction="column">
-      <FlexWrapper>
-        <StyledButton
-          isActive={activeOption === 1}
-          onClick={() => handleOptionChange(1)}
-        >
-          {buttonText1}
-        </StyledButton>
-        <StyledButton
-          isActive={activeOption === 2}
-          onClick={() => handleOptionChange(2)}
-        >
-          {buttonText2}
-        </StyledButton>
-      </FlexWrapper>
-      <TextContainer>
-        {activeOption === 1 ? (
-          <ActiveText>{t('as_soon_as_possible')}</ActiveText>
-        ) : selectedDelivery ? (
-          <ActiveText>
-            {t('delivery_time_selected')}: {selectedDelivery.day},{' '}
-            {selectedDelivery.time}
-          </ActiveText>
-        ) : (
-          <ClickableText onClick={toggleModal}>
-            {t('choose_delivery_time')}
-          </ClickableText>
-        )}
-      </TextContainer>
-      {isModalOpen && (
-        <Modal onClose={toggleModal}>
+    <LayoutGroup>
+      <FlexWrapper direction="column">
+        <FlexWrapper justify='space-between'>
+          <StyledButton
+            isActive={activeOption === 1}
+            onClick={() => handleOptionChange(1)}
+          >
+            {buttonText1}
+          </StyledButton>
+          <StyledButton
+            isActive={activeOption === 2}
+            onClick={() => handleOptionChange(2)}
+          >
+            {buttonText2}
+          </StyledButton>
+        </FlexWrapper>
+        <TextContainer>
+          {activeOption === 1 ? (
+            <BtnWrapper as={motion.div} layoutId={layoutId} isActive={true}>
+              <ActiveText>{t('as_soon_as_possible')}</ActiveText>
+            </BtnWrapper>
+          ) : selectedDelivery ? (
+            <BtnWrapper as={motion.div} layoutId={layoutId} isActive={true}>
+              <ActiveText>
+                {t('delivery_time_selected')}: {selectedDelivery.day}, {selectedDelivery.time}
+              </ActiveText>
+            </BtnWrapper>
+          ) : (
+            <BtnWrapper as={motion.div} layoutId={layoutId} isActive={false} onClick={toggleModal}>
+              <ClickableText>
+                {t('choose_delivery_time')}
+              </ClickableText>
+            </BtnWrapper>
+          )}
+        </TextContainer>
+        <ModalCard isOpen={isModalOpen} onClose={toggleModal} layoutId={layoutId}>
           <ModalInnerContent>
             <h2>{t('choose_delivery_time')}</h2>
             <form onSubmit={handleDeliverySelect}>
@@ -148,9 +160,9 @@ const DataSwitch: React.FC<DataSwitchProps> = ({
               <button type="submit">{t('confirm')}</button>
             </form>
           </ModalInnerContent>
-        </Modal>
-      )}
-    </FlexWrapper>
+        </ModalCard>
+      </FlexWrapper>
+    </LayoutGroup>
   );
 };
 

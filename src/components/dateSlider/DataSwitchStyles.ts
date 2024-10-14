@@ -1,9 +1,10 @@
 import styled from 'styled-components';
 import { theme } from '../../styles/Theme';
+import { motion } from 'framer-motion';
 
 export const TextContainer = styled.div`
-  margin-top: 15px;
   display: flex;
+  margin-top: 5px;
 `;
 
 export const ActiveText = styled.p`
@@ -17,4 +18,11 @@ export const ClickableText = styled.p`
   &:hover {
     color: ${theme.button.buttonHover};
   }
+`;
+
+export const BtnWrapper = styled(motion.div)<{ isActive: boolean }>`
+  background-color: ${({ isActive }) => (isActive ? 'transparent' : 'red')};
+  width: 100%;
+  border-radius: 3px;
+  padding: 3px 2px;
 `;
