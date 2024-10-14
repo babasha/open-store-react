@@ -1058,8 +1058,22 @@ app.get('/api/orders', async (req, res) => {
       }
     });
 
+    // Выводим полный ответ от запроса на получение токена доступа
+    console.log('Полный ответ от запроса на получение токена доступа:', authResponse.data);
+
+    // Проверяем наличие ошибок в ответе
+    if (authResponse.data.error) {
+      console.error('Ошибка при получении токена доступа:', authResponse.data.error_description || authResponse.data.error);
+      return res.status(500).json({ error: 'Ошибка при получении токена доступа' });
+    }
+
     const accessToken = authResponse.data.access_token;
     console.log('Токен доступа получен:', accessToken);
+
+    if (!accessToken) {
+      console.error('Токен доступа не получен');
+      return res.status(500).json({ error: 'Не удалось получить токен доступа' });
+    }
 
     console.log('Получение ссылки на чек по bank_order_id:', bankOrderId);
     const receiptResponse = await axios.get(`https://api.bog.ge/v1/orders/${bankOrderId}/receipt`, {
@@ -1071,8 +1085,19 @@ app.get('/api/orders', async (req, res) => {
     // Выводим полный ответ от запроса на получение чека
     console.log('Полный ответ от запроса на получение чека:', receiptResponse.data);
 
+    // Проверяем наличие ошибок в ответе
+    if (receiptResponse.data.error) {
+      console.error('Ошибка при получении ссылки на чек:', receiptResponse.data.error_description || receiptResponse.data.error);
+      return res.status(500).json({ error: 'Ошибка при получении ссылки на чек' });
+    }
+
     const receiptUrl = receiptResponse.data.receipt_url;
     console.log('Ссылка на чек получена:', receiptUrl);
+
+    if (!receiptUrl) {
+      console.error('Ссылка на чек не получена');
+      return res.status(500).json({ error: 'Не удалось получить ссылку на чек' });
+    }
 
     console.log('Обновление заказа в базе данных с receipt_url');
     await pool.query(
