@@ -16,6 +16,7 @@ const { v4: uuidv4 } = require('uuid')
 const passport = require('./passport-config'); // Импортируем модуль
 // const { createPayment, handlePaymentCallback, verifyCallbackSignature, temporaryOrders } = require('./paymentService');
 const { createPayment, temporaryOrders, verifyCallbackSignature, handlePaymentCallback } = require('./paymentService');
+const axios = require('axios');
 
 
 console.log('Поддерживаемые форматы изображений:', sharp.format);
@@ -1067,7 +1068,7 @@ app.get('/api/orders', async (req, res) => {
       }
     });
 
-    // *** Добавляем вывод полного ответа от запроса на получение чека ***
+    // Выводим полный ответ от запроса на получение чека
     console.log('Полный ответ от запроса на получение чека:', receiptResponse.data);
 
     const receiptUrl = receiptResponse.data.receipt_url;
