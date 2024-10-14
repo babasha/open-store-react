@@ -68,7 +68,13 @@ const PaymentSuccess: React.FC = () => {
     const timer = setTimeout(() => {
       navigate('/');
     }, 30000);
-
+    const handleDownloadReceipt = () => {
+      if (orderDetails?.receipt_url) {
+        window.open(orderDetails.receipt_url, '_blank');
+      } else {
+        alert('Чек недоступен');
+      }
+    };
     const countdown = setInterval(() => {
       setCounter(prev => prev - 1);
     }, 1000);
