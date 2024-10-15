@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import { motion, PanInfo } from 'framer-motion';
 import { theme } from '../../styles/Theme';
+import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
 
-// Пользовательский хук для отслеживания ширины окна
 function useWindowWidth() {
   const isClient = typeof window === 'object';
 
@@ -48,6 +48,7 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
   const [isPartiallyOpen, setIsPartiallyOpen] = useState(false);
   const windowWidth = useWindowWidth();
   const isMobile = windowWidth <= 652;
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = useCallback(() => {
     const newState = !isExpanded;
@@ -64,12 +65,20 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
   }, [isExpanded, setIsExpanded, setIsOpen]);
 
   useEffect(() => {
-    if (isMobile) {
-      document.body.style.overflow = isOpen ? 'hidden' : 'auto';
-    } else {
-      document.body.style.overflow = 'auto';
+    if (isOpen && isMobile && menuRef.current) {
+      disableBodyScroll(menuRef.current);
+    } else if (menuRef.current) {
+      enableBodyScroll(menuRef.current);
     }
   }, [isOpen, isMobile]);
+
+  useEffect(() => {
+    return () => {
+      if (menuRef.current) {
+        enableBodyScroll(menuRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isMobile && cartItemCount > 0) {
@@ -105,6 +114,7 @@ const StyledMenuWrapper: React.FC<StyledMenuWrapperProps> = ({
     <>
       {shouldRenderOverlay && <Overlay />}
       <Wrapper
+        ref={menuRef}
         isExpanded={isExpanded}
         isPartiallyOpen={isPartiallyOpen}
         isAnimating={isAnimating}
