@@ -344,11 +344,15 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     let discounts = [];
     try {
       discounts = req.body.discounts ? JSON.parse(req.body.discounts) : [];
+      discounts = discounts.map(discount => ({
+        quantity: parseFloat(discount.quantity),
+        price: parseFloat(discount.price),
+      }));
     } catch (err) {
-      console.error('Ошибка при разборе discounts:', err.message);
+      console.error('Ошибка при обработке discounts:', err.message);
       discounts = [];
     }
-    console.log('Скидки:', discounts);
+    console.log('Скидки после обработки:', discounts);
 
     let imageUrl = null;
 
@@ -380,16 +384,16 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     console.log('Сохранение продукта в базе данных...');
     const result = await pool.query(
       'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [
-        nameEn,
-        nameRu,
-        nameGeo,
-        price,
-        imageUrl ? `/uploads/${imageUrl}` : null,
-        unit,
-        unit === 'g' ? step : null,
-        discounts,
-      ]
+  [
+    nameEn,
+    nameRu,
+    nameGeo,
+    price,
+    imageUrl ? `/uploads/${imageUrl}` : null,
+    unit,
+    unit === 'g' ? step : null,
+    JSON.stringify(discounts), // Преобразуем скидки в строку JSON
+  ]
     );
 
     const newProduct = result.rows[0];
