@@ -31,7 +31,6 @@ interface CartItem {
   price: number;
   unit: string;
   step?: number;
-  discounts?: { quantity: number; price: number }[]; // Добавлено discounts
 }
 
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
@@ -41,43 +40,23 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDelivery, setSelectedDelivery] = useState<{ day: string; time: string } | null>(null);
-  const [isActive, setIsActive] = useState(false);
-  const [dotCount, setDotCount] = useState(0);
+  const [isActive, setIsActive] = useState(false); // состояние активности кнопки
+  const [dotCount, setDotCount] = useState(0); // For animated dots
 
   const handleEditClick = useCallback(() => {
     setIsEditing((prev) => !prev);
   }, []);
 
-  const getPricePerUnit = useCallback((item: CartItem) => {
-    const { price, quantity, discounts } = item;
-    if (!discounts || discounts.length === 0) {
-      return price;
-    }
-    const sortedDiscounts = [...discounts].sort((a, b) => a.quantity - b.quantity);
-    let applicableDiscount = null;
-    for (const discount of sortedDiscounts) {
-      if (quantity >= discount.quantity) {
-        applicableDiscount = discount;
-      } else {
-        break;
-      }
-    }
-    return applicableDiscount ? applicableDiscount.price : price;
-  }, []);
-
   const calculateTotalPrice = useCallback(
-    (item: CartItem) => {
-      const pricePerUnit = getPricePerUnit(item);
-      return item.unit === 'g'
-        ? pricePerUnit * (item.quantity / (item.step || 1))
-        : pricePerUnit * item.quantity;
+    (price: number, quantity: number, unit: string, step: number = 1) => {
+      return unit === 'g' ? price * (quantity / step) : price * quantity;
     },
-    [getPricePerUnit]
+    []
   );
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce((sum, item) => {
-      return sum + calculateTotalPrice(item);
+      return sum + calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1);
     }, 0);
   }, [cartItems, calculateTotalPrice]);
 
@@ -95,7 +74,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
       setError(t('cart.notAuthorized'));
       return;
     }
-    setIsActive(true);
+    setIsActive(true); // Start the animation
 
     const orderData = {
       userId: user.id,
@@ -103,7 +82,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
         productId: item.id,
         description: item.title,
         quantity: Number(item.quantity),
-        price: calculateTotalPrice(item),
+        price: calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1),
       })),
       total: totalWithDelivery,
       deliveryTime: selectedDelivery ? `${selectedDelivery.day}, ${selectedDelivery.time}` : null,
@@ -130,7 +109,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     } catch (error) {
       console.error('Error processing order or payment:', error);
       setError(t('cart.orderError'));
-      setIsActive(false);
+      setIsActive(false); // Stop the animation on error
     }
   }, [user, cartItems, totalWithDelivery, selectedDelivery, t, calculateTotalPrice]);
 
@@ -138,7 +117,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
     let interval: NodeJS.Timeout | null = null;
     if (isActive) {
       interval = setInterval(() => {
-        setDotCount((prevDotCount) => (prevDotCount % 3) + 1);
+        setDotCount((prevDotCount) => (prevDotCount % 3) + 1); // Cycles from 1 to 3
       }, 500);
     }
     return () => {
@@ -150,7 +129,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
   const renderCartItem = useCallback(
     (item: CartItem) => {
-      const itemTotalPrice = calculateTotalPrice(item);
+      const itemTotalPrice = calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1);
 
       return (
         <CartItemWrapper key={item.id}>
@@ -173,7 +152,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   );
 
   return (
-    <Container width="100%">
+<Container width="100%">
       <CartdiInner>
         <FlexWrapper align="center" justify="space-between">
           <BascketTitle>{t('cart.title')}</BascketTitle>
@@ -205,21 +184,15 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
               buttonText2={t('schedule_delivery')}
               onSelectedDelivery={setSelectedDelivery}
             />
-            <FlexWrapper justify="space-between" top="15px" bottom="15px">
+            <FlexWrapper justify="space-between" top='15px' bottom='15px'>
               <TotalPrice>
                 {t('cart.total')}: {totalWithDelivery} ₾
-              </TotalPrice>
+              </TotalPrice>         
               <EditButton onClick={clearCart}>{t('cart.clear')}</EditButton>
             </FlexWrapper>
-            <FlexWrapper direction="column" align="center" content="center">
-              <PurchaseButton
-                isActive={isActive}
-                isDisabled={isActive}
-                onClick={handlePurchase}
-              >
-                {isActive
-                  ? `Переадресация${'.'.repeat(dotCount)}`
-                  : 'Перейти к оплате'}
+            <FlexWrapper direction='column' align='center' content='center'>
+              <PurchaseButton isActive={isActive} isDisabled={isActive} onClick={handlePurchase}>
+                {isActive ? `Переадресация${'.'.repeat(dotCount)}` : 'Перейти к оплате'}
               </PurchaseButton>
               <GooglePayButton totalPrice={totalWithDelivery} />
             </FlexWrapper>
