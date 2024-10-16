@@ -11,6 +11,7 @@ interface ProductFormProps {
     price?: string;
     unit?: string;
     step?: string;
+    discounts?: any[];
   };
   onCancel?: () => void;
 }
@@ -27,7 +28,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [image, setImage] = useState<File | null>(null);
   const [unit, setUnit] = useState(initialData.unit || 'kg');
   const [step, setStep] = useState(initialData.step || '1');
+  const [discounts, setDiscounts] = useState(initialData.discounts || []);
   const [errors, setErrors] = useState<any>({});
+
+  const addDiscount = () => {
+    setDiscounts([...discounts, { quantity: '', price: '' }]);
+  };
+
+  const updateDiscount = (index: number, key: string, value: any) => {
+    const updatedDiscounts = discounts.map((discount, idx) =>
+      idx === index ? { ...discount, [key]: value } : discount
+    );
+    setDiscounts(updatedDiscounts);
+  };
+
+  const removeDiscount = (index: number) => {
+    setDiscounts(discounts.filter((_, idx) => idx !== index));
+  };
 
   const handleSubmit = () => {
     const formData = {
@@ -38,6 +55,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       unit,
       step,
       image,
+      discounts: JSON.stringify(discounts),
     };
 
     const validationErrors = validateProductForm(formData);
@@ -55,6 +73,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setImage(null);
     setUnit('kg');
     setStep('1');
+    setDiscounts([]);
     setErrors({});
   };
 
@@ -111,6 +130,37 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </select>
         </label>
       )}
+
+      <div>
+        <h3>Скидки</h3>
+        {discounts.map((discount, index) => (
+          <div key={index}>
+            <Input
+              type="number"
+              value={discount.quantity}
+              onChange={(e) =>
+                updateDiscount(index, 'quantity', e.target.value)
+              }
+              placeholder="Количество"
+            />
+            <Input
+              type="number"
+              value={discount.price}
+              onChange={(e) =>
+                updateDiscount(index, 'price', e.target.value)
+              }
+              placeholder="Цена за единицу"
+            />
+            <Button type="button" onClick={() => removeDiscount(index)}>
+              Удалить
+            </Button>
+          </div>
+        ))}
+        <Button type="button" onClick={addDiscount}>
+          Добавить скидку
+        </Button>
+      </div>
+
       <Button type="button" onClick={handleSubmit}>
         Сохранить
       </Button>

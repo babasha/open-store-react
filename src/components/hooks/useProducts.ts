@@ -11,6 +11,7 @@ interface Product {
   image_url: string | null;
   unit: string;
   step?: number;
+  discounts?: any[]; // Добавлено поле discounts
 }
 
 const useProducts = () => {

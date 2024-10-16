@@ -12,6 +12,7 @@ interface Product {
   image_url: string | null;
   unit: string;
   step?: number;
+  discounts?: any[]; // Добавлено поле discounts
 }
 
 interface ProductListItemProps {
@@ -28,6 +29,19 @@ const ProductListItem: React.FC<ProductListItemProps> = React.memo(
         <p>
           {product.name.en} - ${product.price} {product.unit}
         </p>
+        {/* Отображение скидок */}
+        {product.discounts && product.discounts.length > 0 && (
+          <div>
+            <p>Скидки:</p>
+            <ul>
+              {product.discounts.map((discount, index) => (
+                <li key={index}>
+                  {`При покупке от ${discount.quantity} шт. цена ${discount.price} за единицу`}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Button onClick={() => onDelete(product.id)}>Удалить</Button>
         <Button onClick={() => onEdit(product.id)}>Редактировать</Button>
       </ProductDetails>

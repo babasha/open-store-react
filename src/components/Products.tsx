@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../styles/Theme';
-import  ProductCart  from '../layout/prouctCart/cart';
+import ProductCart from '../layout/prouctCart/cart';
 import Basket from '../layout/basket/basket';
 import AuthorizationComponent from '../layout/autoeization/autoComponent';
 import StyledMenuWrapper from './Menu/MenuWrapper';
@@ -18,8 +18,9 @@ type Product = {
   };
   price: number;
   image_url: string | null;
-  unit: string;  
-  step?: number; 
+  unit: string;
+  step?: number;
+  discounts?: { quantity: number; price: number }[]; // Добавлено поле discounts
 };
 
 const Products: React.FC = () => {
@@ -28,6 +29,7 @@ const Products: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { cartItems } = useCart();
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -43,8 +45,9 @@ const Products: React.FC = () => {
             ru: product.name_ru,
             geo: product.name_geo,
           },
-          unit: product.unit || 'kg', // Добавил unit
-          step: product.step || 1,    // Добавил step
+          unit: product.unit || 'kg',
+          step: product.step || 1,
+          discounts: product.discounts || [], // Добавлено discounts
         }));
         setProducts(updatedProducts);
       } catch (error) {
@@ -53,6 +56,7 @@ const Products: React.FC = () => {
     };
     fetchProducts();
   }, []);
+
   return (
     <Showcase>
       <ShopInner>
@@ -63,8 +67,9 @@ const Products: React.FC = () => {
             price={product.price}
             imageUrl={product.image_url}
             titles={product.name}
-            unit={product.unit}  // Использую unit
-            step={product.step}  // Использую step
+            unit={product.unit}
+            step={product.step}
+            discounts={product.discounts} // Передаём discounts
           />
         ))}
         <Cardpromo />
@@ -82,12 +87,15 @@ const Products: React.FC = () => {
     </Showcase>
   );
 };
+
 export default Products;
+
 const Showcase = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
   display: flex;
   border-radius: 20px;
 `;
+
 const ShopInner = styled.div`
   display: flex;
   background-color: ${theme.colors.ShopWindowBg};

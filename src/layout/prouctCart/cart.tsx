@@ -8,14 +8,12 @@ import {
   ProductImage,
   Placeholder,
   Title,
-} from './ProductCartStyles'; // Импортируем стили из нового файла
-import PlaceholderCard from './PlaceholderCard'; // Импортируем плейсхолдер
-
-// Добавляем недостающие импорты
-import QuantityControl from '../../components/quantityCotrol/QuantityControl'; // Импортируем контроллер количества
-import { FlexWrapper } from '../../components/FlexWrapper'; // Импортируем обертку для Flex
+} from './ProductCartStyles';
+import PlaceholderCard from './PlaceholderCard';
+import QuantityControl from '../../components/quantityCotrol/QuantityControl';
+import { FlexWrapper } from '../../components/FlexWrapper';
 import Price from '../../components/productPrice/price';
-import ToggleButton from '../../components/button/button';  // Импортируем кнопку
+import ToggleButton from '../../components/button/button';
 
 type CartPropsType = {
   id: number;
@@ -28,146 +26,204 @@ type CartPropsType = {
   };
   unit: string;
   step?: number;
+  discounts?: { quantity: number; price: number }[]; // Добавлено discounts
 };
 
-const ProductCart: React.FC<CartPropsType> = React.memo(({
-  id,
-  price,
-  imageUrl,
-  titles,
-  unit,
-  step = 1,
-}) => {
-  const { addItemToCart, cartItems, updateItemInCart } = useCart();
-  const { i18n } = useTranslation();
+const ProductCart: React.FC<CartPropsType> = React.memo(
+  ({
+    id,
+    price,
+    imageUrl,
+    titles,
+    unit,
+    step = 1,
+    discounts = [], // Дефолтное значение discounts
+  }) => {
+    const { addItemToCart, cartItems, updateItemInCart } = useCart();
+    const { i18n } = useTranslation();
 
-  const cartItem = useMemo(() => cartItems.find(item => item.id === id), [cartItems, id]);
+    const cartItem = useMemo(() => cartItems.find((item) => item.id === id), [cartItems, id]);
 
-  const [state, setState] = useState({
-    quantity: cartItem ? cartItem.quantity : step,
-    isActive: !!cartItem,
-    isImageLoaded: false,
-    isContentLoaded: !!imageUrl ? false : true,
-  });
+    const [state, setState] = useState({
+      quantity: cartItem ? cartItem.quantity : step,
+      isActive: !!cartItem,
+      isImageLoaded: false,
+      isContentLoaded: !!imageUrl ? false : true,
+    });
 
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    rootMargin: '100px', // Начинаем загружать за 100px до видимости
-  });
+    const { ref, inView } = useInView({
+      triggerOnce: true,
+      rootMargin: '100px',
+    });
 
-  // Функция для проверки поддержки WebP
-  const supportsWebP = useMemo(() => {
-    const elem = document.createElement('canvas');
-    if (!!(elem.getContext && elem.getContext('2d'))) {
-      return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    const supportsWebP = useMemo(() => {
+      const elem = document.createElement('canvas');
+      if (!!(elem.getContext && elem.getContext('2d'))) {
+        return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+      }
+      return false;
+    }, []);
+
+    const imageFormat = supportsWebP ? 'webp' : 'jpeg';
+    const imageFileName = imageUrl ? imageUrl.split('/').pop() : 'placeholder-image.webp';
+    const fullImageUrl = `/images/${imageFileName}`;
+
+    useEffect(() => {
+      if (cartItem) {
+        setState((prev) => ({ ...prev, quantity: cartItem.quantity, isActive: true }));
+      } else {
+        setState((prev) => ({ ...prev, quantity: step, isActive: false }));
+      }
+    }, [cartItem, step]);
+
+    useEffect(() => {
+      if (!imageUrl) {
+        setState((prev) => ({ ...prev, isContentLoaded: true }));
+      }
+    }, [imageUrl]);
+
+    useEffect(() => {
+      if (imageUrl && !state.isContentLoaded) {
+        const timeout = setTimeout(() => {
+          setState((prev) => ({ ...prev, isContentLoaded: true }));
+        }, 5000);
+
+        return () => clearTimeout(timeout);
+      }
+    }, [imageUrl, state.isContentLoaded]);
+
+    const handleImageLoad = useCallback(() => {
+      setState((prev) => ({ ...prev, isImageLoaded: true, isContentLoaded: true }));
+    }, []);
+
+    const handleImageError = useCallback(() => {
+      setState((prev) => ({ ...prev, isContentLoaded: true }));
+    }, []);
+
+    const handleQuantityChange = useCallback(
+      (newQuantity: number) => {
+        setState((prev) => ({ ...prev, quantity: newQuantity }));
+        if (cartItem) {
+          updateItemInCart({ ...cartItem, quantity: newQuantity });
+        }
+      },
+      [cartItem, updateItemInCart]
+    );
+
+    const handleAddToCart = useCallback(() => {
+      if (!state.isActive) {
+        const title = titles[i18n.language as keyof typeof titles] || titles.en;
+        addItemToCart({ id, title, price, quantity: state.quantity, titles, unit, step, discounts });
+        setState((prev) => ({ ...prev, isActive: true }));
+      }
+    }, [
+      state.isActive,
+      addItemToCart,
+      id,
+      price,
+      titles,
+      unit,
+      step,
+      i18n.language,
+      state.quantity,
+      discounts,
+    ]);
+
+    const localizedTitle = useMemo(() => {
+      return titles[i18n.language as keyof typeof titles] || titles.en;
+    }, [titles, i18n.language]);
+
+    const getPricePerUnit = useCallback(
+      (quantity: number) => {
+        if (!discounts || discounts.length === 0) {
+          return price;
+        }
+        const sortedDiscounts = [...discounts].sort((a, b) => a.quantity - b.quantity);
+        let applicableDiscount = null;
+        for (const discount of sortedDiscounts) {
+          if (quantity >= discount.quantity) {
+            applicableDiscount = discount;
+          } else {
+            break;
+          }
+        }
+        return applicableDiscount ? applicableDiscount.price : price;
+      },
+      [discounts, price]
+    );
+
+    const totalPrice = useMemo(() => {
+      const pricePerUnit = getPricePerUnit(state.quantity);
+      return calculateTotalPrice(pricePerUnit, state.quantity, unit, step);
+    }, [state.quantity, unit, step, getPricePerUnit]);
+
+    if (!state.isContentLoaded) {
+      return <PlaceholderCard />;
     }
-    return false;
-  }, []);
-  // Определяем формат изображения
-  const imageFormat = supportsWebP ? 'webp' : 'jpeg';
-  // Получаем имя файла изображения (извлекаем имя файла из imageUrl)
-  const imageFileName = imageUrl ? imageUrl.split('/').pop() : 'placeholder-image.webp'; // Или укажите имя плейсхолдера
-  // Формируем полный URL изображения
-  const fullImageUrl = `/images/${imageFileName}`;
 
-  useEffect(() => {
-    if (cartItem) {
-      setState(prev => ({ ...prev, quantity: cartItem.quantity, isActive: true }));
-    } else {
-      setState(prev => ({ ...prev, quantity: step, isActive: false }));
-    }
-  }, [cartItem, step]);
-
-  useEffect(() => {
-    if (!imageUrl) {
-      setState(prev => ({ ...prev, isContentLoaded: true }));
-    }
-  }, [imageUrl]);
-
-  useEffect(() => {
-    if (imageUrl && !state.isContentLoaded) {
-      const timeout = setTimeout(() => {
-        setState(prev => ({ ...prev, isContentLoaded: true }));
-      }, 5000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [imageUrl, state.isContentLoaded]);
-
-  const handleImageLoad = useCallback(() => {
-    setState(prev => ({ ...prev, isImageLoaded: true, isContentLoaded: true }));
-  }, []);
-
-  const handleImageError = useCallback(() => {
-    setState(prev => ({ ...prev, isContentLoaded: true }));
-  }, []);
-
-  const handleQuantityChange = useCallback((newQuantity: number) => {
-    setState(prev => ({ ...prev, quantity: newQuantity }));
-    if (cartItem) {
-      updateItemInCart({ ...cartItem, quantity: newQuantity });
-    }
-  }, [cartItem, updateItemInCart]);
-
-  const handleAddToCart = useCallback(() => {
-    if (!state.isActive) {
-      const title = titles[i18n.language as keyof typeof titles] || titles.en;
-      addItemToCart({ id, title, price, quantity: state.quantity, titles, unit, step });
-      setState(prev => ({ ...prev, isActive: true }));
-    }
-  }, [state.isActive, addItemToCart, id, price, titles, unit, step, i18n.language, state.quantity]);
-
-  const localizedTitle = useMemo(() => {
-    return titles[i18n.language as keyof typeof titles] || titles.en;
-  }, [titles, i18n.language]);
-
-  const totalPrice = useMemo(() => calculateTotalPrice(price, state.quantity, unit, step), [price, state.quantity, unit, step]);
-
-  if (!state.isContentLoaded) {
-    return <PlaceholderCard />;
-  }
-
-  return (
-    <Cart ref={ref}>
-      <ImageWrapper>
-        {inView && (
-          <>
-            <ProductImage
-              src={`${fullImageUrl}?format=${imageFormat}&width=800`}
-              srcSet={`
-                ${fullImageUrl}?format=${imageFormat}&width=320 320w,
-                ${fullImageUrl}?format=${imageFormat}&width=480 480w,
-                ${fullImageUrl}?format=${imageFormat}&width=800 800w
-              `}
-              sizes="(max-width: 600px) 320px, (max-width: 900px) 480px, 800px"
-              alt={localizedTitle}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-              isLoaded={state.isImageLoaded}
-            />
-            {!state.isImageLoaded && <Placeholder isLoaded={state.isImageLoaded} />}
-          </>
+    return (
+      <Cart ref={ref}>
+        <ImageWrapper>
+          {inView && (
+            <>
+              <ProductImage
+                src={`${fullImageUrl}?format=${imageFormat}&width=800`}
+                srcSet={`
+                  ${fullImageUrl}?format=${imageFormat}&width=320 320w,
+                  ${fullImageUrl}?format=${imageFormat}&width=480 480w,
+                  ${fullImageUrl}?format=${imageFormat}&width=800 800w
+                `}
+                sizes="(max-width: 600px) 320px, (max-width: 900px) 480px, 800px"
+                alt={localizedTitle}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                isLoaded={state.isImageLoaded}
+              />
+              {!state.isImageLoaded && <Placeholder isLoaded={state.isImageLoaded} />}
+            </>
+          )}
+          {!inView && <Placeholder isLoaded={false} />}
+        </ImageWrapper>
+        <Title>{localizedTitle}</Title>
+        <QuantityControl
+          pricePerUnit={getPricePerUnit(state.quantity)}
+          quantity={state.quantity}
+          onQuantityChange={handleQuantityChange}
+          unit={unit}
+          step={step}
+        />
+        {discounts && discounts.length > 0 && (
+          <div>
+            <p>Скидки:</p>
+            <ul>
+              {discounts.map((discount, index) => (
+                <li key={index}>
+                  {`При покупке от ${discount.quantity} шт. цена ${discount.price} за единицу`}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
-        {!inView && <Placeholder isLoaded={false} />}
-      </ImageWrapper>
-      <Title>{localizedTitle}</Title>
-      <QuantityControl
-        pricePerUnit={price}
-        quantity={state.quantity}
-        onQuantityChange={handleQuantityChange}
-        unit={unit}
-        step={step}
-      />
-      <FlexWrapper justify="space-between">
-        <Price amount={totalPrice} />
-        <ToggleButton onClick={handleAddToCart} isActive={state.isActive} isDisabled={state.isActive} />
-      </FlexWrapper>
-    </Cart>
-  );
-});
+        <FlexWrapper justify="space-between">
+          <Price amount={totalPrice} />
+          <ToggleButton
+            onClick={handleAddToCart}
+            isActive={state.isActive}
+            isDisabled={state.isActive}
+          />
+        </FlexWrapper>
+      </Cart>
+    );
+  }
+);
 
-function calculateTotalPrice(price: number, quantity: number, unit: string, step: number) {
-  return unit === 'g' ? price * (quantity / step) : price * quantity;
+function calculateTotalPrice(
+  pricePerUnit: number,
+  quantity: number,
+  unit: string,
+  step: number
+) {
+  return unit === 'g' ? pricePerUnit * (quantity / step) : pricePerUnit * quantity;
 }
 
 export default ProductCart;

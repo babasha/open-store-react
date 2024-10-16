@@ -197,13 +197,14 @@ app.get('/products', async (req, res) => {
       image_url: product.image_url ? path.basename(product.image_url) : null,
       name: {
         en: product.name_en,
-        ru: product.name_geo,
-        geo: product.name_geo
-      }
+        ru: product.name_ru,
+        geo: product.name_geo,
+      },
+      discounts: product.discounts || [],
     }));
     res.json(products);
   } catch (err) {
-    console.error('Ошибка получения продуктов:', err.message);
+    console.error('Ошибка при получении продуктов:', err.message);
     res.status(500).send('Ошибка сервера');
   }
 });

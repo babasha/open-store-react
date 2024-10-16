@@ -21,6 +21,7 @@ interface Product {
   image_url: string | null;
   unit: string;
   step?: number;
+  discounts?: any[]; // Добавлено поле discounts
 }
 
 const ProductList: React.FC = () => {
@@ -29,10 +30,10 @@ const ProductList: React.FC = () => {
     products,
     setProducts,
     loading,
-    setLoading, // Добавляем setLoading здесь
+    setLoading,
     globalError,
     fetchProducts,
-    setGlobalError
+    setGlobalError,
   } = useProducts();
   const [editProductId, setEditProductId] = useState<number | null>(null);
 
@@ -70,6 +71,7 @@ const ProductList: React.FC = () => {
         },
         unit: newProduct.unit || 'kg',
         step: newProduct.step || 1,
+        discounts: newProduct.discounts || [],
       };
       setProducts([...products, updatedProduct]);
     } catch (error) {
@@ -145,6 +147,7 @@ const ProductList: React.FC = () => {
               },
               unit: updatedProduct.unit || 'kg',
               step: updatedProduct.step || 1,
+              discounts: updatedProduct.discounts || [],
             }
           : product
       );
@@ -193,6 +196,7 @@ const ProductList: React.FC = () => {
                     price: product.price.toString(),
                     unit: product.unit,
                     step: product.step?.toString(),
+                    discounts: product.discounts, // Добавлено поле discounts
                   }}
                   onCancel={() => setEditProductId(null)}
                 />
