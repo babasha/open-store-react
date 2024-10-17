@@ -87,3 +87,10 @@ export const DragDropArea = styled.div`
   margin-bottom: 20px;
   cursor: pointer;
 `;
+export const ImagePreview = styled.div`
+  margin-top: 20px;
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+`;

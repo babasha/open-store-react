@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, DragDropArea } from '../../styles/AdminPanelStyles';
+import { Form, Input, Button, DragDropArea, ImagePreview } from '../../styles/AdminPanelStyles';
 import { validateProductForm } from '../../components/utils/validation';
 
 interface ProductFormProps {
@@ -26,6 +26,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [nameGeo, setNameGeo] = useState(initialData.nameGeo || '');
   const [price, setPrice] = useState(initialData.price || '');
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null); // добавили состояние для предпросмотра
   const [unit, setUnit] = useState(initialData.unit || 'kg');
   const [step, setStep] = useState(initialData.step || '1');
   const [discounts, setDiscounts] = useState(initialData.discounts || []);
@@ -36,11 +37,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const file = e.dataTransfer.files[0];
     if (file) {
       setImage(file);
+      setImagePreview(URL.createObjectURL(file)); // устанавливаем превью изображения
     }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file)); // устанавливаем превью изображения
+    }
   };
 
   const handleSubmit = () => {
@@ -68,6 +78,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setNameGeo('');
     setPrice('');
     setImage(null);
+    setImagePreview(null); // сброс превью изображения
     setUnit('kg');
     setStep('1');
     setDiscounts([]);
@@ -107,11 +118,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
       <DragDropArea onDrop={handleDrop} onDragOver={handleDragOver}>
         <p>Перетащите сюда изображение или нажмите для загрузки</p>
-        <Input
-          type="file"
-          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-        />
+        <Input type="file" onChange={handleImageChange} />
       </DragDropArea>
+
+      {imagePreview && (
+        <ImagePreview>
+          <p>Предпросмотр изображения:</p>
+          <img src={imagePreview} alt="Предпросмотр" />
+        </ImagePreview>
+      )}
 
       <label>
         Единица измерения:
