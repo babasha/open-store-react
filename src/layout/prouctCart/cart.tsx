@@ -4,17 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { useInView } from 'react-intersection-observer';
 import {
   Cart,
-  ImageWrapper,
   ProductImage,
   Placeholder,
   Title,
-} from './ProductCartStyles'; // Импортируем стили из нового файла
+} from './ProductCartStyles'; // Импортируем стили
 import PlaceholderCard from './PlaceholderCard'; // Импортируем плейсхолдер
-// Добавляем недостающие импорты
-import QuantityControl from '../../components/quantityCotrol/QuantityControl'; // Импортируем контроллер количества
-import { FlexWrapper } from '../../components/FlexWrapper'; // Импортируем обертку для Flex
+import QuantityControl from '../../components/quantityCotrol/QuantityControl'; // Контроллер количества
+import { FlexWrapper } from '../../components/FlexWrapper'; // Обертка для Flex
 import Price from '../../components/productPrice/price';
-import ToggleButton from '../../components/button/button';  // Импортируем кнопку
+import ToggleButton from '../../components/button/button';  // Кнопка
+import styled from 'styled-components'; // Импортируем styled-components
 
 type CartPropsType = {
   id: number;
@@ -49,6 +48,9 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
     isImageLoaded: false,
     isContentLoaded: !!imageUrl ? false : true,
   });
+
+  // Состояние для отображения информации о скидках
+  const [showDiscountInfo, setShowDiscountInfo] = useState(false);
 
   const { ref, inView } = useInView({
     triggerOnce: true,
@@ -108,19 +110,19 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   const handleAddToCart = useCallback(() => {
     if (!state.isActive) {
       const title = titles[i18n.language as keyof typeof titles] || titles.en;
-     addItemToCart({
-  id,
-  title,
-  price,
-  quantity: state.quantity,
-  titles,
-  unit,
-  step,
-  discounts, // Добавьте это поле
-});
+      addItemToCart({
+        id,
+        title,
+        price,
+        quantity: state.quantity,
+        titles,
+        unit,
+        step,
+        discounts, // Передаем discounts
+      });
       setState(prev => ({ ...prev, isActive: true }));
     }
-  }, [state.isActive, addItemToCart, id, price, titles, unit, step, i18n.language, state.quantity]);
+  }, [state.isActive, addItemToCart, id, price, titles, unit, step, i18n.language, state.quantity, discounts]);
 
   const localizedTitle = useMemo(() => {
     return titles[i18n.language as keyof typeof titles] || titles.en;
@@ -154,6 +156,22 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
               isLoaded={state.isImageLoaded}
             />
             {!state.isImageLoaded && <Placeholder isLoaded={state.isImageLoaded} />}
+            {discounts && discounts.length > 0 && (
+              <>
+                <DiscountLabel onClick={() => setShowDiscountInfo(prev => !prev)}>
+                  Оптовые скидки
+                </DiscountLabel>
+                {showDiscountInfo && (
+                  <DiscountPopup onMouseLeave={() => setShowDiscountInfo(false)}>
+                    {discounts.map(discount => (
+                      <div key={discount.quantity}>
+                        Купите {discount.quantity} или больше за {discount.price}₾
+                      </div>
+                    ))}
+                  </DiscountPopup>
+                )}
+              </>
+            )}
           </>
         )}
         {!inView && <Placeholder isLoaded={false} />}
@@ -200,3 +218,37 @@ function calculateTotalPrice(
 }
 
 export default ProductCart;
+
+// Добавляем стили для DiscountLabel и DiscountPopup
+const DiscountLabel = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(255, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  z-index: 10;
+`;
+
+const DiscountPopup = styled.div`
+  position: absolute;
+  top: 30px;
+  right: 8px;
+  background-color: white;
+  color: black;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 100;
+  width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+`;
+
+// Убедитесь, что ImageWrapper имеет position: relative
+const ImageWrapper = styled.div`
+  position: relative;
+  // ... остальные стили
+`;
