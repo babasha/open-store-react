@@ -108,7 +108,16 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   const handleAddToCart = useCallback(() => {
     if (!state.isActive) {
       const title = titles[i18n.language as keyof typeof titles] || titles.en;
-      addItemToCart({ id, title, price, quantity: state.quantity, titles, unit, step });
+     addItemToCart({
+  id,
+  title,
+  price,
+  quantity: state.quantity,
+  titles,
+  unit,
+  step,
+  discounts, // Добавьте это поле
+});
       setState(prev => ({ ...prev, isActive: true }));
     }
   }, [state.isActive, addItemToCart, id, price, titles, unit, step, i18n.language, state.quantity]);

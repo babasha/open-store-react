@@ -19,6 +19,7 @@ import {
   ErrorText,
   BascketTitle,
 } from './BasketStyles';
+import { calculateTotalPrice } from './utils';
 
 interface BasketProps {
   currentLanguage: string;
@@ -31,6 +32,7 @@ interface CartItem {
   price: number;
   unit: string;
   step?: number;
+  discounts?: { quantity: number; price: number }[];
 }
 
 export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
@@ -48,15 +50,28 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
   }, []);
 
   const calculateTotalPrice = useCallback(
-    (price: number, quantity: number, unit: string, step: number = 1) => {
-      return unit === 'g' ? price * (quantity / step) : price * quantity;
+    (price: number, quantity: number, unit: string, step: number = 1, discounts?: { quantity: number; price: number }[]) => {
+      let applicablePrice = price;
+  
+      if (discounts && discounts.length > 0) {
+        const applicableDiscount = discounts
+          .filter((discount) => quantity >= discount.quantity)
+          .reduce((prev, curr) => (curr.quantity > prev.quantity ? curr : prev), { quantity: 0, price });
+  
+        applicablePrice = applicableDiscount.price;
+      }
+  
+      return unit === 'g' ? applicablePrice * (quantity / step) : applicablePrice * quantity;
     },
     []
   );
 
   const totalPrice = useMemo(() => {
     return cartItems.reduce((sum, item) => {
-      return sum + calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1);
+      return (
+        sum +
+        calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1, item.discounts)
+      );
     }, 0);
   }, [cartItems, calculateTotalPrice]);
 
@@ -129,8 +144,13 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
 
   const renderCartItem = useCallback(
     (item: CartItem) => {
-      const itemTotalPrice = calculateTotalPrice(item.price, item.quantity, item.unit, item.step || 1);
-
+      const itemTotalPrice = calculateTotalPrice(
+        item.price,
+        item.quantity,
+        item.unit,
+        item.step || 1,
+        item.discounts // Добавьте это поле
+      );
       return (
         <CartItemWrapper key={item.id}>
           <ItemDetails>

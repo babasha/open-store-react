@@ -20,6 +20,7 @@ interface CartItem {
   };
   price: number;
   quantity: number;
+  discounts?: { quantity: number; price: number }[]; // Добавьте это поле
 }
 
 interface CartContextType {
