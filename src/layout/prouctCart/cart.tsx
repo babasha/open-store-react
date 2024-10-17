@@ -27,6 +27,7 @@ type CartPropsType = {
   };
   unit: string;
   step?: number;
+  discounts?: { quantity: number; price: number }[];
 };
 
 const ProductCart: React.FC<CartPropsType> = React.memo(({
@@ -36,21 +37,24 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   titles,
   unit,
   step = 1,
+  discounts = [],
 }) => {
   const { addItemToCart, cartItems, updateItemInCart } = useCart();
   const { i18n } = useTranslation();
   const cartItem = useMemo(() => cartItems.find(item => item.id === id), [cartItems, id]);
+
   const [state, setState] = useState({
     quantity: cartItem ? cartItem.quantity : step,
     isActive: !!cartItem,
     isImageLoaded: false,
     isContentLoaded: !!imageUrl ? false : true,
   });
+
   const { ref, inView } = useInView({
     triggerOnce: true,
-    rootMargin: '100px', // Начинаем загружать за 100px до видимости
+    rootMargin: '100px',
   });
-  // Функция для проверки поддержки WebP
+
   const supportsWebP = useMemo(() => {
     const elem = document.createElement('canvas');
     if (!!(elem.getContext && elem.getContext('2d'))) {
@@ -58,12 +62,11 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
     }
     return false;
   }, []);
-  // Определяем формат изображения
+
   const imageFormat = supportsWebP ? 'webp' : 'jpeg';
-  // Получаем имя файла изображения (извлекаем имя файла из imageUrl)
-  const imageFileName = imageUrl ? imageUrl.split('/').pop() : 'placeholder-image.webp'; // Или укажите имя плейсхолдера
-  // Формируем полный URL изображения
+  const imageFileName = imageUrl ? imageUrl.split('/').pop() : 'placeholder-image.webp';
   const fullImageUrl = `/images/${imageFileName}`;
+
   useEffect(() => {
     if (cartItem) {
       setState(prev => ({ ...prev, quantity: cartItem.quantity, isActive: true }));
@@ -71,11 +74,13 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
       setState(prev => ({ ...prev, quantity: step, isActive: false }));
     }
   }, [cartItem, step]);
+
   useEffect(() => {
     if (!imageUrl) {
       setState(prev => ({ ...prev, isContentLoaded: true }));
     }
   }, [imageUrl]);
+
   useEffect(() => {
     if (imageUrl && !state.isContentLoaded) {
       const timeout = setTimeout(() => {
@@ -84,18 +89,22 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
       return () => clearTimeout(timeout);
     }
   }, [imageUrl, state.isContentLoaded]);
+
   const handleImageLoad = useCallback(() => {
     setState(prev => ({ ...prev, isImageLoaded: true, isContentLoaded: true }));
   }, []);
+
   const handleImageError = useCallback(() => {
     setState(prev => ({ ...prev, isContentLoaded: true }));
   }, []);
+
   const handleQuantityChange = useCallback((newQuantity: number) => {
     setState(prev => ({ ...prev, quantity: newQuantity }));
     if (cartItem) {
       updateItemInCart({ ...cartItem, quantity: newQuantity });
     }
   }, [cartItem, updateItemInCart]);
+
   const handleAddToCart = useCallback(() => {
     if (!state.isActive) {
       const title = titles[i18n.language as keyof typeof titles] || titles.en;
@@ -103,14 +112,20 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
       setState(prev => ({ ...prev, isActive: true }));
     }
   }, [state.isActive, addItemToCart, id, price, titles, unit, step, i18n.language, state.quantity]);
+
   const localizedTitle = useMemo(() => {
     return titles[i18n.language as keyof typeof titles] || titles.en;
   }, [titles, i18n.language]);
 
-  const totalPrice = useMemo(() => calculateTotalPrice(price, state.quantity, unit, step), [price, state.quantity, unit, step]);
+  const totalPrice = useMemo(
+    () => calculateTotalPrice(price, state.quantity, unit, step, discounts),
+    [price, state.quantity, unit, step, discounts]
+  );
+
   if (!state.isContentLoaded) {
     return <PlaceholderCard />;
   }
+
   return (
     <Cart ref={ref}>
       <ImageWrapper>
@@ -136,11 +151,12 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
       </ImageWrapper>
       <Title>{localizedTitle}</Title>
       <QuantityControl
-        pricePerUnit={price}
+        basePrice={price}
         quantity={state.quantity}
         onQuantityChange={handleQuantityChange}
         unit={unit}
         step={step}
+        discounts={discounts}
       />
       <FlexWrapper justify="space-between">
         <Price amount={totalPrice} />
@@ -149,8 +165,29 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
     </Cart>
   );
 });
-function calculateTotalPrice(price: number, quantity: number, unit: string, step: number) {
-  return unit === 'g' ? price * (quantity / step) : price * quantity;
+
+function calculateTotalPrice(
+  basePrice: number,
+  quantity: number,
+  unit: string,
+  step: number,
+  discounts: { quantity: number; price: number }[]
+) {
+  let applicablePrice = basePrice;
+  
+  if (discounts && discounts.length > 0) {
+    discounts = discounts.filter(discount => quantity >= discount.quantity);
+    
+    if (discounts.length > 0) {
+      const maxDiscount = discounts.reduce((prev, curr) => 
+        (curr.quantity <= quantity && curr.price < prev.price) ? curr : prev,
+        { quantity: 0, price: basePrice }
+      );
+      applicablePrice = maxDiscount.price;
+    }
+  }
+
+  return unit === 'g' ? applicablePrice * (quantity / step) : applicablePrice * quantity;
 }
 
 export default ProductCart;

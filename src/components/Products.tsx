@@ -18,8 +18,9 @@ type Product = {
   };
   price: number;
   image_url: string | null;
-  unit: string;  
-  step?: number; 
+  unit: string;
+  step?: number;
+  discounts?: { quantity: number; price: number }[]; // Добавляем discounts
 };
 
 const Products: React.FC = () => {
@@ -28,6 +29,7 @@ const Products: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { cartItems } = useCart();
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -36,6 +38,7 @@ const Products: React.FC = () => {
           throw new Error(`Ошибка HTTP: ${response.status}`);
         }
         const data = await response.json();
+        console.log(data); // Вывод данных в консоль для проверки
         const updatedProducts = data.map((product: any) => ({
           ...product,
           name: {
@@ -43,16 +46,25 @@ const Products: React.FC = () => {
             ru: product.name_ru,
             geo: product.name_geo,
           },
-          unit: product.unit || 'kg', // Добавил unit
-          step: product.step || 1,    // Добавил step
+          price: Number(product.price),
+          unit: product.unit || 'kg',
+          step: product.step ? Number(product.step) : 1,
+          discounts: Array.isArray(product.discounts)
+            ? product.discounts.map((discount: any) => ({
+                quantity: Number(discount.quantity),
+                price: Number(discount.price),
+              }))
+            : [], // Если discounts не массив, используем пустой массив
         }));
         setProducts(updatedProducts);
       } catch (error) {
         console.error('Ошибка при загрузке продуктов:', error);
       }
     };
+  
     fetchProducts();
   }, []);
+
   return (
     <Showcase>
       <ShopInner>
@@ -63,8 +75,9 @@ const Products: React.FC = () => {
             price={product.price}
             imageUrl={product.image_url}
             titles={product.name}
-            unit={product.unit}  // Использую unit
-            step={product.step}  // Использую step
+            unit={product.unit}
+            step={product.step}
+            discounts={product.discounts}
           />
         ))}
         <Cardpromo />
@@ -82,12 +95,15 @@ const Products: React.FC = () => {
     </Showcase>
   );
 };
+
 export default Products;
+
 const Showcase = styled.div`
   background-color: ${theme.colors.ShopWindowBg};
   display: flex;
   border-radius: 20px;
 `;
+
 const ShopInner = styled.div`
   display: flex;
   background-color: ${theme.colors.ShopWindowBg};
