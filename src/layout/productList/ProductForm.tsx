@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button } from '../../styles/AdminPanelStyles';
+import { Form, Input, Button, DragDropArea } from '../../styles/AdminPanelStyles';
 import { validateProductForm } from '../../components/utils/validation';
 
 interface ProductFormProps {
@@ -31,19 +31,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [discounts, setDiscounts] = useState(initialData.discounts || []);
   const [errors, setErrors] = useState<any>({});
 
-  const addDiscount = () => {
-    setDiscounts([...discounts, { quantity: '', price: '' }]);
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      setImage(file);
+    }
   };
 
-  const updateDiscount = (index: number, key: string, value: any) => {
-    const updatedDiscounts = discounts.map((discount, idx) =>
-      idx === index ? { ...discount, [key]: value } : discount
-    );
-    setDiscounts(updatedDiscounts);
-  };
-
-  const removeDiscount = (index: number) => {
-    setDiscounts(discounts.filter((_, idx) => idx !== index));
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
   };
 
   const handleSubmit = () => {
@@ -107,11 +104,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
         placeholder="Цена продукта"
       />
       {errors.price && <p>{errors.price}</p>}
-      <Input
-        type="file"
-        onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-      />
-      {errors.image && <p>{errors.image}</p>}
+
+      <DragDropArea onDrop={handleDrop} onDragOver={handleDragOver}>
+        <p>Перетащите сюда изображение или нажмите для загрузки</p>
+        <Input
+          type="file"
+          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
+        />
+      </DragDropArea>
+
       <label>
         Единица измерения:
         <select value={unit} onChange={(e) => setUnit(e.target.value)}>
@@ -139,7 +140,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
               type="number"
               value={discount.quantity}
               onChange={(e) =>
-                updateDiscount(index, 'quantity', e.target.value)
+                setDiscounts(prev =>
+                  prev.map((d, i) => i === index ? {...d, quantity: e.target.value} : d)
+                )
               }
               placeholder="Количество"
             />
@@ -147,16 +150,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
               type="number"
               value={discount.price}
               onChange={(e) =>
-                updateDiscount(index, 'price', e.target.value)
+                setDiscounts(prev =>
+                  prev.map((d, i) => i === index ? {...d, price: e.target.value} : d)
+                )
               }
               placeholder="Цена за единицу"
             />
-            <Button type="button" onClick={() => removeDiscount(index)}>
+            <Button type="button" onClick={() => setDiscounts(discounts.filter((_, i) => i !== index))}>
               Удалить
             </Button>
           </div>
         ))}
-        <Button type="button" onClick={addDiscount}>
+        <Button type="button" onClick={() => setDiscounts([...discounts, { quantity: '', price: '' }])}>
           Добавить скидку
         </Button>
       </div>

@@ -78,3 +78,12 @@ export const OrderDetails = styled.div`
   flex-direction: column;
   gap: 10px;
 `;
+export const DragDropArea = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+`;
