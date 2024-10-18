@@ -1,5 +1,10 @@
 import React from 'react';
-import { ListItem, ProductDetails, ProductImage, Button } from '../../styles/AdminPanelStyles';
+import {
+  ListItem,
+  ProductDetails,
+  ProductImage,
+  Button,
+} from '../../styles/AdminPanelStyles';
 
 interface Product {
   id: number;
@@ -12,7 +17,7 @@ interface Product {
   image_url: string | null;
   unit: string;
   step?: number;
-  discounts?: any[]; // Добавлено поле discounts
+  discounts?: any[];
 }
 
 interface ProductListItemProps {
@@ -22,8 +27,12 @@ interface ProductListItemProps {
 }
 
 const ProductListItem: React.FC<ProductListItemProps> = React.memo(
-  ({ product, onDelete, onEdit }) => (
-    <ListItem>
+  ({ product, onDelete, onEdit }) => {
+    const unitLabel = product.unit === 'g' ? `${product.step} г` : 'единицу';
+    const quantityLabel = product.unit === 'g' ? 'г' : 'шт.';
+
+    return (
+      <ListItem>
       <ProductDetails>
         <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
         <p>
@@ -47,6 +56,7 @@ const ProductListItem: React.FC<ProductListItemProps> = React.memo(
       </ProductDetails>
     </ListItem>
   )
+ }
 );
 
 export default ProductListItem;

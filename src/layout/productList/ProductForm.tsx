@@ -65,7 +65,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     onSubmit(formData);
-    // Сброс формы после отправки
+    // Reset form after submission
     setNameEn('');
     setNameRu('');
     setNameGeo('');
