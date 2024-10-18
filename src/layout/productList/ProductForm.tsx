@@ -54,7 +54,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       unit,
       step,
       image,
-      discounts: JSON.stringify(discounts),
+      discounts, // Не сериализуем здесь
     };
 
     const validationErrors = validateProductForm(formData);
