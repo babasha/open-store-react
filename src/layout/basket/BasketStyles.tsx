@@ -30,6 +30,11 @@ export const CartItemWrapper = styled.div`
 export const ItemDetails = styled.div`
   /* flex-grow: 1; */
   /* margin-bottom: 10px; */
+ background-color: #00e6ac4c;
+  
+  width: 100%;
+  height: 20px;
+
 `;
 
 export const DeleteButton = styled.button<{ isEditing: boolean }>`
@@ -95,4 +100,16 @@ export const ErrorText = styled.p`
 export const BascketTitle = styled.h2`
  font-size: 24px;
  padding-top: -25px;
+`;
+export const DiscountInfo = styled.div`
+  color: #ff0000;
+  font-size: 12px;
+  margin-top: 5px;
+`;
+
+export const ItemWrapper = styled.div`
+  /* color: #15f1ba; */
+  
+  width: 100%;
+  height: 20px;
 `;

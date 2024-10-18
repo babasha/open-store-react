@@ -87,5 +87,6 @@
   "firstnumber": "Phone:",
   "secondnumber": "Phone:",
   "mainemail": "Email:",
-  "payment.successTitle": "Successful payment" 
+  "payment.successTitle": "Successful payment" ,
+  "discountInfo": "Add {{quantityNeeded}} {{unit}} to get a discount"
 }

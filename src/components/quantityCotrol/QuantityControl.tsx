@@ -41,15 +41,18 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
   const currentUnitPrice = useMemo(() => {
     let price = basePrice;
     if (discounts && discounts.length > 0) {
-      const sortedDiscounts = discounts.sort((a, b) => a.quantity - b.quantity);
-      const applicableDiscount = sortedDiscounts.reduce(
-        (acc, discount) => (localQuantity >= discount.quantity ? discount : acc),
-        { quantity: 0, price: basePrice }
-      );
-      price = applicableDiscount.price;
+      const totalQuantityInSteps = localQuantity / step;
+
+      const applicableDiscounts = discounts.filter(discount => totalQuantityInSteps >= discount.quantity);
+      if (applicableDiscounts.length > 0) {
+        const maxDiscount = applicableDiscounts.reduce((prev, curr) => {
+          return curr.quantity > prev.quantity ? curr : prev;
+        });
+        price = maxDiscount.price;
+      }
     }
     return Number(price);
-  }, [basePrice, localQuantity, discounts]);
+  }, [basePrice, localQuantity, discounts, step]);
 
   return (
     <FlexWrapper
@@ -64,7 +67,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
         <span>-</span>
       </Button>
       <Quantity>
-        {localQuantity} {unit} @ {currentUnitPrice.toFixed(2)}₾/{unit}
+        {localQuantity}{unit} {currentUnitPrice.toFixed(2)}₾
       </Quantity>
       <Button onClick={increase}>
         <span>+</span>

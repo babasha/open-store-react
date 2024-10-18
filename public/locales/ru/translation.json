@@ -86,6 +86,7 @@
   "mainemail": "Электронная почта:",
   "payment.successTitle": "Успешная оплата" ,
   "enter_address": "Введите адрес",
-  "location_outside_batumi": "Пожалуйста, выберите адрес внутри Батуми"
+  "location_outside_batumi": "Пожалуйста, выберите адрес внутри Батуми",
+  "discountInfo": "Add {{quantityNeeded}} {{unit}} to get a discount"
   }
 

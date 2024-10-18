@@ -165,7 +165,15 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
                   <DiscountPopup onMouseLeave={() => setShowDiscountInfo(false)}>
                     {discounts.map(discount => (
                       <div key={discount.quantity}>
-                        Купите {discount.quantity} или больше за {discount.price}₾
+                        {unit === 'g' ? (
+                          <>
+                            Купите {discount.quantity * step}г или больше за {discount.price}₾ / {step}г
+                          </>
+                        ) : (
+                          <>
+                            Купите {discount.quantity} или больше за {discount.price}₾ / {unit}
+                          </>
+                        )}
                       </div>
                     ))}
                   </DiscountPopup>
@@ -201,20 +209,23 @@ function calculateTotalPrice(
   discounts: { quantity: number; price: number }[]
 ) {
   let applicablePrice = basePrice;
-  
+
+  const totalQuantityInSteps = quantity / step; // Количество шагов
+
   if (discounts && discounts.length > 0) {
-    discounts = discounts.filter(discount => quantity >= discount.quantity);
-    
-    if (discounts.length > 0) {
-      const maxDiscount = discounts.reduce((prev, curr) => 
-        (curr.quantity <= quantity && curr.price < prev.price) ? curr : prev,
-        { quantity: 0, price: basePrice }
-      );
+    const applicableDiscounts = discounts.filter(discount => totalQuantityInSteps >= discount.quantity);
+
+    if (applicableDiscounts.length > 0) {
+      // Находим скидку с наибольшим порогом количества
+      const maxDiscount = applicableDiscounts.reduce((prev, curr) => {
+        return curr.quantity > prev.quantity ? curr : prev;
+      });
       applicablePrice = maxDiscount.price;
     }
   }
 
-  return unit === 'g' ? applicablePrice * (quantity / step) : applicablePrice * quantity;
+  // Расчет цены
+  return totalQuantityInSteps * applicablePrice;
 }
 
 export default ProductCart;
