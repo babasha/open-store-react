@@ -340,16 +340,6 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     price = parseFloat(price);
     step = parseFloat(step);
 
-    // Валидация price и step
-    if (isNaN(price)) {
-      console.error('Price is not a valid number:', req.body.price);
-      return res.status(400).send('Invalid price');
-    }
-    if (unit === 'g' && isNaN(step)) {
-      console.error('Step is not a valid number:', req.body.step);
-      return res.status(400).send('Invalid step');
-    }
-
     // Обработка discounts
     let discounts = [];
     try {
@@ -394,16 +384,16 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     console.log('Сохранение продукта в базе данных...');
     const result = await pool.query(
       'INSERT INTO products (name_en, name_ru, name_geo, price, image_url, unit, step, discounts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [
-        nameEn,
-        nameRu,
-        nameGeo,
-        price,
-        imageUrl ? `/uploads/${imageUrl}` : null,
-        unit,
-        unit === 'g' ? step : null,
-        discounts, // Передаем discounts как объект, а не строку
-      ]
+  [
+    nameEn,
+    nameRu,
+    nameGeo,
+    price,
+    imageUrl ? `/uploads/${imageUrl}` : null,
+    unit,
+    unit === 'g' ? step : null,
+    JSON.stringify(discounts), // Преобразуем скидки в строку JSON
+  ]
     );
 
     const newProduct = result.rows[0];
@@ -423,7 +413,6 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     res.status(500).send('Ошибка сервера');
   }
 });
-
 
 // Маршрут для обслуживания изображений
 app.get('/images/:filename', async (req, res) => {

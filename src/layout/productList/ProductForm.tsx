@@ -34,6 +34,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const addDiscount = () => {
     setDiscounts([...discounts, { quantity: '', price: '' }]);
   };
+
   const updateDiscount = (index: number, key: string, value: any) => {
     const updatedDiscounts = discounts.map((discount, idx) =>
       idx === index ? { ...discount, [key]: value } : discount
@@ -54,7 +55,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       unit,
       step,
       image,
-      discounts, // Не сериализуем здесь
+      discounts: JSON.stringify(discounts),
     };
 
     const validationErrors = validateProductForm(formData);

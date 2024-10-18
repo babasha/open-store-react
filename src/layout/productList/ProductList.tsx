@@ -21,10 +21,11 @@ interface Product {
   image_url: string | null;
   unit: string;
   step?: number;
-  discounts?: any[];
+  discounts?: any[]; // Добавлено поле discounts
 }
 
 const ProductList: React.FC = () => {
+  // Деструктурируем setLoading из хука useProducts
   const {
     products,
     setProducts,
@@ -35,7 +36,7 @@ const ProductList: React.FC = () => {
     setGlobalError,
   } = useProducts();
   const [editProductId, setEditProductId] = useState<number | null>(null);
-  
+
   const handleAddProduct = async (formData: any) => {
     setGlobalError(null);
     setLoading(true);
@@ -43,11 +44,7 @@ const ProductList: React.FC = () => {
       const sendData = new FormData();
       Object.keys(formData).forEach((key) => {
         if (formData[key]) {
-          if (key === 'discounts') {
-            sendData.append(key, JSON.stringify(formData[key]));
-          } else {
-            sendData.append(key, formData[key]);
-          }
+          sendData.append(key, formData[key]);
         }
       });
 
@@ -110,6 +107,10 @@ const ProductList: React.FC = () => {
     }
   };
 
+  const handleEditProduct = (id: number) => {
+    setEditProductId(id);
+  };
+
   const handleSaveProduct = async (formData: any) => {
     setGlobalError(null);
     setLoading(true);
@@ -117,11 +118,7 @@ const ProductList: React.FC = () => {
       const sendData = new FormData();
       Object.keys(formData).forEach((key) => {
         if (formData[key]) {
-          if (key === 'discounts') {
-            sendData.append(key, JSON.stringify(formData[key]));
-          } else {
-            sendData.append(key, formData[key]);
-          }
+          sendData.append(key, formData[key]);
         }
       });
 
@@ -215,7 +212,7 @@ const ProductList: React.FC = () => {
                 <ProductListItem
                   product={product}
                   onDelete={handleDeleteProduct}
-                  onEdit={handleSaveProduct}
+                  onEdit={handleEditProduct}
                 />
               </motion.div>
             )
