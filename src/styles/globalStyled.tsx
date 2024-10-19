@@ -14,7 +14,7 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
 
   body {
     margin: 0;
-    font-family: "Noto Sans", sans-serif;
+    font-family: "inter-variable", sans-serif; /* Измененный шрифт */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: ${theme.colors.font};
@@ -97,7 +97,6 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
       font-size: 12px;
     }
   }
-
 
   /* Убираем синий цвет при клике на мобильных устройствах */
   * {
