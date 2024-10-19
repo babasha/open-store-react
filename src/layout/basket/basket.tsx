@@ -259,7 +259,7 @@ export const Basket: React.FC<BasketProps> = ({ currentLanguage }) => {
             {cartItems.map(renderCartItem)}
             <CartItemWrapper>
               <ItemDetails>
-                <strong>{t('cart.delivery')}</strong>
+                <strong>{t('cart.delivery')}: </strong>
                 <span>
                   {deliveryCost === 0
                     ? t('cart.free')

@@ -1,6 +1,7 @@
-import styled from 'styled-components';
+// import styled from 'styled-components';
 import { theme } from '../../styles/Theme';
 import ButtonWithRipple from '../../styles/btns/ButtonStyles';
+import styled, { keyframes } from 'styled-components';
 
 export const CartdiInner = styled.div`
   background-color: ${theme.colors.mainBg};
@@ -30,11 +31,11 @@ export const CartItemWrapper = styled.div`
 export const ItemDetails = styled.div`
   /* flex-grow: 1; */
   /* margin-bottom: 10px; */
- background-color: #00e6ac4c;
+ /* background-color: #00e6ac4c; */
   
   width: 100%;
-  height: 20px;
-
+  /* height: 20px; */
+   
 `;
 
 export const DeleteButton = styled.button<{ isEditing: boolean }>`
@@ -89,8 +90,9 @@ export const ItemContext = styled.span`
 
 export const ItemContextTitle = styled.span`
   font-weight: bold;
-  margin-right: 25px;
+  margin-right: 20px;
   font-size: 16px;
+  text-align: center;
 `;
 
 export const ErrorText = styled.p`
@@ -101,10 +103,29 @@ export const BascketTitle = styled.h2`
  font-size: 24px;
  padding-top: -25px;
 `;
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
 export const DiscountInfo = styled.div`
-  color: #ff0000;
+  color: ${theme.colors.font};
   font-size: 12px;
+  margin-top: 2px;
+  background-color: ${theme.colors.ShopWindowBg};
   margin-top: 5px;
+  padding: 5px 5px;
+  border-radius: 3px;
+  width: 70%;
+  opacity: 0;
+  animation: ${fadeIn} 0.5s forwards; /* добавлена анимация */
 `;
 
 export const ItemWrapper = styled.div`
