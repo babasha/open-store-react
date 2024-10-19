@@ -28,35 +28,42 @@ interface ProductListItemProps {
 
 const ProductListItem: React.FC<ProductListItemProps> = React.memo(
   ({ product, onDelete, onEdit }) => {
+    const handleDelete = () => {
+      const confirmed = window.confirm("Вы уверены, что хотите удалить этот товар?");
+      if (confirmed) {
+        onDelete(product.id);
+      }
+    };
+
     const unitLabel = product.unit === 'g' ? `${product.step} г` : 'единицу';
     const quantityLabel = product.unit === 'g' ? 'г' : 'шт.';
 
-    return  (
+    return (
       <ListItem>
-      <ProductDetails>
-        <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
-        <p>
-          {product.name.en} - ${product.price} {product.unit}
-        </p>
-        {/* Отображение скидок */}
-        {product.discounts && product.discounts.length > 0 && (
-          <div>
-            <p>Скидки:</p>
-            <ul>
-              {product.discounts.map((discount, index) => (
-                <li key={index}>
-                  {`При покупке от ${discount.quantity} шт. цена ${discount.price} за единицу`}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <Button onClick={() => onDelete(product.id)}>Удалить</Button>
-        <Button onClick={() => onEdit(product.id)}>Редактировать</Button>
-      </ProductDetails>
-    </ListItem>
-  )
- }
+        <ProductDetails>
+          <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
+          <p>
+            {product.name.en} - ${product.price} {product.unit}
+          </p>
+          {/* Отображение скидок */}
+          {product.discounts && product.discounts.length > 0 && (
+            <div>
+              <p>Скидки:</p>
+              <ul>
+                {product.discounts.map((discount, index) => (
+                  <li key={index}>
+                    {`При покупке от ${discount.quantity} шт. цена ${discount.price} за единицу`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <Button onClick={handleDelete}>Удалить</Button>
+          <Button onClick={() => onEdit(product.id)}>Редактировать</Button>
+        </ProductDetails>
+      </ListItem>
+    );
+  }
 );
 
 export default ProductListItem;

@@ -389,7 +389,7 @@ app.post('/products', upload.single('image'), isAdmin, async (req, res) => {
     nameRu,
     nameGeo,
     price,
-    imageUrl ? `/images/${imageUrl}` : null,
+    imageUrl ? `/uploads/${imageUrl}` : null,
     unit,
     unit === 'g' ? step : null,
     JSON.stringify(discounts), // Преобразуем скидки в строку JSON
@@ -634,7 +634,7 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
         nameRu,
         nameGeo,
         price,
-        finalImageUrl ? `/images/${path.basename(finalImageUrl)}` : null, // Обновленная строка
+        finalImageUrl,
         unit,
         unit === 'g' ? step : null,
         discounts,
