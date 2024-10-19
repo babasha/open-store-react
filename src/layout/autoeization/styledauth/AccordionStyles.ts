@@ -9,6 +9,7 @@ export const AccordionHeader = styled(motion.summary)`
   background: #f0f0f0;
   border-radius: 5px;
   margin-bottom: 10px;
+  user-select: none;
   &:hover {
     background: #e0e0e0;
   }
