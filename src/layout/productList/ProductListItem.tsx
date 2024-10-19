@@ -31,7 +31,7 @@ const ProductListItem: React.FC<ProductListItemProps> = React.memo(
     const unitLabel = product.unit === 'g' ? `${product.step} г` : 'единицу';
     const quantityLabel = product.unit === 'g' ? 'г' : 'шт.';
 
-    return (
+    return  (
       <ListItem>
       <ProductDetails>
         <ProductImage src={product.image_url ?? ''} alt={product.name.en ?? ''} />
