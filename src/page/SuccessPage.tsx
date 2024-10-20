@@ -44,7 +44,8 @@ const OrderNumber = styled.h2`
 
 const TotalAmount = styled.div`
   font-size: 1.25rem;
-  font-weight: bold;
+  /* font-weight: bold; */
+  font-variation-settings: "wght" 600;
   color: #333;
   margin-top: 20px;
 `;
@@ -52,7 +53,9 @@ const TotalAmount = styled.div`
 const Status = styled.div`
   margin-top: 10px;
   color: #007bff;
-  font-weight: bold;
+  /* font-weight: bold; */
+  font-variation-settings: "wght" 600;
+
 `;
 const ReturnButton = styled.button`
   margin-top: 30px;

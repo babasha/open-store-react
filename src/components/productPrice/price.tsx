@@ -27,7 +27,8 @@ const Container = styled.div`
 const Amount = styled.span`
   font-size: 19px;
   /* font-size: 1.2rem;; */
-  font-weight: bold;
+  font-variation-settings: "wght" 500;
+  /* font-weight: bold; */
   color: black;
   margin-left: 10px;
   /* @media (max-width: 1024px) {

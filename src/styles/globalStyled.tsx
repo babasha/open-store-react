@@ -59,7 +59,7 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
   }
 
   h1 {
-    font-weight: 900;
+    font-variation-settings: "wght" 600; /* Пример изменения веса */
     font-size: 24px;
     text-transform: uppercase;
     @media (max-width: 1024px) {
@@ -71,8 +71,9 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
   }
 
   h2, h3 {
+    font-variation-settings: "wght" 500;
     font-size: 20px;
-    font-weight: 700;
+    /* font-weight: 700; */
     line-height: normal;
     letter-spacing: 1px;
     @media (max-width: 1024px) {
@@ -88,8 +89,9 @@ export const GlobalStyled = createGlobalStyle<GlobalStyledProps>`
   }
 
   p {
+    font-variation-settings: "wght" 400;
+
     font-size: 16px;
-    font-weight: 400;
     @media (max-width: 430px) {
       font-size: 14px;
     }

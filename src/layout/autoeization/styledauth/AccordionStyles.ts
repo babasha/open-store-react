@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 
 export const AccordionHeader = styled(motion.summary)`
   cursor: pointer;
-  font-weight: bold;
+  /* font-weight: bold; */
+  font-variation-settings: "wght" 500;
   padding: 10px;
   background: #f0f0f0;
   border-radius: 5px;

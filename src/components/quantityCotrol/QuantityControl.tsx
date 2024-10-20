@@ -67,7 +67,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
         <span>-</span>
       </Button>
       <Quantity>
-        {localQuantity}{unit} {currentUnitPrice.toFixed(2)}₾
+        {localQuantity}{unit} 
       </Quantity>
       <Button onClick={increase}>
         <span>+</span>

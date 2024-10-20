@@ -179,7 +179,9 @@ export const OrderDetailsContainer = styled.div`
   }
 
   strong {
-    font-weight: bold;
+    /* font-weight: bold; */
+    font-variation-settings: "wght" 900;
+
   }
 
   .order-actions {

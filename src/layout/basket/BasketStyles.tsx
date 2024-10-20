@@ -79,7 +79,8 @@ export const PurchaseButton = styled(ButtonWithRipple)`
 
 export const TotalPrice = styled.div`
   /* margin-top: 10px; */
-  font-weight: bold;
+  /* font-weight: bold; */
+  font-variation-settings: "wght" 600;
   font-size: 20px;
 `;
 
