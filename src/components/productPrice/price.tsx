@@ -1,61 +1,39 @@
+// src/components/productPrice/Price.tsx
 import React from 'react';
 import styled from 'styled-components';
+import { theme } from '../../styles/Theme';
 
 interface PriceProps {
   amount: number;
+  insideButton?: boolean;
+  isActive?: boolean; // Добавляем необязательный проп isActive
 }
 
-const Price: React.FC<PriceProps> = ({ amount }) => {
+const Price: React.FC<PriceProps> = ({ amount, insideButton = false, isActive = false }) => {
   return (
-    <Container>
-      <Amount>{amount} ₾</Amount>
+    <Container insideButton={insideButton}>
+      <Amount insideButton={insideButton} isActive={isActive}>
+        {amount} ₾
+      </Amount>
     </Container>
   );
 };
 
-const Container = styled.div`
+const Container = styled.div<{ insideButton: boolean }>`
   display: flex;
   align-items: center;
+  margin-left: ${({ insideButton }) => (insideButton ? '0' : '10px')};
 `;
 
-// const Text = styled.span`
-//   font-size: 16px;
-//   color: black;
-//   margin-right: 5px;
-// `;
-
-const Amount = styled.span`
-  font-size: 19px;
-  /* font-size: 1.2rem;; */
-  font-variation-settings: "wght" 500;
-  /* font-weight: bold; */
-  color: black;
-  margin-left: 10px;
-  /* @media (max-width: 1024px) {
-    font-size: 16px;
-  } */
-  /* @media (max-width: 820px) {
-    font-size: 16px;
-  }
-  @media (max-width: 540px) {
-    font-size: 16px;
-  }
-  @media (max-width: 430px) {
-    font-size: 16px;
-  }
-  @media (max-width: 390px) {
-    font-size: 16px;
-  }
-  @media (max-width: 375px) {
-    font-size: 16px;
-  }
-  @media (max-width: 360px) {
-    font-size: 16px;
-  }
-  @media (max-width: 344px) {
-    font-size: 16px;
-  } */
-  
+const Amount = styled.span<{ insideButton: boolean; isActive: boolean }>`
+  font-size: ${({ insideButton }) => (insideButton ? '14px' : '19px')};
+  color: ${({ insideButton, isActive }) => {
+    if (insideButton) {
+      return isActive ? 'white' : theme.colors.font;
+    }
+    return 'black';
+  }};
+  margin-right: ${({ insideButton }) => (insideButton ? '8px' : '0')};
 `;
 
 export default Price;

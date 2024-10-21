@@ -7,6 +7,7 @@ import React, { useState, MouseEvent } from 'react';
 interface ButtonProps extends MotionProps {
   isActive: boolean;
   isDisabled: boolean;
+  hasPrice?: boolean; // Необязательный проп для наличия цены
 }
 
 interface Ripple {
@@ -15,6 +16,9 @@ interface Ripple {
 }
 
 const StyledButton = styled(motion.button)<ButtonProps>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 10px;
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
   background-color: ${({ isActive }) => (isActive ? theme.button.buttonActive : 'transparent')};
@@ -23,7 +27,7 @@ const StyledButton = styled(motion.button)<ButtonProps>`
   font-size: 16px;
   position: relative;
   overflow: hidden;
-  padding: 5px 15px;
+  padding: ${({ hasPrice }) => (hasPrice ? '5px 10px' : '5px 15px')};
   transition: 0.2s;
   pointer-events: ${({ isDisabled }) => (isDisabled ? 'none' : 'auto')};
 
@@ -35,44 +39,22 @@ const StyledButton = styled(motion.button)<ButtonProps>`
     background-color: ${theme.button.buttonActive};
   }
 
-  /* @media (max-width: 1024px) {
-    font-size: 16px;
-    padding: 8px 15px;
-  }
-  @media (max-width: 820px) {
-    font-size: 16px;
-    padding: 5px 12px;
-  } */
-    @media (max-width: 480px) {
-      font-size: 14px;
-      padding: 5px 5px;
-
-  }
-
-  @media (min-width: 481px) and (max-width: 768px) {
+  @media (max-width: 480px) {
     font-size: 14px;
-    padding: 5px 7px;
-
-  }
-
-  @media (min-width: 769px) and (max-width: 1024px) {
-    font-size: 14px;
-
-  }
-
-  @media (min-width: 1025px) {
-    font-size: 16px;
+    padding: ${({ hasPrice }) => (hasPrice ? '5px 10px' : '5px 15px')};
   }
 `;
 
-const Ripple = styled(motion.span)`
+const RippleSpan = styled(motion.span)`
   position: absolute;
-  border-radius: 20px;
+  border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.7);
   pointer-events: none;
 `;
 
-export const ButtonWithRipple: React.FC<ButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ isActive, isDisabled, children, onClick, ...props }) => {
+export const ButtonWithRipple: React.FC<
+  ButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>
+> = ({ isActive, isDisabled, children, onClick, hasPrice, ...props }) => {
   const [ripples, setRipples] = useState<Ripple[]>([]);
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -94,10 +76,10 @@ export const ButtonWithRipple: React.FC<ButtonProps & React.ButtonHTMLAttributes
   };
 
   return (
-    <StyledButton isActive={isActive} isDisabled={isDisabled} onClick={handleClick} {...props}>
+    <StyledButton isActive={isActive} isDisabled={isDisabled} hasPrice={hasPrice} onClick={handleClick} {...props}>
       {children}
       {ripples.map(({ key, style }) => (
-        <Ripple
+        <RippleSpan
           key={key}
           style={style}
           initial={{ scale: 0, opacity: 1 }}

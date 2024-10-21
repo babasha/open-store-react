@@ -1,3 +1,4 @@
+// src/components/ProductCart.tsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useCart } from '../basket/CartContext';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,8 @@ import { FlexWrapper } from '../../components/FlexWrapper'; // Обертка д
 import Price from '../../components/productPrice/price';
 import ToggleButton from '../../components/button/button';  // Кнопка
 import styled from 'styled-components'; // Импортируем styled-components
+import { theme } from '../../styles/Theme';
+import useIsMobile from './useIsMobile'; // Импортируем хук
 
 type CartPropsType = {
   id: number;
@@ -41,7 +44,7 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
   const { addItemToCart, cartItems, updateItemInCart } = useCart();
   const { i18n } = useTranslation();
   const cartItem = useMemo(() => cartItems.find(item => item.id === id), [cartItems, id]);
-
+  const isMobile = useIsMobile(); 
   const [state, setState] = useState({
     quantity: cartItem ? cartItem.quantity : step,
     isActive: !!cartItem,
@@ -118,7 +121,7 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
         titles,
         unit,
         step,
-        discounts, // Передаем discounts
+        discounts, // Передаём discounts
       });
       setState(prev => ({ ...prev, isActive: true }));
     }
@@ -193,10 +196,25 @@ const ProductCart: React.FC<CartPropsType> = React.memo(({
         step={step}
         discounts={discounts}
       />
-      <FlexWrapper justify="space-between">
-        <Price amount={totalPrice} />
-        <ToggleButton onClick={handleAddToCart} isActive={state.isActive} isDisabled={state.isActive} />
-      </FlexWrapper>
+      {isMobile ? (
+        // На мобильных устройствах отображаем Price внутри ToggleButton
+        <ToggleButton
+          onClick={handleAddToCart}
+          isActive={state.isActive}
+          isDisabled={state.isActive}
+          price={totalPrice} // Передаём цену как проп
+        />
+      ) : (
+        // На больших экранах отображаем Price и ToggleButton отдельно
+        <FlexWrapper justify="space-between">
+          <Price amount={totalPrice} />
+          <ToggleButton
+            onClick={handleAddToCart}
+            isActive={state.isActive}
+            isDisabled={state.isActive}
+          />
+        </FlexWrapper>
+      )}
     </Cart>
   );
 });
@@ -224,7 +242,7 @@ function calculateTotalPrice(
     }
   }
 
-  // Расчет цены
+  // Расчёт цены
   return totalQuantityInSteps * applicablePrice;
 }
 
@@ -233,9 +251,9 @@ export default ProductCart;
 // Добавляем стили для DiscountLabel и DiscountPopup
 const DiscountLabel = styled.div`
   position: absolute;
-  top: 8px;
+  top: 6px;
   right: 8px;
-  background-color: rgba(255, 0, 0, 0.8);
+  background-color: ${theme.button.buttonActive};
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -249,17 +267,17 @@ const DiscountPopup = styled.div`
   top: 30px;
   right: 8px;
   background-color: white;
-  color: black;
-  padding: 8px;
+  color: ${theme.colors.font};
+  padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 10px;
   z-index: 100;
-  width: 200px;
+  width: max-content;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 `;
 
 // Убедитесь, что ImageWrapper имеет position: relative
 const ImageWrapper = styled.div`
   position: relative;
-  // ... остальные стили
+  /* Добавьте остальные стили по необходимости */
 `;
