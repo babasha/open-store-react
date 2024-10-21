@@ -77,10 +77,16 @@ const verifyTelegramAuth = (data) => {
 
   const dataCheckString = Object.keys(rest)
     .sort()
-    .map(key => `${key}=${rest[key]}`)
+    .map((key) => `${key}=${rest[key]}`)
     .join('\n');
 
-  const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+  const hmac = crypto
+    .createHmac('sha256', secretKey)
+    .update(dataCheckString)
+    .digest('hex');
+
+  console.log('Computed HMAC:', hmac);
+  console.log('Received hash:', hash);
 
   return hmac === hash;
 };

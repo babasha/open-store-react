@@ -36,7 +36,7 @@ const TelegramLoginButton: React.FC<TelegramLoginButtonProps> = ({ botName, onAu
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-userpic', 'false');
     script.setAttribute('data-request-access', 'write');
-    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+    script.setAttribute('data-onauth', 'onTelegramAuth'); // Исправлено здесь
     script.async = true;
 
     // Добавляем скрипт в контейнер
@@ -44,6 +44,11 @@ const TelegramLoginButton: React.FC<TelegramLoginButtonProps> = ({ botName, onAu
       containerRef.current.innerHTML = '';
       containerRef.current.appendChild(script);
     }
+
+    // Очистка функции при размонтировании компонента
+    return () => {
+      delete (window as any).onTelegramAuth;
+    };
   }, [botName, onAuth]);
 
   return <div ref={containerRef}></div>;
