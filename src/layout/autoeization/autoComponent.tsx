@@ -14,7 +14,7 @@ import styled from 'styled-components';
 import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 import { EditButton } from '../../styles/btns/secondBtns';
 import { FlexWrapper } from '../../components/FlexWrapper';
-// import GoogleLoginComponent from './google/GoogleLoginComponent';
+import GoogleLoginComponent from './google/GoogleLoginComponent';
 import TelegramLoginButton from '../../components/telegram/TelegramLoginButton';
 
 const AuthorizationComponent: React.FC = () => {
@@ -22,7 +22,6 @@ const AuthorizationComponent: React.FC = () => {
   const { user, logout, login } = useAuth() as AuthContextType;
   const [orders, setOrders] = useState<Order[]>([]);
   const { t } = useTranslation();
-
 
   interface TelegramUser {
     id: number;
@@ -33,6 +32,7 @@ const AuthorizationComponent: React.FC = () => {
     auth_date: number;
     hash: string;
   }
+
   useEffect(() => {
     if (user) {
       fetchUserOrders();
@@ -56,7 +56,7 @@ const AuthorizationComponent: React.FC = () => {
 
       const ordersWithProductNames = ordersData.map((order: Order) => ({
         ...order,
-        items: order.items.map(item => ({
+        items: order.items.map((item: any) => ({
           ...item,
           productName: productsMap[item.productId]?.name?.ru || 'Неизвестный продукт'
         }))
@@ -98,60 +98,60 @@ const AuthorizationComponent: React.FC = () => {
     setAuthMode(mode);
   };
 
- // Обработчик аутентификации через Telegram
- const handleTelegramAuth = async (telegramUser: TelegramUser) => {
-  try {
-    const response = await axios.post('https://enddel.com/auth/telegram', telegramUser);
-    const { user: appUser, token } = response.data;
-    login(appUser, token);
-  } catch (error) {
-    console.error('Telegram аутентификация не удалась:', error);
-    // Вы можете добавить отображение ошибки пользователю здесь
-  }
-};
+  // Обработчик аутентификации через Telegram
+  const handleTelegramAuth = async (telegramUser: TelegramUser) => {
+    try {
+      const response = await axios.post('https://enddel.com/auth/telegram', telegramUser);
+      const { user: appUser, token } = response.data;
+      login(appUser, token);
+    } catch (error) {
+      console.error('Telegram аутентификация не удалась:', error);
+      // Вы можете добавить отображение ошибки пользователю здесь
+    }
+  };
 
   return (
     <Container width={'100%'}>
-    <CardInner>
-      {user ? (
-        <UserDetails user={user} logout={logout} login={login} orders={orders} setOrders={setOrders} />
-      ) : (
-        <div>
-          {authMode === '' && (
-            <FlexWrapper justify='space-evenly' wrap='wrap'>
-              <ButtonAuteriztion onClick={() => handleSetAuthMode('login')} isActive={false} isDisabled={false}>
-                {t('login')}
-              </ButtonAuteriztion>
-              <ButtonAuteriztion onClick={() => handleSetAuthMode('register')} isActive={false} isDisabled={false}>
-                {t('register')}
-              </ButtonAuteriztion>
-            </FlexWrapper>
-          )}
-          {authMode === 'login' && (
-            <div>
-              <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>
-                {t('back')}
-              </ButtonAuteriztionExit>
-              <LoginComponent />
-            </div>
-          )}
-          {authMode === 'register' && (
-            <div>
-              <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>
-                {t('back')}
-              </ButtonAuteriztionExit>
-              <RegisterComponent onAuthModeChange={handleSetAuthMode} />
-            </div>
-          )}
-          {/* Добавляем кнопку Telegram Login */}
-          {authMode === '' && (
-            <TelegramLoginButton botName="enddel_com_bot" onAuth={handleTelegramAuth} />
-          )}
-        </div>
-      )}
-      {/* <GoogleLoginComponent /> */}
-    </CardInner>
-  </Container>
+      <CardInner>
+        {user ? (
+          <UserDetails user={user} logout={logout} login={login} orders={orders} setOrders={setOrders} />
+        ) : (
+          <div>
+            {authMode === '' && (
+              <FlexWrapper justify='space-evenly' wrap='wrap'>
+                <ButtonAuteriztion onClick={() => handleSetAuthMode('login')} isActive={false} isDisabled={false}>
+                  {t('login')}
+                </ButtonAuteriztion>
+                <ButtonAuteriztion onClick={() => handleSetAuthMode('register')} isActive={false} isDisabled={false}>
+                  {t('register')}
+                </ButtonAuteriztion>
+              </FlexWrapper>
+            )}
+            {authMode === 'login' && (
+              <div>
+                <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>
+                  {t('back')}
+                </ButtonAuteriztionExit>
+                <LoginComponent />
+              </div>
+            )}
+            {authMode === 'register' && (
+              <div>
+                <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>
+                  {t('back')}
+                </ButtonAuteriztionExit>
+                <RegisterComponent onAuthModeChange={handleSetAuthMode} />
+              </div>
+            )}
+            {/* Добавляем кнопку Telegram Login */}
+            {authMode === '' && (
+              <TelegramLoginButton botName="enddel_com_bot" onAuth={handleTelegramAuth} />
+            )}
+          </div>
+        )}
+        {/* <GoogleLoginComponent /> */}
+      </CardInner>
+    </Container>
   );
 };
 
