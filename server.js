@@ -70,6 +70,56 @@ app.use(passport.initialize());
 //   }
 // );
 
+// Функция для проверки подлинности данных от Telegram
+const verifyTelegramAuth = (data) => {
+  const { hash, ...rest } = data;
+  const secretKey = crypto.createHash('sha256').update(process.env.TELEGRAM_BOT_TOKEN).digest();
+
+  const dataCheckString = Object.keys(rest)
+    .sort()
+    .map(key => `${key}=${rest[key]}`)
+    .join('\n');
+
+  const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+
+  return hmac === hash;
+};
+// Маршрут для аутентификации через Telegram
+app.post('/auth/telegram', async (req, res) => {
+  const telegramData = req.body;
+
+  // Проверка подлинности данных Telegram
+  if (!verifyTelegramAuth(telegramData)) {
+    return res.status(403).json({ error: 'Неверные данные Telegram' });
+  }
+
+  try {
+    // Проверяем, существует ли пользователь с данным telegram_id
+    const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegramData.id]);
+    
+    if (result.rows.length === 0) {
+      // Если пользователь не найден, создаем нового
+      const { id, first_name, last_name, username, photo_url } = telegramData;
+
+      const insertResult = await pool.query(
+        'INSERT INTO users (telegram_id, first_name, last_name, username, photo_url, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [id, first_name, last_name || '', username || '', photo_url || '', 'user']
+      );
+      
+      const newUser = insertResult.rows[0];
+      const token = jwt.sign({ id: newUser.id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      return res.json({ token, user: newUser });
+    } else {
+      // Если пользователь найден, возвращаем токен
+      const existingUser = result.rows[0];
+      const token = jwt.sign({ id: existingUser.id, role: existingUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      return res.json({ token, user: existingUser });
+    }
+  } catch (err) {
+    console.error('Ошибка при аутентификации через Telegram:', err.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({

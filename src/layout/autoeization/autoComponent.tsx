@@ -1,3 +1,4 @@
+// src/components/AuthorizationComponent.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Container } from '../../components/Container';
@@ -14,6 +15,7 @@ import ButtonWithRipple from '../../styles/btns/ButtonStyles';
 import { EditButton } from '../../styles/btns/secondBtns';
 import { FlexWrapper } from '../../components/FlexWrapper';
 import GoogleLoginComponent from './google/GoogleLoginComponent';
+import TelegramLoginButton from '../../components/telegram/TelegramLoginButton';
 
 const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
@@ -21,11 +23,22 @@ const AuthorizationComponent: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const { t } = useTranslation();
 
+
+  interface TelegramUser {
+    id: number;
+    first_name: string;
+    last_name?: string;
+    username?: string;
+    photo_url?: string;
+    auth_date: number;
+    hash: string;
+  }
   useEffect(() => {
     if (user) {
       fetchUserOrders();
     }
   }, [user]);
+
   const fetchUserOrders = useCallback(async () => {
     try {
       const [ordersResponse, productsResponse] = await Promise.all([
@@ -85,9 +98,20 @@ const AuthorizationComponent: React.FC = () => {
     setAuthMode(mode);
   };
 
+  // Обработчик аутентификации через Telegram
+  const handleTelegramAuth = async (telegramUser: TelegramUser) => {
+    try {
+      const response = await axios.post('https://enddel.com/auth/telegram', telegramUser);
+      const { user: appUser, token } = response.data;
+      login(appUser, token);
+    } catch (error) {
+      console.error('Telegram аутентификация не удалась:', error);
+      // Вы можете добавить отображение ошибки пользователю здесь
+    }
+  };
+
   return (
     <Container width={'100%'}>
-      <GoogleLoginComponent />
       <CardInner>
         {user ? (
           <UserDetails user={user} logout={logout} login={login} orders={orders} setOrders={setOrders} />
@@ -107,19 +131,24 @@ const AuthorizationComponent: React.FC = () => {
             )}
             {authMode === 'register' && (
               <div>
-             <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>{t('back')}</ButtonAuteriztionExit>
-                  <RegisterComponent onAuthModeChange={handleSetAuthMode} />
+                <ButtonAuteriztionExit onClick={() => handleSetAuthMode('')}>{t('back')}</ButtonAuteriztionExit>
+                <RegisterComponent onAuthModeChange={handleSetAuthMode} />
               </div>
+            )}
+            {/* Добавляем кнопку Telegram Login */}
+            {authMode === '' && (
+              <TelegramLoginButton botName="enddel_com_bot" onAuth={handleTelegramAuth} />
             )}
           </div>
         )}
+        <GoogleLoginComponent />
       </CardInner>
     </Container>
   );
 };
 
 const ButtonAuteriztion = styled(ButtonWithRipple)`
-margin: 5px 0px;
+  margin: 5px 0px;
 `;
 const ButtonAuteriztionExit = styled(EditButton)`
 `;
