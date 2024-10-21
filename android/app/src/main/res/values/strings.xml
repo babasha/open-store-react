@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ENDDEL</string>
+    <string name="title_activity_main">ENDDEL</string>
+    <string name="package_name">ENDDEL.COM</string>
+    <string name="custom_url_scheme">ENDDEL.COM</string>
+</resources>

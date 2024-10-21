@@ -41,7 +41,10 @@ const StyledButton = styled(motion.button)<ButtonProps>`
 
   @media (max-width: 480px) {
     font-size: 14px;
+  
     padding: ${({ hasPrice }) => (hasPrice ? '5px 10px' : '5px 15px')};
+    width: ${({ hasPrice }) => (hasPrice ? '100%' : '100%')};
+
   }
 `;
 

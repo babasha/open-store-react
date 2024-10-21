@@ -29,7 +29,7 @@ const Amount = styled.span<{ insideButton: boolean; isActive: boolean }>`
   font-size: ${({ insideButton }) => (insideButton ? '14px' : '19px')};
   color: ${({ insideButton, isActive }) => {
     if (insideButton) {
-      return isActive ? 'white' : theme.colors.font;
+      return isActive ? 'white' : theme.button.buttonActive;
     }
     return 'black';
   }};
