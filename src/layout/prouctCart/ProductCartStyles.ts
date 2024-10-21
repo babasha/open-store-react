@@ -14,7 +14,7 @@ export const loadingAnimation = keyframes`
 export const Cart = styled.div`
   background-color: ${theme.colors.mainBg};
   width: 250px;
-  min-height: 300px;
+  /* min-height: 300px; */
   height: max-content;
   margin: 10px;
   border-radius: 20px;
