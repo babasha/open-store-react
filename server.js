@@ -105,13 +105,15 @@ app.post('/auth/telegram', async (req, res) => {
   console.log('Проверка подлинности Telegram прошла успешно.');
 
   try {
+    const { id, first_name, last_name, username, photo_url } = telegramData.user;
+    console.log('Данные пользователя Telegram:', { id, first_name, last_name, username, photo_url });
+
     // Проверяем, существует ли пользователь с данным telegram_id
-    const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegramData.id]);
+    const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [id]);
     console.log('Результат проверки существования пользователя:', result.rows);
 
     if (result.rows.length === 0) {
       // Если пользователь не найден, создаем нового
-      const { id, first_name, last_name, username, photo_url } = telegramData;
       console.log('Пользователь не найден. Создаём нового пользователя.');
 
       const insertResult = await pool.query(
@@ -138,7 +140,7 @@ app.post('/auth/telegram', async (req, res) => {
       return res.json({ token, user: existingUser });
     }
   } catch (err) {
-    console.error('Ошибка при аутентификации через Telegram:', err.message);
+    console.error('Ошибка при аутентификации через Telegram:', err);
     res.status(500).json({ error: 'Ошибка сервера', details: err.message });
   }
 });
