@@ -69,7 +69,6 @@ app.use(passport.initialize());
 //     res.redirect(`${process.env.PUBLIC_URL}/auth/success?token=${token}`);
 //   }
 // );
-
 // Функция для проверки подлинности данных от Telegram
 const verifyTelegramAuth = (data) => {
   const { hash, ...rest } = data;
@@ -88,42 +87,59 @@ const verifyTelegramAuth = (data) => {
   console.log('Computed HMAC:', hmac);
   console.log('Received hash:', hash);
 
-  return hmac === hash;
+  const isValid = hmac === hash;
+  console.log(`Проверка подлинности Telegram: ${isValid ? 'успешно' : 'неудачно'}`);
+  
+  return isValid;
 };
-// Маршрут для аутентификации через Telegram
+// Функция для проверки подлинности данных от Telegram
 app.post('/auth/telegram', async (req, res) => {
   const telegramData = req.body;
+  console.log('Полученные данные от Telegram:', telegramData);
 
   // Проверка подлинности данных Telegram
   if (!verifyTelegramAuth(telegramData)) {
+    console.log('Проверка подлинности Telegram не пройдена.');
     return res.status(403).json({ error: 'Неверные данные Telegram' });
   }
+  console.log('Проверка подлинности Telegram прошла успешно.');
 
   try {
     // Проверяем, существует ли пользователь с данным telegram_id
     const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [telegramData.id]);
-    
+    console.log('Результат проверки существования пользователя:', result.rows);
+
     if (result.rows.length === 0) {
       // Если пользователь не найден, создаем нового
       const { id, first_name, last_name, username, photo_url } = telegramData;
+      console.log('Пользователь не найден. Создаём нового пользователя.');
 
       const insertResult = await pool.query(
-        'INSERT INTO users (telegram_id, first_name, last_name, username, photo_url, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [id, first_name, last_name || '', username || '', photo_url || '', 'user']
+        'INSERT INTO users (telegram_id, first_name, last_name, telegram_username, photo_url, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+        [id, first_name, last_name || '', username || '', photo_url || '', 'user', null] // password_hash = NULL
       );
-      
+
+      if (insertResult.rows.length === 0) {
+        console.log('Ошибка: пользователь не был добавлен в базу данных.');
+        throw new Error('Пользователь не был добавлен в базу данных.');
+      }
+
       const newUser = insertResult.rows[0];
+      console.log('Новый пользователь успешно добавлен:', newUser);
+
       const token = jwt.sign({ id: newUser.id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
       return res.json({ token, user: newUser });
     } else {
       // Если пользователь найден, возвращаем токен
       const existingUser = result.rows[0];
+      console.log('Пользователь найден:', existingUser);
+
       const token = jwt.sign({ id: existingUser.id, role: existingUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
       return res.json({ token, user: existingUser });
     }
   } catch (err) {
     console.error('Ошибка при аутентификации через Telegram:', err.message);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Ошибка сервера', details: err.message });
   }
 });
 
