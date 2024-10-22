@@ -45,6 +45,7 @@ app.use(cors(corsOptions));
 
 // Middleware для обработки JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Middleware для заголовков CORS
 app.use((req, res, next) => {
@@ -92,20 +93,21 @@ const verifyTelegramAuth = (data) => {
   
   return isValid;
 };
+
 // Функция для проверки подлинности данных от Telegram
 app.post('/auth/telegram', async (req, res) => {
-  const telegramData = req.body;
-  console.log('Полученные данные от Telegram:', telegramData);
+  const telegramUser = req.body; // Теперь это TelegramUser
+  console.log('Полученные данные от Telegram:', telegramUser);
 
   // Проверка подлинности данных Telegram
-  if (!verifyTelegramAuth(telegramData)) {
+  if (!verifyTelegramAuth(telegramUser)) {
     console.log('Проверка подлинности Telegram не пройдена.');
     return res.status(403).json({ error: 'Неверные данные Telegram' });
   }
   console.log('Проверка подлинности Telegram прошла успешно.');
 
   try {
-    const { id, first_name, last_name, username, photo_url } = telegramData.user;
+    const { id, first_name, last_name, username, photo_url } = telegramUser;
     console.log('Данные пользователя Telegram:', { id, first_name, last_name, username, photo_url });
 
     // Проверяем, существует ли пользователь с данным telegram_id

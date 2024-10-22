@@ -17,21 +17,22 @@ import { FlexWrapper } from '../../components/FlexWrapper';
 import GoogleLoginComponent from './google/GoogleLoginComponent';
 import TelegramLoginButton from '../../components/telegram/TelegramLoginButton';
 
+// Интерфейсы для типизации
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
+
 const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
   const { user, logout, login } = useAuth() as AuthContextType;
   const [orders, setOrders] = useState<Order[]>([]);
   const { t } = useTranslation();
-
-  interface TelegramUser {
-    id: number;
-    first_name: string;
-    last_name?: string;
-    username?: string;
-    photo_url?: string;
-    auth_date: number;
-    hash: string;
-  }
 
   useEffect(() => {
     if (user) {
@@ -98,13 +99,18 @@ const AuthorizationComponent: React.FC = () => {
     setAuthMode(mode);
   };
 
-  // Обработчик аутентификации через Telegram
+  // Обработчик аутентификации через Telegram с типизацией
   const handleTelegramAuth = async (telegramUser: TelegramUser) => {
+    console.log('Данные, полученные от Telegram:', telegramUser);
     try {
-      const response = await axios.post('https://enddel.com/auth/telegram', telegramUser);
+      const response = await axios.post('https://enddel.com/auth/telegram', telegramUser, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       const { user: appUser, token } = response.data;
       login(appUser, token);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Telegram аутентификация не удалась:', error);
       // Вы можете добавить отображение ошибки пользователю здесь
     }
