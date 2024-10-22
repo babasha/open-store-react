@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 
 interface TelegramLoginButtonProps {
-  botName: string; // Имя вашего бота без @
+  botName: string;
   onAuth: (user: TelegramUser) => void;
 }
 
@@ -24,8 +24,8 @@ const TelegramLoginButton: React.FC<TelegramLoginButtonProps> = ({ botName, onAu
     console.log('TelegramLoginButton: useEffect called');
 
     // Определяем глобальную функцию для обработки аутентификации
-    (window as any).onTelegramAuth = (user: TelegramUser) => {
-      console.log('onTelegramAuth called with user:', user);
+    (window as any).TelegramLoginWidgetCallback = (user: TelegramUser) => {
+      console.log('TelegramLoginWidgetCallback called with user:', user);
       onAuth(user);
     };
 
@@ -36,7 +36,8 @@ const TelegramLoginButton: React.FC<TelegramLoginButtonProps> = ({ botName, onAu
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-userpic', 'false');
     script.setAttribute('data-request-access', 'write');
-    script.setAttribute('data-onauth', 'onTelegramAuth'); // Исправлено здесь
+    script.setAttribute('data-userpic', 'false');
+    script.setAttribute('data-onauth', 'TelegramLoginWidgetCallback(user)');
     script.async = true;
 
     // Добавляем скрипт в контейнер
@@ -47,7 +48,7 @@ const TelegramLoginButton: React.FC<TelegramLoginButtonProps> = ({ botName, onAu
 
     // Очистка функции при размонтировании компонента
     return () => {
-      delete (window as any).onTelegramAuth;
+      delete (window as any).TelegramLoginWidgetCallback;
     };
   }, [botName, onAuth]);
 

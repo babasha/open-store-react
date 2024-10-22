@@ -85,18 +85,33 @@ const verifyTelegramAuth = (data) => {
     .update(dataCheckString)
     .digest('hex');
 
+  console.log('Data Check String:', dataCheckString);
   console.log('Computed HMAC:', hmac);
   console.log('Received hash:', hash);
 
   const isValid = hmac === hash;
+
+  // Проверяем, что auth_date не слишком старый (например, не более 24 часов)
+  const authDate = parseInt(rest.auth_date, 10);
+  if (isNaN(authDate)) {
+    console.log('Неверный auth_date');
+    return false;
+  }
+  const now = Math.floor(Date.now() / 1000);
+  if (now - authDate > 86400) {
+    console.log('Данные аутентификации устарели');
+    return false;
+  }
+
   console.log(`Проверка подлинности Telegram: ${isValid ? 'успешно' : 'неудачно'}`);
-  
+
   return isValid;
 };
 
 // Функция для проверки подлинности данных от Telegram
+// Маршрут для аутентификации через Telegram
 app.post('/auth/telegram', async (req, res) => {
-  const telegramUser = req.body; // Теперь это TelegramUser
+  const telegramUser = req.body;
   console.log('Полученные данные от Telegram:', telegramUser);
 
   // Проверка подлинности данных Telegram
@@ -119,8 +134,8 @@ app.post('/auth/telegram', async (req, res) => {
       console.log('Пользователь не найден. Создаём нового пользователя.');
 
       const insertResult = await pool.query(
-        'INSERT INTO users (telegram_id, first_name, last_name, telegram_username, photo_url, role, password_hash, email, phone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-        [id, first_name, last_name || '', username || '', photo_url || '', 'user', null, null, null]
+        'INSERT INTO users (telegram_id, first_name, last_name, telegram_username, photo_url, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [id, first_name, last_name || '', username || '', photo_url || '', 'user']
       );
 
       if (insertResult.rows.length === 0) {
@@ -146,6 +161,7 @@ app.post('/auth/telegram', async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера', details: err.message });
   }
 });
+
 
 // Конфигурация multer для загрузки файлов
 const storage = multer.diskStorage({

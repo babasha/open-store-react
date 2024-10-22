@@ -28,6 +28,7 @@ interface TelegramUser {
   hash: string;
 }
 
+// React-компонент авторизации
 const AuthorizationComponent: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register' | ''>('');
   const { user, logout, login } = useAuth() as AuthContextType;
@@ -99,7 +100,7 @@ const AuthorizationComponent: React.FC = () => {
     setAuthMode(mode);
   };
 
-  // Обработчик аутентификации через Telegram с типизацией
+  // Обработчик аутентификации через Telegram
   const handleTelegramAuth = async (telegramUser: TelegramUser) => {
     console.log('Данные, полученные от Telegram:', telegramUser);
     try {
@@ -149,7 +150,7 @@ const AuthorizationComponent: React.FC = () => {
                 <RegisterComponent onAuthModeChange={handleSetAuthMode} />
               </div>
             )}
-            {/* Добавляем кнопку Telegram Login */}
+            {/* Кнопка Telegram Login */}
             {authMode === '' && (
               <TelegramLoginButton botName="enddel_com_bot" onAuth={handleTelegramAuth} />
             )}
