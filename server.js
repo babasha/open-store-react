@@ -115,8 +115,8 @@ app.post('/auth/telegram', async (req, res) => {
       console.log('Пользователь не найден. Создаём нового пользователя.');
 
       const insertResult = await pool.query(
-        'INSERT INTO users (telegram_id, first_name, last_name, telegram_username, photo_url, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-        [id, first_name, last_name || '', username || '', photo_url || '', 'user', null] // password_hash = NULL
+        'INSERT INTO users (telegram_id, first_name, last_name, telegram_username, photo_url, role, password_hash, email, phone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+        [id, first_name, last_name || '', username || '', photo_url || '', 'user', null, null, null]
       );
 
       if (insertResult.rows.length === 0) {
