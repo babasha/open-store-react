@@ -114,52 +114,58 @@ app.post('/auth/telegram', async (req, res) => {
   const telegramUser = req.body;
   console.log('Полученные данные от Telegram:', telegramUser);
 
-  // Проверка подлинности данных Telegram
-  if (!verifyTelegramAuth(telegramUser)) {
-    console.log('Проверка подлинности Telegram не пройдена.');
-    return res.status(403).json({ error: 'Неверные данные Telegram' });
-  }
-  console.log('Проверка подлинности Telegram прошла успешно.');
+ // Проверка подлинности данных Telegram
+ if (!verifyTelegramAuth(telegramUser)) {
+  console.log('Проверка подлинности Telegram не пройдена.');
+  return res.status(403).json({ error: 'Неверные данные Telegram' });
+}
+console.log('Проверка подлинности Telegram прошла успешно.');
 
-  try {
-    const { id, first_name, last_name, username, photo_url } = telegramUser;
-    console.log('Данные пользователя Telegram:', { id, first_name, last_name, username, photo_url });
+try {
+  const { id, first_name, last_name, username, photo_url } = telegramUser;
+  console.log('Данные пользователя Telegram:', { id, first_name, last_name, username, photo_url });
 
-    // Проверяем, существует ли пользователь с данным telegram_id
-    const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [id]);
-    console.log('Результат проверки существования пользователя:', result.rows);
+  // Проверяем, существует ли пользователь с данным telegram_id
+  const result = await pool.query('SELECT * FROM users WHERE telegram_id = $1', [id]);
+  console.log('Результат проверки существования пользователя:', result.rows);
 
-    if (result.rows.length === 0) {
-      // Если пользователь не найден, создаем нового
-      console.log('Пользователь не найден. Создаём нового пользователя.');
+  let user;
+  if (result.rows.length === 0) {
+    // Если пользователь не найден, создаем нового
+    console.log('Пользователь не найден. Создаём нового пользователя.');
 
-      const insertResult = await pool.query(
-        'INSERT INTO users (telegram_id, first_name, last_name, telegram_username, photo_url, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [id, first_name, last_name || '', username || '', photo_url || '', 'user']
-      );
+    const insertResult = await pool.query(
+      'INSERT INTO users (telegram_id, first_name, last_name, telegram_username, photo_url, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [id, first_name, last_name || '', username || '', photo_url || '', 'user']
+    );
 
-      if (insertResult.rows.length === 0) {
-        console.log('Ошибка: пользователь не был добавлен в базу данных.');
-        throw new Error('Пользователь не был добавлен в базу данных.');
-      }
-
-      const newUser = insertResult.rows[0];
-      console.log('Новый пользователь успешно добавлен:', newUser);
-
-      const token = jwt.sign({ id: newUser.id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      return res.json({ token, user: newUser });
-    } else {
-      // Если пользователь найден, возвращаем токен
-      const existingUser = result.rows[0];
-      console.log('Пользователь найден:', existingUser);
-
-      const token = jwt.sign({ id: existingUser.id, role: existingUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      return res.json({ token, user: existingUser });
+    if (insertResult.rows.length === 0) {
+      console.log('Ошибка: пользователь не был добавлен в базу данных.');
+      throw new Error('Пользователь не был добавлен в базу данных.');
     }
-  } catch (err) {
-    console.error('Ошибка при аутентификации через Telegram:', err);
-    res.status(500).json({ error: 'Ошибка сервера', details: err.message });
+
+    user = insertResult.rows[0];
+    console.log('Новый пользователь успешно добавлен:', user);
+  } else {
+    // Если пользователь найден
+    user = result.rows[0];
+    console.log('Пользователь найден:', user);
   }
+
+  // Убедимся, что секретный ключ для JWT доступен
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    console.error('JWT_SECRET не установлен!');
+    return res.status(500).json({ error: 'Ошибка сервера', details: 'Секретный ключ JWT не установлен' });
+  }
+
+  // Генерация токена
+  const token = jwt.sign({ id: user.id, role: user.role }, jwtSecret, { expiresIn: '1h' });
+  return res.json({ token, user });
+} catch (err) {
+  console.error('Ошибка при аутентификации через Telegram:', err);
+  res.status(500).json({ error: 'Ошибка сервера', details: err.message });
+}
 });
 
 
