@@ -8,9 +8,9 @@ export interface User {
   id: number;
   first_name: string;
   last_name: string;
-  email: string;
-  address: string;
-  phone: string;
+  email?: string; // Сделано необязательным
+  address?: string;
+  phone?: string; // Сделано необязательным
   role: string;
 }
 
@@ -22,7 +22,7 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// **Добавляем объявление глобальных переменных для TypeScript**
+// Объявляем глобальные переменные для TypeScript
 declare global {
   interface Window {
     $crisp: any[];
@@ -38,8 +38,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
-    console.log('storedUser:', storedUser);  // <-- Здесь мы выводим данные о пользователе
-    console.log('storedToken:', storedToken); // <-- Здесь мы выводим токен
+    console.log('storedUser:', storedUser);
+    console.log('storedToken:', storedToken);
     if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -47,11 +47,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         socket.emit('login', parsedUser.id);
 
-        // **Настраиваем данные пользователя в Crisp при восстановлении сессии**
+        // Настраиваем данные пользователя в Crisp, если они доступны
         if (window.$crisp) {
-          window.$crisp.push(["set", "user:email", [parsedUser.email]]);
+          if (parsedUser.email) {
+            window.$crisp.push(["set", "user:email", [parsedUser.email]]);
+          }
           window.$crisp.push(["set", "user:nickname", [`${parsedUser.first_name} ${parsedUser.last_name}`]]);
-          window.$crisp.push(["set", "user:phone", [parsedUser.phone]]);
+          if (parsedUser.phone) {
+            window.$crisp.push(["set", "user:phone", [parsedUser.phone]]);
+          }
           window.$crisp.push(["set", "session:data", [[["user_id", parsedUser.id.toString()]]]]);
         }
       } catch (error) {
@@ -68,11 +72,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     socket.emit('login', user.id);
 
-    // **Настраиваем данные пользователя в Crisp**
+    // Настраиваем данные пользователя в Crisp
     if (window.$crisp) {
-      window.$crisp.push(["set", "user:email", [user.email]]);
+      if (user.email) {
+        window.$crisp.push(["set", "user:email", [user.email]]);
+      }
       window.$crisp.push(["set", "user:nickname", [`${user.first_name} ${user.last_name}`]]);
-      window.$crisp.push(["set", "user:phone", [user.phone]]);
+      if (user.phone) {
+        window.$crisp.push(["set", "user:phone", [user.phone]]);
+      }
       window.$crisp.push(["set", "session:data", [[["user_id", user.id.toString()]]]]);
     }
   };
@@ -87,7 +95,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     delete axios.defaults.headers.common['Authorization'];
     navigate('/');
 
-    // **Сбрасываем сессию Crisp при выходе пользователя**
+    // Сбрасываем сессию Crisp при выходе пользователя
     if (window.$crisp) {
       window.$crisp.push(["do", "session:reset", []]);
     }
