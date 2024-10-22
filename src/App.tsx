@@ -8,7 +8,6 @@ import ProtectedRoute from './layout/Protect/ProtectedRoute';
 import RegisterComponent from './page/register/register';
 import PaymentSuccess from './page/paymentsPages/PaymentSuccess';
 import { PurchasedItemsProvider } from './page/paymentsPages/PurchasedItemsContext';
-require('dotenv').config();
 
 declare global {
   interface Window {
