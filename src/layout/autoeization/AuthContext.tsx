@@ -16,7 +16,7 @@ export interface User {
 
 export interface AuthContextType {
   user: User | null;
-  login: (user: User, token: string) => void;
+  login: (user: User, token?: string) => void; // Сделали token опциональным
   logout: () => void;
 }
 
