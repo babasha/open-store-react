@@ -36,6 +36,7 @@ const AuthorizationComponent: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
+    console.log('Текущий пользователь:', user);
     if (user) {
       fetchUserOrders();
     }
@@ -100,8 +101,8 @@ const AuthorizationComponent: React.FC = () => {
     setAuthMode(mode);
   };
 
-  // Обработчик аутентификации через Telegram
-  const handleTelegramAuth = async (telegramUser: TelegramUser) => {
+   // Обработчик аутентификации через Telegram
+   const handleTelegramAuth = async (telegramUser: TelegramUser) => {
     console.log('Данные, полученные от Telegram:', telegramUser);
     try {
       const response = await axios.post('https://enddel.com/auth/telegram', telegramUser, {
@@ -109,11 +110,12 @@ const AuthorizationComponent: React.FC = () => {
           'Content-Type': 'application/json',
         },
       });
-      const { user: appUser, token } = response.data;
-      login(appUser, token);
+      console.log('Ответ сервера:', response.data);
+      const appUser = response.data; // Настроено в соответствии с фактическим ответом
+      login(appUser); // Токен может быть опциональным или не передаваться
+      console.log('Пользователь после логина:', appUser);
     } catch (error: any) {
-      console.error('Telegram аутентификация не удалась:', error);
-      // Вы можете добавить отображение ошибки пользователю здесь
+      console.error('Аутентификация через Telegram не удалась:', error);
     }
   };
 

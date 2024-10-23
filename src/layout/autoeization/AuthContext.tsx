@@ -65,12 +65,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(false);
   }, []);
 
-  const login = (user: User, token: string) => {
+  const login = (user: User, token?: string) => {
     setUser(user);
-    localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('user', JSON.stringify(user));
+  if (token) {
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    socket.emit('login', user.id);
+  } else {
+    // Обработка случаев, когда токен не передается
+    delete axios.defaults.headers.common['Authorization'];
+  }
+  socket.emit('login', user.id);
 
     // Настраиваем данные пользователя в Crisp
     if (window.$crisp) {
