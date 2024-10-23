@@ -19,7 +19,7 @@ declare global {
 export function App() {
   useEffect(() => {
     window.$crisp = [];
-    window.CRISP_WEBSITE_ID = "63e2c9a9-fa2b-4c85-a14f-f0f7b0c0e313"; // Замените на ваш CRISP_WEBSITE_ID
+    window.CRISP_WEBSITE_ID = "63e2c9a9-fa2b-4c85-a14f-f0f7b0c0e313";
 
     // Загружаем скрипт Crisp
     (function() {

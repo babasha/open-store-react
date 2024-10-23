@@ -1,3 +1,4 @@
+// telegram/TelegramLoginButton.tsx
 import React, { useEffect, useRef } from 'react';
 
 interface TelegramLoginButtonProps {
