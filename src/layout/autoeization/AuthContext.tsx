@@ -66,18 +66,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = (user: User, token?: string) => {
+    console.log('Logging in user:', user);
     setUser(user);
-  localStorage.setItem('user', JSON.stringify(user));
-  if (token) {
-    localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    // Обработка случаев, когда токен не передается
-    delete axios.defaults.headers.common['Authorization'];
-  }
-  socket.emit('login', user.id);
-
-    // Настраиваем данные пользователя в Crisp
+    localStorage.setItem('user', JSON.stringify(user));
+    if (token) {
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+    socket.emit('login', user.id);
+  
+    // Configure user data in Crisp
     if (window.$crisp) {
       if (user.email) {
         window.$crisp.push(["set", "user:email", [user.email]]);
@@ -89,6 +89,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       window.$crisp.push(["set", "session:data", [[["user_id", user.id.toString()]]]]);
     }
   };
+  
 
   const logout = () => {
     if (user) {

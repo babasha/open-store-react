@@ -110,11 +110,11 @@ const AuthorizationComponent: React.FC = () => {
           'Content-Type': 'application/json',
         },
       });
-      console.log('Ответ сервера:', response.data);
-      const appUser = response.data;
-      login(appUser); // Передайте пустую строку или настройте в зависимости от потребностей
+      console.log('Server response:', response.data);
+      const { user: appUser, token } = response.data;
+      login(appUser, token);
     } catch (error: any) {
-      console.error('Аутентификация через Telegram не удалась:', error);
+      console.error('Telegram authentication failed:', error);
     }
   };
 
