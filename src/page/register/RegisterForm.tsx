@@ -41,7 +41,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   const { t } = useTranslation();
 
   return (
-    <Form>
+    <Form onSubmit={onSubmit}>
       <TextInput
         label={t('first_name')}
         type="text"
@@ -92,7 +92,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         required
       />
       <RegisterButton type="submit" isDisabled={isSubmitting} isActive={!isSubmitting}>
-        {isSubmitting ? t('loading') : t('register')}
+       {isSubmitting ? t('loading') : t('register')}
       </RegisterButton>
     </Form>
   );

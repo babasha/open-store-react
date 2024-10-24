@@ -18,8 +18,8 @@ const Container = styled.div`
 `;
 
 const LoginTitle = styled.h3` 
- margin: 15px 0px 25px 0px;
- font-size: 22px;
+  margin: 15px 0px 25px 0px;
+  font-size: 22px;
 `;
 
 const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange }) => {
@@ -35,7 +35,6 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Состояние для управления модальным окном
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddressClick = () => {
@@ -79,6 +78,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('Submitting form'); // Добавлено
 
     const validationError = validateForm();
     if (validationError) {
@@ -123,11 +123,10 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
         onChange={handleChange}
         onAddressClick={handleAddressClick}
         isSubmitting={isSubmitting}
-        onSubmit={handleSubmit} // Добавлено
+        onSubmit={handleSubmit}
       />
       {error && <ErrorMessage message={error} />}
 
-      {/* Модальное окно для MapPicker */}
       {isModalOpen && (
         <Modal onClose={handleModalClose} onAddressSelect={handleAddressSelect} />
       )}
