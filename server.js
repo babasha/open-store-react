@@ -760,23 +760,37 @@ app.put('/products/:id', upload.single('image'), isAdmin, async (req, res) => {
 // Маршрут для регистрации пользователя
 app.post('/auth/register', async (req, res) => {
   const { firstName, lastName, email, address, phone, password } = req.body;
+  
+  // Логирование входных данных
+  console.log(`[${new Date().toISOString()}] Начало регистрации пользователя:`, {
+    firstName, lastName, email, address, phone
+  });
+  
   try {
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    console.log(`[${new Date().toISOString()}] Генерация соли для пароля:`, salt);
 
+    const passwordHash = await bcrypt.hash(password, salt);
+    console.log(`[${new Date().toISOString()}] Хеш пароля создан:`, passwordHash);
+
+    console.log(`[${new Date().toISOString()}] Выполнение SQL-запроса на добавление пользователя в БД...`);
     const result = await pool.query(
       'INSERT INTO users (first_name, last_name, email, address, phone, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, first_name, last_name, email, address, phone, role',
       [firstName, lastName, email, address, phone, passwordHash, 'user']
     );
-
+    
     const user = result.rows[0];
+    console.log(`[${new Date().toISOString()}] Пользователь успешно зарегистрирован:`, user);
+
     res.status(201).json(user);
   } catch (err) {
-    console.error('Ошибка регистрации пользователя:', err.message);
+    console.error(`[${new Date().toISOString()}] Ошибка регистрации пользователя:`, err);
 
     if (err.code === '23505') {
+      console.warn(`[${new Date().toISOString()}] Email уже используется:`, email);
       return res.status(400).json({ error: 'Email уже используется' });
     }
+
     res.status(500).json({ error: 'Ошибка сервера', message: err.message });
   }
 });
