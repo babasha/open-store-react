@@ -17,6 +17,7 @@ interface RegisterFormProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddressClick: () => void;
   isSubmitting: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void; // Добавлено
 }
 
 const Form = styled.form`
@@ -35,6 +36,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   onChange,
   onAddressClick,
   isSubmitting,
+  onSubmit, // Добавлено
 }) => {
   const { t } = useTranslation();
 
