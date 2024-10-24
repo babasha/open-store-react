@@ -123,6 +123,7 @@ const RegisterComponent: React.FC<RegisterComponentProps> = ({ onAuthModeChange 
         onChange={handleChange}
         onAddressClick={handleAddressClick}
         isSubmitting={isSubmitting}
+        onSubmit={handleSubmit} // Добавлено
       />
       {error && <ErrorMessage message={error} />}
 
